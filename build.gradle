@@ -1,0 +1,58 @@
+plugins {
+    id 'java'
+    //id 'distribution'
+    id 'application'
+}
+
+group = 'io.jmix.migration'
+version = '0.1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.beust:jcommander:1.82'
+    implementation 'commons-io:commons-io:2.16.1'
+    implementation 'org.slf4j:slf4j-api:2.0.12'
+    implementation 'ch.qos.logback:logback-core:1.5.6'
+    implementation 'ch.qos.logback:logback-classic:1.5.6'
+    implementation 'org.apache.commons:commons-lang3:3.14.0'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.1'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.2'
+    implementation 'com.google.guava:guava:33.2.1-jre'
+    implementation 'org.dom4j:dom4j:2.1.4'
+    implementation 'com.github.javaparser:javaparser-core:3.26.1'
+    implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.26.1'
+    implementation 'org.freemarker:freemarker:2.3.33'
+
+
+
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+def toolDir = "migration-advisor-${project.property('version')}"
+
+/*tasks.register('prepareDist', Copy) {
+    dependsOn tasks.cleanBuild
+}*/
+
+tasks.register('cleanBuild', Delete) {
+    delete project.buildDir
+}
+
+tasks.register('zipDist', Zip) {
+    dependsOn tasks.cleanBuild, tasks.installDist
+    archiveFileName = "${toolDir}.zip"
+    destinationDirectory = layout.buildDirectory.dir('distributions')
+    from project.layout.buildDirectory.dir('install')
+}
+
+application {
+    mainClass = 'io.jmix.migration.CliRunner'
+}
