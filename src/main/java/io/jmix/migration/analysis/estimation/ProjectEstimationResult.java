@@ -1,12 +1,14 @@
 package io.jmix.migration.analysis.estimation;
 
+import io.jmix.migration.model.ThresholdItem;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProjectEstimationResult {
-    private final Map<ScreenComplexityGroup, List<String>> screensPerGroup;
+    private final Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerComplexity;
     private final Map<String, Integer> allUiComponents;
     private final int entitiesAmount;
     private final Map<String, List<String>> entitiesPerPersistenceUnit;
@@ -16,7 +18,7 @@ public class ProjectEstimationResult {
     private final int baseEntitiesMigrationCost;
 
     private ProjectEstimationResult(Builder builder) {
-        this.screensPerGroup = builder.screensPerGroup;
+        this.screensPerComplexity = builder.screensPerComplexity;
         this.allUiComponents = builder.allUiComponents;
         this.entitiesAmount = countTotalEntities(builder.entitiesPerPersistenceUnit);
         this.entitiesPerPersistenceUnit = builder.entitiesPerPersistenceUnit;
@@ -25,8 +27,8 @@ public class ProjectEstimationResult {
         this.totalScreensCost = builder.totalScreensCost;
     }
 
-    public Map<ScreenComplexityGroup, List<String>> getScreensPerGroup() {
-        return screensPerGroup;
+    public Map<ThresholdItem<Integer, BigDecimal>, List<String>> getScreensPerComplexity() {
+        return screensPerComplexity;
     }
 
     public Map<String, Integer> getAllUiComponents() {
@@ -49,12 +51,16 @@ public class ProjectEstimationResult {
         return baseEntitiesMigrationCost;
     }
 
+    public BigDecimal getTotalScreensCost() {
+        return totalScreensCost;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
 
     public static class Builder {
-        private Map<ScreenComplexityGroup, List<String>> screensPerGroup;
+        private Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerComplexity;
         private Map<String, Integer> allUiComponents;
         private Map<String, List<String>> entitiesPerPersistenceUnit;
 
@@ -66,8 +72,8 @@ public class ProjectEstimationResult {
         public Builder() {
         }
 
-        public Builder setScreensPerGroup(Map<ScreenComplexityGroup, List<String>> screensPerGroup) {
-            this.screensPerGroup = screensPerGroup;
+        public Builder setScreensPerComplexity(Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerComplexity) {
+            this.screensPerComplexity = screensPerComplexity;
             return this;
         }
 

@@ -29,7 +29,7 @@ public class UiComponentIssue {
         return notes;
     }
 
-    public int getComplexityScore() {
+    public int getExtraComplexityScore() {
         return complexityScore;
     }
 }

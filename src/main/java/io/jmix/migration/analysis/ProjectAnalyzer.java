@@ -1,10 +1,5 @@
 package io.jmix.migration.analysis;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
-import io.jmix.migration.CliRunner;
 import io.jmix.migration.analysis.estimation.*;
 import io.jmix.migration.analysis.issue.UiComponentIssue;
 import io.jmix.migration.analysis.issue.UiComponentIssuesRegistry;
@@ -22,14 +17,10 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.ResolverStyle;
-import java.time.temporal.ChronoField;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 
 import static java.time.temporal.ChronoField.*;
-import static java.time.temporal.ChronoField.NANO_OF_SECOND;
 
 public class ProjectAnalyzer {
 
@@ -43,8 +34,9 @@ public class ProjectAnalyzer {
     public static final String SRC_DIR = "src";
 
     private final UiComponentIssuesRegistry uiComponentIssuesRegistry = UiComponentIssuesRegistry.create();
-    private final ScreenEstimator screenEstimator = new ScreenEstimator(uiComponentIssuesRegistry);
-    private final ScreenTimeEstimator screenTimeEstimator = new ScreenTimeEstimator();
+    private final EstimationDataProvider estimationDataProvider = new EstimationDataProvider(); //todo provide external file
+    private final ScreenEstimator screenEstimator = new ScreenEstimator(uiComponentIssuesRegistry, estimationDataProvider);
+    private final ScreenTimeEstimator screenTimeEstimator = new ScreenTimeEstimator(estimationDataProvider.getScreenComplexityTimeEstimationThresholds());
 
     public void analyzeProject(String projectPathString, String basePackage) {
         if (StringUtils.isBlank(projectPathString)) {
@@ -72,7 +64,8 @@ public class ProjectAnalyzer {
         Path webSrcPath = projectPath.resolve(MODULES_DIR).resolve(WEB_MODULE_DIR).resolve(SRC_DIR);
         Path guiSrcPath = projectPath.resolve(MODULES_DIR).resolve(GUI_MODULE_DIR).resolve(SRC_DIR);
         UiModulesAnalyzer uiModulesAnalyzer = new UiModulesAnalyzer(webSrcPath, guiSrcPath, basePackage);
-        ScreensCollector screensCollector = uiModulesAnalyzer.analyzeUiModules(); //todo additional wrapper
+        UiModulesAnalysisResult uiModulesAnalysisResult = uiModulesAnalyzer.analyzeUiModules();
+        ScreensCollector screensCollector = uiModulesAnalysisResult.getScreensCollector();
 
         log.info("\n\n-----===== RESULTS =====-----");
 
@@ -111,7 +104,7 @@ public class ProjectAnalyzer {
 
         //screenEstimator.estimate(screensCollector);
 
-        ProjectEstimationResult projectEstimationResult = estimateProject(coreModuleAnalysisResult, globalModuleAnalysisResult, screensCollector);
+        ProjectEstimationResult projectEstimationResult = estimateProject(coreModuleAnalysisResult, globalModuleAnalysisResult, uiModulesAnalysisResult);
         generateReport(projectEstimationResult);
     }
 
@@ -162,9 +155,9 @@ public class ProjectAnalyzer {
 
             writer.write("Entities: " + result.getEntitiesAmount());
 
-            Map<ScreenComplexityGroup, List<String>> screensPerGroup = result.getScreensPerGroup();
-            List<ScreenComplexityGroup> groups = new ArrayList<>(screensPerGroup.keySet());
-            groups.sort(Comparator.comparingInt(ScreenComplexityGroup::getOrder));
+            Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerGroup = result.getScreensPerComplexity();
+            List<ThresholdItem<Integer, BigDecimal>> groups = new ArrayList<>(screensPerGroup.keySet());
+            groups.sort(Comparator.comparingInt(ThresholdItem::getOrder));
 
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append(System.lineSeparator()).append(System.lineSeparator())
@@ -174,8 +167,8 @@ public class ProjectAnalyzer {
                 stringBuilder.append(System.lineSeparator()).append("\t")
                         .append(group.getName())
                         .append(": Amount=").append(amount)
-                        .append(", Cost=").append(group.getCost())
-                        .append(", Total=").append(group.getCost().multiply(BigDecimal.valueOf(amount)));
+                        .append(", Cost=").append(group.getOutputValue())
+                        .append(", Total=").append(group.getOutputValue().multiply(BigDecimal.valueOf(amount)));
             });
             writer.write(stringBuilder.toString());
 
@@ -194,6 +187,8 @@ public class ProjectAnalyzer {
             writer.write(stringBuilder.toString());
 
 
+
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -201,30 +196,31 @@ public class ProjectAnalyzer {
 
     protected ProjectEstimationResult estimateProject(CoreModuleAnalysisResult coreModuleAnalysisResult,
                                                       GlobalModuleAnalysisResult globalModuleAnalysisResult,
-                                                      ScreensCollector screensCollector) {
+                                                      UiModulesAnalysisResult uiModulesAnalysisResult) {
+        ScreensCollector screensCollector = uiModulesAnalysisResult.getScreensCollector();
         Map<String, ScreenComplexityScore> screenScores = screenEstimator.estimate(screensCollector);
         StringBuilder screenScoresSb = new StringBuilder("Screens Scores:");
-        Map<ScreenComplexityGroup, List<String>> screensPerGroup = new HashMap<>();
+        Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerGroup = new HashMap<>();
         BigDecimal screenSumHours = screenScores.entrySet().stream().map(entry -> {
             String name = entry.getKey();
             ScreenComplexityScore score = entry.getValue();
-            ScreenComplexityGroup complexityGroup = screenTimeEstimator.estimate(score);
+            ThresholdItem<Integer, BigDecimal> complexityThreshold = screenTimeEstimator.estimate(score);
 
-            List<String> screensInGroup = screensPerGroup.computeIfAbsent(complexityGroup, key -> new ArrayList<>());
+            List<String> screensInGroup = screensPerGroup.computeIfAbsent(complexityThreshold, key -> new ArrayList<>());
             screensInGroup.add(name);
 
-            screenScoresSb.append("\nScreen: '").append(name).append("'. Score: ").append(score.getValue()).append(". Hours: ").append(complexityGroup.getCost());
-            return complexityGroup.getCost();
+            screenScoresSb.append("\nScreen: '").append(name).append("'. Score: ").append(score.getValue()).append(". Hours: ").append(complexityThreshold.getOutputValue());
+            return complexityThreshold.getOutputValue();
         }).reduce(BigDecimal::add).orElse(new BigDecimal("0"));
 
         screenScoresSb.append("\n\nTotal screens hours: ").append(screenSumHours);
 
-        screensPerGroup.forEach((group, screens) -> {
+        screensPerGroup.forEach((complexityThreshold, screens) -> {
             screenScoresSb
-                    .append("\n\nGroup: ").append(group.getName())
-                    .append(", Cost: ").append(group.getCost())
+                    .append("\n\nGroup: ").append(complexityThreshold.getName())
+                    .append(", Cost: ").append(complexityThreshold.getOutputValue())
                     .append(", Amount: ").append(screens.size())
-                    .append(", TotalCost: ").append(group.getCost().multiply(BigDecimal.valueOf(screens.size())));
+                    .append(", TotalCost: ").append(complexityThreshold.getOutputValue().multiply(BigDecimal.valueOf(screens.size())));
         });
 
         log.info("{}", screenScoresSb);
@@ -235,7 +231,7 @@ public class ProjectAnalyzer {
         ProjectEstimationResult result = resultBuilder
                 .setInitialMigrationCost(100) // todo rule based on amount of entities
                 .setBaseEntitiesMigrationCost(16) //todo rule
-                .setScreensPerGroup(screensPerGroup)
+                .setScreensPerComplexity(screensPerGroup)
                 .setEntitiesPerPersistenceUnit(globalModuleAnalysisResult.getEntitiesPerPersistenceUnit())
                 .setAllUiComponents(screensTotalInfo.getUiComponents())
                 .build();
@@ -328,7 +324,7 @@ public class ProjectAnalyzer {
         log.info("Screen layout: {}", screenLayoutSb);
 
         log.info("---=== ESTIMATION ===---");
-        screenEstimator.estimate(screenInfo);
+        //screenEstimator.estimate(screenInfo);
     }
 
 

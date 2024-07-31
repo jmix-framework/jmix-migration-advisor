@@ -1,9 +1,10 @@
 package io.jmix.migration.analysis;
 
 import io.jmix.migration.analysis.parser.ScreensCollector;
-import io.jmix.migration.analysis.parser.screen.WebScreensXmlParser;
+import io.jmix.migration.analysis.parser.general.PropertiesParser;
 import io.jmix.migration.analysis.parser.screen.ScreenControllerParser;
 import io.jmix.migration.analysis.parser.screen.ScreenDescriptorParser;
+import io.jmix.migration.analysis.parser.screen.WebScreensXmlParser;
 import io.jmix.migration.model.*;
 import org.apache.commons.io.FilenameUtils;
 import org.dom4j.Document;
@@ -33,12 +34,21 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
         this.allSrcPaths = List.of(webSrcPath, guiSrcPath);
     }
 
-    public ScreensCollector analyzeUiModules() {
+    public UiModulesAnalysisResult analyzeUiModules() {
         log.info("---=== Start analyze UI modules ===---");
 
-        String[] basePackageSplit = basePackage.split("\\.");
-        Path basePackageLocalPath = Path.of("", basePackageSplit);
+        Path basePackageLocalPath = packageToPath(basePackage);
         Path webModuleBasePackagePath = webSrcPath.resolve(basePackageLocalPath);
+
+        List<BooleanMetric> booleanMetrics = new ArrayList<>();
+
+        Properties webAppProperties = null;
+        PropertiesParser propertiesParser = new PropertiesParser();
+        Path webAppPropertiesFilePath = getWebAppPropertiesFilePath(webModuleBasePackagePath);
+        if(webAppPropertiesFilePath.toFile().exists()) {
+            webAppProperties = propertiesParser.parsePropertiesFile(webAppPropertiesFilePath);
+        }
+
         Path webScreensFilePath = getWebScreensXmlFilePath(webModuleBasePackagePath);
 
         ScreensCollector screensCollector = new ScreensCollector();
@@ -49,7 +59,12 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
         analyzeWebModule(screensCollector);
         analyzeGuiModule(screensCollector);
 
-        Map<String, ScreenInfo> screensByControllers = screensCollector.getScreensByControllers();
+        UiModulesAnalysisResult uiModulesAnalysisResult = new UiModulesAnalysisResult(screensCollector, webAppProperties);
+
+        return uiModulesAnalysisResult;
+
+        // todo advanced inheritance
+        /*Map<String, ScreenInfo> screensByControllers = screensCollector.getScreensByControllers();
 
         Set<String> classesForAdditionalCheck = new HashSet<>();
         Set<ClassGeneralDetails> unknownClasses = screensCollector.getUnknownClasses();
@@ -90,10 +105,10 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
         if(!classesForAdditionalCheck.isEmpty()) {
             classesForAdditionalCheck.forEach(screensCollector::removeUnknownClass);
             //analyzeAdditionalClasses(screensCollector, classesForAdditionalCheck); //todo implement forced processing of class as controller
-        }
+        }*/
 
 
-        return screensCollector;
+
     }
 
     protected void analyzeWebModule(ScreensCollector screensCollector) {
@@ -226,5 +241,9 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
     protected Path getWebScreensXmlFilePath(Path basePackagePath) {
         //todo check 'web-screens.xml' location property
         return Path.of(basePackagePath.toString(), "web-screens.xml");
+    }
+
+    protected Path getWebAppPropertiesFilePath(Path basePackagePath) {
+        return Path.of(basePackagePath.toString(), "web-app.properties");
     }
 }

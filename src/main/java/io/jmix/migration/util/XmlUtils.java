@@ -26,7 +26,7 @@ public class XmlUtils {
     public static Document readDocument(File file, SAXReader xmlReader) {
         FileInputStream inputStream = null;
         try {
-            if(file.length() == 0) {
+            if(file.length() == 0) { //todo
                 log.warn("Empty file: {}", file.getName());
                 return new DOMDocument();
             }

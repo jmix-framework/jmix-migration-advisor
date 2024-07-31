@@ -40,4 +40,9 @@ public abstract class BaseAnalyzer {
         String fileName = file.getFileName().toString();
         return FilenameUtils.getExtension(fileName);
     }
+
+    protected Path packageToPath(String packageName) {
+        String[] basePackageSplit = packageName.split("\\.");
+        return Path.of("", basePackageSplit);
+    }
 }

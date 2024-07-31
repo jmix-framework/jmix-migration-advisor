@@ -1,16 +1,19 @@
 package io.jmix.migration.analysis.estimation.rules;
 
+import io.jmix.migration.model.ThresholdItem;
 import org.apache.commons.lang3.Range;
 
+import java.util.List;
 import java.util.Map;
 
 import static io.jmix.migration.analysis.parser.screen.MethodMetrics.METHOD_CALLS_AMOUNT_METRIC_CODE;
 
 public class ScreenControllerMethodsCallsRule implements NumericMetricRule {
 
-    protected Map<Range<Integer>, Integer> thresholdMap;
+    //protected Map<Range<Integer>, Integer> thresholdMap;
+    protected final List<? extends ThresholdItem<Integer, Integer>> thresholds;
 
-    public ScreenControllerMethodsCallsRule() {
+    /*public ScreenControllerMethodsCallsRule() {
         this(Map.of(
                 Range.of(0, 5), 0,
                 Range.of(6, 30), 10,
@@ -22,6 +25,10 @@ public class ScreenControllerMethodsCallsRule implements NumericMetricRule {
 
     public ScreenControllerMethodsCallsRule(Map<Range<Integer>, Integer> thresholdMap) {
         this.thresholdMap = thresholdMap; //todo from xml
+    }*/
+
+    public ScreenControllerMethodsCallsRule(List<? extends ThresholdItem<Integer, Integer>> thresholds) {
+        this.thresholds = thresholds;
     }
 
     @Override
@@ -31,12 +38,21 @@ public class ScreenControllerMethodsCallsRule implements NumericMetricRule {
 
     @Override
     public int apply(int inputValue) {
-        Integer score = thresholdMap.entrySet().stream()
+        return thresholds.stream()
+                .filter(item -> {
+                    Range<Integer> range = item.getThresholdRange();
+                    return range.contains(inputValue);
+                })
+                .findFirst()
+                .map(ThresholdItem::getOutputValue)
+                .orElse(0);
+
+        /*Integer score = thresholdMap.entrySet().stream()
                 .filter(entry -> {
                     Range<Integer> range = entry.getKey();
                     boolean contains = range.contains(inputValue);
                     return contains;
                 }).findFirst().map(Map.Entry::getValue).orElse(0);
-        return score;
+        return score;*/
     }
 }
