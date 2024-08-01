@@ -1,4 +1,4 @@
-package io.jmix.migration.model;
+package io.jmix.migration.analysis.model;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public class Layout {
 
     public void putItem(String name) {
         LayoutItem item = items.get(name);
-        if(item == null) {
+        if (item == null) {
             item = new LayoutItem(name);
             items.put(name, item);
         } else {

@@ -1,11 +1,11 @@
 package io.jmix.migration.analysis;
 
-import io.jmix.migration.analysis.parser.ScreensCollector;
+import io.jmix.migration.analysis.model.UiModulesAnalysisResult;
 import io.jmix.migration.analysis.parser.general.PropertiesParser;
 import io.jmix.migration.analysis.parser.screen.ScreenControllerParser;
 import io.jmix.migration.analysis.parser.screen.ScreenDescriptorParser;
+import io.jmix.migration.analysis.parser.screen.ScreensCollector;
 import io.jmix.migration.analysis.parser.screen.WebScreensXmlParser;
-import io.jmix.migration.model.*;
 import org.apache.commons.io.FilenameUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -15,8 +15,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class UiModulesAnalyzer extends BaseAnalyzer {
 
@@ -40,12 +42,10 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
         Path basePackageLocalPath = packageToPath(basePackage);
         Path webModuleBasePackagePath = webSrcPath.resolve(basePackageLocalPath);
 
-        List<BooleanMetric> booleanMetrics = new ArrayList<>();
-
         Properties webAppProperties = null;
         PropertiesParser propertiesParser = new PropertiesParser();
         Path webAppPropertiesFilePath = getWebAppPropertiesFilePath(webModuleBasePackagePath);
-        if(webAppPropertiesFilePath.toFile().exists()) {
+        if (webAppPropertiesFilePath.toFile().exists()) {
             webAppProperties = propertiesParser.parsePropertiesFile(webAppPropertiesFilePath);
         }
 
@@ -108,18 +108,17 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
         }*/
 
 
-
     }
 
     protected void analyzeWebModule(ScreensCollector screensCollector) {
-        if(webSrcPath.toFile().exists()) {
+        if (webSrcPath.toFile().exists()) {
             processUiModuleScreenDescriptors(webSrcPath, screensCollector);
             processUiModuleScreenControllers(webSrcPath, screensCollector);
         }
     }
 
     protected void analyzeGuiModule(ScreensCollector screensCollector) {
-        if(guiSrcPath.toFile().exists()) {
+        if (guiSrcPath.toFile().exists()) {
             processUiModuleScreenDescriptors(guiSrcPath, screensCollector);
             processUiModuleScreenControllers(guiSrcPath, screensCollector);
         }
@@ -161,12 +160,12 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     if (isJavaSourceFile(file)) {
-                        if(specificClassesToAnalyze != null && !specificClassesToAnalyze.isEmpty()) {
+                        if (specificClassesToAnalyze != null && !specificClassesToAnalyze.isEmpty()) {
                             Path relativePath = moduleSrcPath.relativize(file);
                             String relativePathString = relativePath.toString();
                             String fileNameNoExtension = FilenameUtils.removeExtension(relativePathString);
                             String fqn = fileNameNoExtension.replace(FileSystems.getDefault().getSeparator(), ".");
-                            if(specificClassesToAnalyze.contains(fqn)) {
+                            if (specificClassesToAnalyze.contains(fqn)) {
                                 log.debug("Process file `{}`", file);
                                 processJavaFile(file, screenControllerParser);
                             }
@@ -183,58 +182,22 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
         }
     }
 
-    protected void visitUiModuleFiles(Path moduleSrcPath, ScreensCollector screensCollector) {
-        ScreenDescriptorParser screenDescriptorParser = new ScreenDescriptorParser(moduleSrcPath, screensCollector);
-        ScreenControllerParser screenControllerParser = new ScreenControllerParser(moduleSrcPath, allSrcPaths, screensCollector);
-
-        try {
-            Files.walkFileTree(moduleSrcPath, new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    log.info("\n\n---=== Process file: {} ===---", file);
-
-                    if (isDirectory(file)) {
-                        log.debug("`{}` is directory", file);
-                        return FileVisitResult.CONTINUE;
-                    }
-
-                    if (isXmlFile(file)) {
-                        log.debug("`{}` is XML file", file);
-                        processXmlFile(file, screenDescriptorParser);
-                        return FileVisitResult.CONTINUE;
-                    }
-
-                    if (isJavaSourceFile(file)) {
-                        log.debug("`{}` is java source file", file);
-                        processJavaFile(file, screenControllerParser);
-                        return FileVisitResult.CONTINUE;
-                    }
-
-                    log.debug("`{}` is something else", file); //todo
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     protected void processXmlFile(Path filePath, ScreenDescriptorParser screenDescriptorParser) {
-        log.info("[Process XML file] File={}", filePath);
+        log.debug("[Process XML file] File={}", filePath);
 
         Document document = parseDocument(filePath);
         Element rootElement = document.getRootElement();
-        if(rootElement == null) {
+        if (rootElement == null) {
             return;
         }
 
         if (screenDescriptorParser.isScreenDescriptor(rootElement) || screenDescriptorParser.isFragmentDescriptor(rootElement)) {
-            screenDescriptorParser.parseXmlDescriptor2(rootElement, filePath);
+            screenDescriptorParser.parseXmlDescriptor(rootElement, filePath);
         }
     }
 
     protected void processJavaFile(Path filePath, ScreenControllerParser screenControllerParser) {
-        log.info("[Process Java file] File={}", filePath);
+        log.debug("[Process Java file] File={}", filePath);
         screenControllerParser.parseJavaFile(filePath);
     }
 

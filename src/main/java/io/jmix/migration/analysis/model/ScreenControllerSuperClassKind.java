@@ -1,4 +1,4 @@
-package io.jmix.migration.model;
+package io.jmix.migration.analysis.model;
 
 import io.jmix.migration.analysis.parser.screen.ScreenConstants;
 

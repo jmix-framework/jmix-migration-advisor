@@ -1,13 +1,16 @@
-package io.jmix.migration.analysis.parser;
+package io.jmix.migration.analysis.parser.screen;
 
-import io.jmix.migration.model.ClassGeneralDetails;
-import io.jmix.migration.model.LegacyScreenRegistration;
-import io.jmix.migration.model.ScreenInfo;
+import io.jmix.migration.analysis.model.ClassGeneralDetails;
+import io.jmix.migration.analysis.model.LegacyScreenRegistration;
+import io.jmix.migration.analysis.model.ScreenInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ScreensCollector {
 
@@ -42,19 +45,19 @@ public class ScreensCollector {
 
     @Nullable
     public ScreenInfo getScreenInfoByDescriptor(String xmlDescriptorFileName) {
-        log.info("Try to get Screen Info by descriptor '{}'", xmlDescriptorFileName);
+        log.debug("Try to get Screen Info by descriptor '{}'", xmlDescriptorFileName);
         return screensByDescriptors.get(xmlDescriptorFileName);
     }
 
     @Nullable
     public ScreenInfo getScreenInfoByController(String controllerClassName) {
-        log.info("Try to get Screen Info by Controller '{}'", controllerClassName);
+        log.debug("Try to get Screen Info by Controller '{}'", controllerClassName);
         return screensByControllers.get(controllerClassName);
     }
 
     @Nullable
     public ScreenInfo getScreenInfoByScreenId(String screenId) {
-        log.info("Try to get Screen Info by Id '{}'", screenId);
+        log.debug("Try to get Screen Info by Id '{}'", screenId);
         return screensByIds.get(screenId);
     }
 
@@ -69,25 +72,6 @@ public class ScreensCollector {
     public void removeUnknownClass(String fqn) {
         unknownClasses.remove(fqn);
     }
-
-    /*public void addCustomExtendedClass(SuperClassDetails superClassDetails) {
-        SuperClassDetails existingSuperClassDetails = customExtendedClasses.get(superClassDetails.getExtensionName());
-        if(existingSuperClassDetails == null) {
-            customExtendedClasses.put(superClassDetails.getExtensionName(), superClassDetails);
-        } else {
-            String existingFullName = existingSuperClassDetails.getFullName();
-            String newFullName = superClassDetails.getFullName();
-            if(StringUtils.isNoneEmpty(existingFullName, newFullName) && !existingFullName.equals(newFullName)) {
-                existingSuperClassDetails.setFullNameCandidates(Set.of(existingFullName, newFullName));
-                existingSuperClassDetails.setFullName(null);
-            } else if (StringUtils.isEmpty(existingFullName) && StringUtils.isNotEmpty(newFullName)) {
-                existingSuperClassDetails.setFullName(newFullName);
-                existingSuperClassDetails.setFullNameCandidates(Collections.emptySet());
-            } else if (StringUtils.isAllEmpty(existingFullName, newFullName)) {
-                existingSuperClassDetails.getFullNameCandidates().add(newFullName);
-            }
-        }
-    }*/
 
     public void addLegacyScreenRegistration(String screenId, String descriptor, String registrationModule) {
         LegacyScreenRegistration legacyScreenRegistration = new LegacyScreenRegistration(
@@ -150,7 +134,7 @@ public class ScreensCollector {
     }
 
     protected boolean saveScreenInfo(ScreenInfo screenInfo) {
-        log.info("Save Screen Info: ID={}, Descriptor={}, Controller={}",
+        log.debug("Save Screen Info: ID={}, Descriptor={}, Controller={}",
                 screenInfo.getScreenId(), screenInfo.getDescriptorFile(), screenInfo.getControllerClass());
         boolean saved = false;
         if (screenInfo.getScreenId() != null) {
@@ -165,8 +149,6 @@ public class ScreensCollector {
             screensByControllers.put(screenInfo.getControllerClass(), screenInfo);
             saved = true;
         }
-
-        //todo by controller file?
         return saved;
     }
 

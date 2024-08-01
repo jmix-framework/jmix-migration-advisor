@@ -59,7 +59,7 @@ public class PersistenceXmlParser {
             String persistenceUnitName = persistenceUnitElement.attributeValue("name");
             List<Element> classElements = persistenceUnitElement.elements("class");
             List<String> entitiesOfUnit = new ArrayList<>();
-            for(Element classElement : classElements) {
+            for (Element classElement : classElements) {
                 String entityClassName = classElement.getText();
                 entitiesOfUnit.add(entityClassName);
             }

@@ -5,7 +5,6 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.*;
-import io.jmix.migration.model.GlobalModuleJavaFileParseResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class GlobalModuleJavaParser extends AbstractJavaParser<GlobalModuleJavaFileParseResult> {
+public class GlobalModuleJavaParser extends AbstractJavaParser {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalModuleJavaParser.class);
 
@@ -27,10 +26,10 @@ public class GlobalModuleJavaParser extends AbstractJavaParser<GlobalModuleJavaF
     }
 
     @Nullable
-    protected GlobalModuleJavaFileParseResult processCompilationUnit(CompilationUnit compilationUnit) {
+    protected void processCompilationUnit(CompilationUnit compilationUnit) {
         Optional<TypeDeclaration<?>> primaryTypeOpt = compilationUnit.getPrimaryType();
         if (primaryTypeOpt.isEmpty()) {
-            return null;
+            return;
         }
 
         TypeDeclaration<?> primaryTypeDeclaration = primaryTypeOpt.get();
@@ -38,8 +37,6 @@ public class GlobalModuleJavaParser extends AbstractJavaParser<GlobalModuleJavaF
             ClassOrInterfaceDeclaration classDeclaration = primaryTypeDeclaration.asClassOrInterfaceDeclaration();
             processPrimaryClassDeclaration(classDeclaration);
         }
-
-        return new GlobalModuleJavaFileParseResult(); //todo
     }
 
     protected void processPrimaryClassDeclaration(ClassOrInterfaceDeclaration classDeclaration) {
@@ -50,7 +47,6 @@ public class GlobalModuleJavaParser extends AbstractJavaParser<GlobalModuleJavaF
             Name annotationName = annotationExpr.getName();
 
             if ("Listeners".equals(annotationName.asString())) {
-                log.info("[Listeners]");
                 if (annotationExpr.isSingleMemberAnnotationExpr()) {
                     List<String> listenersOnEntity = extractSingleMemberAnnotationListOfStringsValue(annotationExpr.asSingleMemberAnnotationExpr());
                     listenersCollector.addAll(listenersOnEntity);
@@ -79,5 +75,4 @@ public class GlobalModuleJavaParser extends AbstractJavaParser<GlobalModuleJavaF
         }
         return result;
     }
-
 }

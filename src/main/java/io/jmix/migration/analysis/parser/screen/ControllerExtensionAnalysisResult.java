@@ -1,7 +1,7 @@
 package io.jmix.migration.analysis.parser.screen;
 
-import io.jmix.migration.model.ScreenControllerSuperClassKind;
-import io.jmix.migration.model.SuperClassDetails;
+import io.jmix.migration.analysis.model.ScreenControllerSuperClassKind;
+import io.jmix.migration.analysis.model.SuperClassDetails;
 
 public class ControllerExtensionAnalysisResult {
     private final ScreenControllerSuperClassKind superClassKind;

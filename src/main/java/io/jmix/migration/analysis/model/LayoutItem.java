@@ -1,4 +1,4 @@
-package io.jmix.migration.model;
+package io.jmix.migration.analysis.model;
 
 public class LayoutItem {
     protected final String name;

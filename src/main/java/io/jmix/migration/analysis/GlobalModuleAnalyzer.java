@@ -1,16 +1,16 @@
 package io.jmix.migration.analysis;
 
+import io.jmix.migration.analysis.model.GlobalModuleAnalysisResult;
 import io.jmix.migration.analysis.parser.GlobalModuleJavaParser;
-import io.jmix.migration.analysis.parser.ScreensCollector;
 import io.jmix.migration.analysis.parser.general.PersistenceXmlParser;
-import io.jmix.migration.analysis.parser.screen.ScreenControllerParser;
-import io.jmix.migration.model.GlobalModuleAnalysisResult;
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
 import java.util.List;
@@ -38,14 +38,14 @@ public class GlobalModuleAnalyzer extends BaseAnalyzer {
         PersistenceXmlParser persistenceXmlParser = new PersistenceXmlParser();
         Map<String, List<String>> entitiesPerPersistenceUnit = persistenceXmlParser.processPersistenceXml(persistenceFilePath);
 
-        processGlobalModuleJavaFiles(globalSrcPath);
+        Set<String> listeners = processGlobalModuleJavaFiles(globalSrcPath);
 
-        GlobalModuleAnalysisResult result = new GlobalModuleAnalysisResult(entitiesPerPersistenceUnit);
-        return result;
+        return new GlobalModuleAnalysisResult(entitiesPerPersistenceUnit, listeners);
     }
 
-    protected void processGlobalModuleJavaFiles(Path moduleSrcPath) {
-        GlobalModuleJavaParser globalModuleJavaParser = new GlobalModuleJavaParser(new HashSet<>());
+    protected Set<String> processGlobalModuleJavaFiles(Path moduleSrcPath) {
+        Set<String> listeners = new HashSet<>();
+        GlobalModuleJavaParser globalModuleJavaParser = new GlobalModuleJavaParser(listeners);
 
         try {
             Files.walkFileTree(moduleSrcPath, new SimpleFileVisitor<>() {
@@ -60,6 +60,8 @@ public class GlobalModuleAnalyzer extends BaseAnalyzer {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        return listeners;
     }
 
     protected Path getPersistenceFilePath(Path moduleBasePackagePath) {

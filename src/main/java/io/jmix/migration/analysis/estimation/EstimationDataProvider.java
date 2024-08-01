@@ -1,8 +1,8 @@
 package io.jmix.migration.analysis.estimation;
 
-import io.jmix.migration.model.BigDecimalThresholdItem;
-import io.jmix.migration.model.IntegerThresholdItem;
-import io.jmix.migration.model.ThresholdItem;
+import io.jmix.migration.analysis.model.BigDecimalThresholdItem;
+import io.jmix.migration.analysis.model.IntegerThresholdItem;
+import io.jmix.migration.analysis.model.ThresholdItem;
 import io.jmix.migration.util.XmlUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.Range;
@@ -34,8 +34,6 @@ public class EstimationDataProvider {
 
     private static final String THRESHOLDS_XPATH_TEMPLATE = "./estimation-unit[name = '%s']/content/thresholds/threshold";
     private static final String SIMPLE_COST_VALUE_XPATH_TEMPLATE = "./estimation-unit[name = '%s']/content/cost";
-
-    private static final ThresholdItemGenerator<Integer> INTEGER_THRESHOLD_ITEM_GENERATOR = IntegerThresholdItem::new;
 
     protected final SAXReader saxReader;
 
@@ -128,43 +126,34 @@ public class EstimationDataProvider {
 
         this.screenControllerMethodsCallsComplexityThresholds = extractScreenControllerMethodsCallsComplexityThresholds(defaultFileElement, externalFileElement);
         this.screenComplexityTimeEstimationThresholds = extractScreenComplexityTimeEstimationThresholds(defaultFileElement, externalFileElement);
-        int i = 1;
-
     }
 
     protected int loadChangedUiComponentsComplexityBaseValue(Element defaultRootElement, Element externalRootElement) {
         return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("screen-changed-ui-components-complexity-base-value"));
-        //return extractSingleIntValue(defaultRootElement, externalRootElement, "./estimation-unit[name = 'screen-changed-ui-components-complexity-base-value']/content/cost");
     }
 
     protected int loadScreenDescriptorExtendsScreenComplexityScore(Element defaultRootElement, Element externalRootElement) {
         return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("screen-descriptor-extends-screen-complexity-score"));
-        //return extractSingleIntValue(defaultRootElement, externalRootElement, "./estimation-unit[name = 'screen-descriptor-extends-screen-complexity-score']/content/cost");
     }
 
     protected int loadScreenDescriptorHasNestedDataItemComplexityScore(Element defaultRootElement, Element externalRootElement) {
         return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("screen-descriptor-has-nested-data-item-complexity-score"));
-        //return extractSingleIntValue(defaultRootElement, externalRootElement, "./estimation-unit[name = 'screen-descriptor-has-nested-data-item-complexity-score']/content/cost");
     }
 
     protected int loadScreenDescriptorUiComponentCreateCallComplexityScore(Element defaultRootElement, Element externalRootElement) {
         return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("screen-descriptor-ui-component-create-call-complexity-score"));
-        //return extractSingleIntValue(defaultRootElement, externalRootElement, "./estimation-unit[name = 'screen-descriptor-ui-component-create-call-complexity-score']/content/cost");
     }
 
     protected int loadInitialMigrationCost(Element defaultRootElement, Element externalRootElement) {
         return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("initial-migration-cost"));
-        //return extractSingleIntValue(defaultRootElement, externalRootElement, "./estimation-unit[name = 'initial-migration-cost']/content/cost");
     }
 
     protected int loadBaseEntitiesMigrationCost(Element defaultRootElement, Element externalRootElement) {
         return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("base-entities-migration-cost"));
-        //return extractSingleIntValue(defaultRootElement, externalRootElement, "./estimation-unit[name = 'base-entities-migration-cost']/content/cost");
     }
 
     protected int loadLegacyEntityListenerCost(Element defaultRootElement, Element externalRootElement) {
         return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("legacy-entity-listener-cost"));
-        //return extractSingleIntValue(defaultRootElement, externalRootElement, "./estimation-unit[name = 'legacy-entity-listener-cost']/content/cost");
     }
 
 
@@ -183,10 +172,7 @@ public class EstimationDataProvider {
     }
 
     protected List<? extends ThresholdItem<Integer, Integer>> extractScreenControllerMethodsCallsComplexityThresholds(Element defaultRootElement, Element externalRootElement) {
-        //return extractThresholds(defaultRootElement, externalRootElement, createThresholdXPathExpression("screen-controller-method-calls"));
-
-        //return extractThresholds(defaultRootElement, externalRootElement, createThresholdXPathExpression("screen-controller-method-calls"));
-        return extractThresholds2(
+        return extractThresholds(
                 defaultRootElement,
                 externalRootElement,
                 createThresholdXPathExpression("screen-controller-method-calls"),
@@ -195,7 +181,7 @@ public class EstimationDataProvider {
     }
 
     protected List<? extends ThresholdItem<Integer, BigDecimal>> extractScreenComplexityTimeEstimationThresholds(Element defaultRootElement, Element externalRootElement) {
-        return extractThresholds2(
+        return extractThresholds(
                 defaultRootElement,
                 externalRootElement,
                 createThresholdXPathExpression("screen-complexity-time-estimation"),
@@ -212,7 +198,11 @@ public class EstimationDataProvider {
         return node.getStringValue();
     }
 
-    protected List<IntegerThresholdItem> extractThresholds(Element defaultRootElement, Element externalRootElement, String xpath) {
+    protected <V> List<? extends ThresholdItem<Integer, V>> extractThresholds(Element defaultRootElement,
+                                                                              Element externalRootElement,
+                                                                              String xpath,
+                                                                              Function<String, V> outputValueConverter,
+                                                                              ThresholdItemGenerator<V> itemGenerator) {
         List<Node> thresholdItemNodes = null;
         if (externalRootElement != null) {
             thresholdItemNodes = externalRootElement.selectNodes(xpath);
@@ -224,62 +214,10 @@ public class EstimationDataProvider {
         if (thresholdItemNodes.isEmpty()) {
             throw new RuntimeException("No data found by xpath: " + xpath);
         }
-        return createThresholdItems(thresholdItemNodes);
+        return createThresholdItems(thresholdItemNodes, outputValueConverter, itemGenerator);
     }
 
-    protected <V> List<? extends ThresholdItem<Integer, V>> extractThresholds2(Element defaultRootElement,
-                                                                               Element externalRootElement,
-                                                                               String xpath,
-                                                                               Function<String, V> outputValueConverter,
-                                                                               ThresholdItemGenerator<V> itemGenerator) {
-        List<Node> thresholdItemNodes = null;
-        if (externalRootElement != null) {
-            thresholdItemNodes = externalRootElement.selectNodes(xpath);
-        }
-        if (thresholdItemNodes == null || thresholdItemNodes.isEmpty()) {
-            thresholdItemNodes = defaultRootElement.selectNodes(xpath);
-        }
-
-        if (thresholdItemNodes.isEmpty()) {
-            throw new RuntimeException("No data found by xpath: " + xpath);
-        }
-        return createThresholdItems2(thresholdItemNodes, outputValueConverter, itemGenerator);
-    }
-
-    protected List<IntegerThresholdItem> createThresholdItems(List<Node> thresholdItemNodes) {
-        AtomicInteger minValue = new AtomicInteger();
-        AtomicInteger counter = new AtomicInteger();
-        return thresholdItemNodes.stream().map(node -> {
-                    if (ELEMENT_NODE == node.getNodeType()) {
-                        Element thresholdItemElement = (Element) node;
-                        Element nameElement = thresholdItemElement.element("name");
-                        Element thresholdValueElement = thresholdItemElement.element("threshold-value");
-                        Element outputValueElement = thresholdItemElement.element("output-value");
-
-                        String name = nameElement.getText();
-
-                        String thresholdStringValue = thresholdValueElement.getText();
-                        int thresholdValue = stringToInt(thresholdStringValue);
-
-                        String outputStringValue = outputValueElement.getText();
-                        int outputValue = stringToInt(outputStringValue);
-
-                        Range<Integer> range = Range.of(minValue.get(), thresholdValue);
-                        IntegerThresholdItem thresholdItem = new IntegerThresholdItem(name, range, outputValue, counter.getAndIncrement());
-
-                        int delta = range.getMaximum() - range.getMinimum();
-                        minValue.addAndGet(delta + 1);
-
-                        return thresholdItem;
-                    } else {
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .toList();
-    }
-
-    protected <V> List<? extends ThresholdItem<Integer, V>> createThresholdItems2(
+    protected <V> List<? extends ThresholdItem<Integer, V>> createThresholdItems(
             List<Node> thresholdItemNodes,
             Function<String, V> outputValueConverter,
             ThresholdItemGenerator<V> itemGenerator) {
@@ -301,7 +239,7 @@ public class EstimationDataProvider {
                         V outputValue = outputValueConverter.apply(outputStringValue);
 
                         Range<Integer> range = Range.of(minValue.get(), thresholdValue);
-                        //IntegerThresholdItem thresholdItem = new IntegerThresholdItem(name, range, outputValue);
+
                         ThresholdItem<Integer, V> thresholdItem = itemGenerator.createItem(name, range, outputValue, counter.getAndIncrement());
 
                         int delta = range.getMaximum() - range.getMinimum();

@@ -6,10 +6,11 @@ import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class WebXmlParser {
 
@@ -53,13 +54,13 @@ public class WebXmlParser {
         List<String> appComponents = Collections.emptyList();
         for (Element contextParamElement : contextParamElements) {
             Element paramNameElement = contextParamElement.element("param-name");
-            if(paramNameElement == null) {
+            if (paramNameElement == null) {
                 continue;
             }
             String paramNameElementValue = paramNameElement.getText();
-            if("appComponents".equals(paramNameElementValue)) {
+            if ("appComponents".equals(paramNameElementValue)) {
                 Element paramValueElement = contextParamElement.element("param-value");
-                if(paramValueElement == null) {
+                if (paramValueElement == null) {
                     continue;
                 }
                 String paramValueElementValue = paramValueElement.getText();

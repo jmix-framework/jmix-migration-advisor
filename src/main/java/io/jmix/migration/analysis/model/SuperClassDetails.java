@@ -1,4 +1,4 @@
-package io.jmix.migration.model;
+package io.jmix.migration.analysis.model;
 
 import org.apache.commons.lang3.StringUtils;
 

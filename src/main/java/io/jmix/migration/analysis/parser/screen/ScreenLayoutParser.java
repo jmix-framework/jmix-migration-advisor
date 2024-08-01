@@ -1,6 +1,6 @@
 package io.jmix.migration.analysis.parser.screen;
 
-import io.jmix.migration.model.Layout;
+import io.jmix.migration.analysis.model.Layout;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ public class ScreenLayoutParser {
 
     protected void processLayoutItem(Layout layout, Element layoutItemElement) {
         String elementName = layoutItemElement.getQualifiedName();
-        log.info("Layout item: {}", elementName);
+        log.debug("Layout item: {}", elementName);
         layout.putItem(elementName);
 
         if (layoutItemElement.elements().isEmpty()) {
@@ -49,25 +49,25 @@ public class ScreenLayoutParser {
         }
 
         if (isSimpleContainerLayoutItem(elementName)) {
-            log.info("'{}' is container component", elementName);
+            log.debug("'{}' is container component", elementName);
             List<Element> childElements = layoutItemElement.elements();
             for (Element childElement : childElements) {
                 processLayoutItem(layout, childElement);
             }
-            log.info("Finish processing container component '{}'", elementName);
+            log.debug("Finish processing container component '{}'", elementName);
         } else if (isTabbedContainerLayoutItem(elementName)) {
-            log.info("'{}' is tabbed component", elementName);
+            log.debug("'{}' is tabbed component", elementName);
             List<Element> tabElements = layoutItemElement.elements("tab");
-            log.info("Tabbed component '{}' has {} tabs", elementName, tabElements.size());
+            log.debug("Tabbed component '{}' has {} tabs", elementName, tabElements.size());
             for (Element tabElement : tabElements) {
                 List<Element> tabChildElements = tabElement.elements();
-                log.info("Process tab");
+                log.debug("Process tab");
                 for (Element tabChildElement : tabChildElements) {
-                    log.info("Tab child element: {}", tabChildElement.getQualifiedName());
+                    log.debug("Tab child element: {}", tabChildElement.getQualifiedName());
                     processLayoutItem(layout, tabChildElement);
                 }
             }
-            log.info("Finish processing tabbed component '{}'", elementName);
+            log.debug("Finish processing tabbed component '{}'", elementName);
         }
     }
 

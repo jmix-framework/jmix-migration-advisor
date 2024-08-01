@@ -1,6 +1,6 @@
-package io.jmix.migration.model;
+package io.jmix.migration.analysis.model;
 
-import io.jmix.migration.analysis.parser.ScreensCollector;
+import io.jmix.migration.analysis.parser.screen.ScreensCollector;
 
 import javax.annotation.Nullable;
 import java.util.Properties;

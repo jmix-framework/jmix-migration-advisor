@@ -1,6 +1,4 @@
-package io.jmix.migration.analysis.estimation;
-
-import io.jmix.migration.model.ThresholdItem;
+package io.jmix.migration.analysis.model;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,6 +14,7 @@ public class ProjectEstimationResult {
 
     private final int initialMigrationCost;
     private final int baseEntitiesMigrationCost;
+    private final int legacyListenersCost;
 
     private ProjectEstimationResult(Builder builder) {
         this.screensPerComplexity = builder.screensPerComplexity;
@@ -25,6 +24,7 @@ public class ProjectEstimationResult {
         this.initialMigrationCost = builder.initialMigrationCost;
         this.baseEntitiesMigrationCost = builder.baseEntitiesMigrationCost;
         this.totalScreensCost = builder.totalScreensCost;
+        this.legacyListenersCost = builder.legacyListenersCost;
     }
 
     public Map<ThresholdItem<Integer, BigDecimal>, List<String>> getScreensPerComplexity() {
@@ -55,6 +55,10 @@ public class ProjectEstimationResult {
         return totalScreensCost;
     }
 
+    public int getLegacyListenersCost() {
+        return legacyListenersCost;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -68,6 +72,7 @@ public class ProjectEstimationResult {
 
         private int initialMigrationCost;
         private int baseEntitiesMigrationCost;
+        private int legacyListenersCost;
 
         public Builder() {
         }
@@ -99,6 +104,11 @@ public class ProjectEstimationResult {
 
         public Builder setTotalScreensCost(BigDecimal totalScreensCost) {
             this.totalScreensCost = totalScreensCost;
+            return this;
+        }
+
+        public Builder setLegacyListenersCost(int legacyListenersCost) {
+            this.legacyListenersCost = legacyListenersCost;
             return this;
         }
 

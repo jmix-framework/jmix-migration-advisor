@@ -1,4 +1,4 @@
-package io.jmix.migration.model;
+package io.jmix.migration.analysis.model;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -23,7 +23,7 @@ public class ScreenControllerDetails {
     }
 
     public static Builder builder(String className) {
-        if(StringUtils.isBlank(className)) {
+        if (StringUtils.isBlank(className)) {
             throw new IllegalArgumentException("Class name is not specified");
         }
         return new Builder(className);

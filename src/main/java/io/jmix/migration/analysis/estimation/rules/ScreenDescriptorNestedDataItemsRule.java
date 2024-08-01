@@ -17,6 +17,6 @@ public class ScreenDescriptorNestedDataItemsRule implements NumericMetricRule {
 
     @Override
     public int apply(int inputValue) {
-        return inputValue * cost; //todo from xml
+        return inputValue * cost;
     }
 }

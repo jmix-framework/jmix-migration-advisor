@@ -1,7 +1,6 @@
-package io.jmix.migration.model;
+package io.jmix.migration.analysis.model;
 
 import java.util.List;
-import java.util.Map;
 
 public class CoreModuleAnalysisResult {
     private final List<String> appComponents;

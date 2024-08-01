@@ -26,7 +26,7 @@ public class XmlUtils {
     public static Document readDocument(File file, SAXReader xmlReader) {
         FileInputStream inputStream = null;
         try {
-            if(file.length() == 0) { //todo
+            if (file.length() == 0) { //todo
                 log.warn("Empty file: {}", file.getName());
                 return new DOMDocument();
             }
@@ -43,7 +43,7 @@ public class XmlUtils {
         try (InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
             return xmlReader.read(reader);
         } catch (IOException | DocumentException e) {
-            if(e.getCause() instanceof SAXParseException) {
+            if (e.getCause() instanceof SAXParseException) {
 
             }
             throw new RuntimeException("Unable to read XML from stream", e);

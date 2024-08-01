@@ -1,9 +1,8 @@
 package io.jmix.migration.analysis.parser.screen;
 
-import io.jmix.migration.model.ScreenData;
-import io.jmix.migration.model.ScreenDataItem;
+import io.jmix.migration.analysis.model.ScreenData;
+import io.jmix.migration.analysis.model.ScreenDataItem;
 import org.dom4j.Element;
-import org.dom4j.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +19,7 @@ public class ScreenDataParser {
     protected static final Set<String> DATA_CONTAINER_ELEMENTS = Stream.of("instance", "collection", "keyValueInstance", "keyValueCollection")
             .collect(Collectors.toUnmodifiableSet());
     protected static final Set<String> DATASOURCE_ELEMENTS = Stream.of(
-            "datasource", "collectionDatasource", "groupDatasource", "hierarchicalDatasource",
+                    "datasource", "collectionDatasource", "groupDatasource", "hierarchicalDatasource",
                     "runtimePropsDatasource", "valueCollectionDatasource", "valueGroupDatasource", "valueHierarchicalDatasource")
             .collect(Collectors.toUnmodifiableSet());
 
@@ -44,21 +43,21 @@ public class ScreenDataParser {
     public void parseScreenDataItemElement(Element itemElement, ScreenData screenData, @Nullable ScreenDataItem parentItem) {
         String itemElementName = itemElement.getQualifiedName();
         String itemElementId = itemElement.attributeValue("id");
-        log.info("Data item: {}, ID: {}, parent: {}", itemElementName, itemElementId, parentItem);
+        log.debug("Data item: {}, ID: {}, parent: {}", itemElementName, itemElementId, parentItem);
         ScreenDataItem screenDataItem = new ScreenDataItem(itemElementName, itemElementId, parentItem);
         screenData.addItem(screenDataItem);
 
         List<Element> childElements = itemElement.elements();
-        for(Element childElement: childElements) {
+        for (Element childElement : childElements) {
             String childElementName = childElement.getQualifiedName();
-            if("loader".equalsIgnoreCase(childElementName)) {
+            if ("loader".equalsIgnoreCase(childElementName)) {
                 Element queryElement = childElement.element("query");
-                if(queryElement != null) {
+                if (queryElement != null) {
                     String queryText = queryElement.getTextTrim();
-                    log.info("[QUERY]: text={}", queryText);
+                    log.debug("[QUERY]: text={}", queryText);
                     screenDataItem.setQuery(queryText);
                 }
-            } else if(DATA_CONTAINER_ELEMENTS.contains(childElementName)) {
+            } else if (DATA_CONTAINER_ELEMENTS.contains(childElementName)) {
                 parseScreenDataItemElement(childElement, screenData, screenDataItem);
             }
         }
@@ -84,15 +83,15 @@ public class ScreenDataParser {
     protected void parseLegacyDsContextItemElement(Element itemElement, ScreenData screenData, @Nullable ScreenDataItem parentItem) {
         String itemElementName = itemElement.getQualifiedName();
         String itemElementId = itemElement.attributeValue("id");
-        log.info("dsContext item: {}, ID: {}, parent: {}", itemElementName, itemElementId, parentItem);
+        log.debug("dsContext item: {}, ID: {}, parent: {}", itemElementName, itemElementId, parentItem);
         ScreenDataItem screenDataItem = new ScreenDataItem(itemElementName, itemElementId, parentItem);
         screenData.addItem(screenDataItem);
 
         List<Element> childElements = itemElement.elements();
         for (Element childElement : childElements) {
-            if("query".equalsIgnoreCase(childElement.getQualifiedName())) {
+            if ("query".equalsIgnoreCase(childElement.getQualifiedName())) {
                 String queryText = childElement.getTextTrim();
-                log.info("[QUERY]: text={}", queryText);
+                log.debug("[QUERY]: text={}", queryText);
                 screenDataItem.setQuery(queryText);
             } else if (DATASOURCE_ELEMENTS.contains(childElement.getQualifiedName())) {
                 parseLegacyDsContextItemElement(childElement, screenData, screenDataItem);

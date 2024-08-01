@@ -1,6 +1,6 @@
 package io.jmix.migration.analysis.parser.screen;
 
-import io.jmix.migration.model.Facet;
+import io.jmix.migration.analysis.model.Facet;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +16,7 @@ public class ScreenFacetsParser {
     public List<Facet> parseFacets(Element rootElement) {
         Element facetsElement = rootElement.element("facets");
         if (facetsElement == null) {
-            log.info("No facets found");
+            log.debug("No facets found");
             return Collections.emptyList();
         }
         return parseFacetElement(facetsElement);

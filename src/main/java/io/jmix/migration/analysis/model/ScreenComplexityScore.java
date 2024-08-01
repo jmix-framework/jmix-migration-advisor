@@ -1,4 +1,4 @@
-package io.jmix.migration.analysis.estimation;
+package io.jmix.migration.analysis.model;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

@@ -1,12 +1,12 @@
 package io.jmix.migration.analysis.estimation;
 
+import io.jmix.migration.analysis.MetricCodes;
 import io.jmix.migration.analysis.estimation.rules.*;
 import io.jmix.migration.analysis.issue.UiComponentIssue;
 import io.jmix.migration.analysis.issue.UiComponentIssueType;
 import io.jmix.migration.analysis.issue.UiComponentIssuesRegistry;
-import io.jmix.migration.analysis.parser.ScreensCollector;
-import io.jmix.migration.analysis.parser.screen.MethodMetrics;
-import io.jmix.migration.model.*;
+import io.jmix.migration.analysis.model.*;
+import io.jmix.migration.analysis.parser.screen.ScreensCollector;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +34,10 @@ public class ScreenEstimator {
         this.uiComponentIssuesRegistry = uiComponentIssuesRegistry;
         this.estimationDataProvider = estimationDataProvider;
 
+        //todo rule factory/provider
         Map<String, NumericMetricRule> numericMetricRulesTmp = new HashMap<>();
-        numericMetricRulesTmp.put(MethodMetrics.METHOD_CALLS_AMOUNT_METRIC_CODE, new ScreenControllerMethodsCallsRule(estimationDataProvider.getScreenControllerMethodsCallsComplexityThresholds()));
-        numericMetricRulesTmp.put(MethodMetrics.UI_COMPONENT_CREATE_CALLS_AMOUNT_METRIC_CODE, new UiComponentCreateCallsRule(estimationDataProvider.getScreenDescriptorUiComponentCreateCallComplexityScore()));
+        numericMetricRulesTmp.put(METHOD_CALLS_AMOUNT_METRIC_CODE, new ScreenControllerMethodsCallsRule(estimationDataProvider.getScreenControllerMethodsCallsComplexityThresholds()));
+        numericMetricRulesTmp.put(UI_COMPONENT_CREATE_CALLS_AMOUNT_METRIC_CODE, new UiComponentCreateCallsRule(estimationDataProvider.getScreenDescriptorUiComponentCreateCallComplexityScore()));
         numericMetricRulesTmp.put(SCREEN_DESCRIPTOR_NESTED_DATA_ITEMS_METRIC_CODE, new ScreenDescriptorNestedDataItemsRule(estimationDataProvider.getScreenDescriptorHasNestedDataItemComplexityScore()));
         numericMetricRulesTmp.put(SCREEN_DESCRIPTOR_CHANGED_UI_COMPONENTS_SCORE_METRIC_CODE, new ScreenDescriptorChangedUiComponentsScoreRule(estimationDataProvider.getScreenChangedUiComponentsComplexityBaseValue()));
         numericMetricRulesTmp.put(SCREEN_DESCRIPTOR_EXTENDS_SCREEN_METRIC_CODE, new ScreenDescriptorExtendsScreenRule(estimationDataProvider.getScreenDescriptorExtendsScreenComplexityScore()));
@@ -61,7 +62,6 @@ public class ScreenEstimator {
             ScreenComplexityScore score = estimate(screenInfo);
             result.put(resolveScreenName(screenInfo), score);
         });
-        //ScreenComplexityScore resultScore = allScreensInfos.stream().map(this::estimate).reduce(ScreenComplexityScore::merge).orElse(new ScreenComplexityScore());
         return result;
     }
 
@@ -70,13 +70,13 @@ public class ScreenEstimator {
 
         // Descriptor extension
         String extendedDescriptor = screenInfo.getExtendedDescriptor();
-        if(StringUtils.isNotEmpty(extendedDescriptor)) {
-            numericMetrics.add(new NumericMetric(SCREEN_DESCRIPTOR_EXTENDS_SCREEN_METRIC_CODE, 1));
+        if (StringUtils.isNotEmpty(extendedDescriptor)) {
+            numericMetrics.add(MetricCodes.createScreenDescriptorExtendsScreenMetric());
         }
 
         // screen data
         ScreenData screenData = screenInfo.getScreenData();
-        if(screenData != null) {
+        if (screenData != null) {
             List<ScreenDataItem> screenDataItems = screenData.getItems();
 
             int dataItemsWithoutQuery = 0;
@@ -92,34 +92,33 @@ public class ScreenEstimator {
                 }
             }
             //numericMetrics.add(new NumericMetric("screen-descriptor-data-items-without-query", dataItemsWithoutQuery)); //todo exclude single value data items
-            numericMetrics.add(new NumericMetric(SCREEN_DESCRIPTOR_NESTED_DATA_ITEMS_METRIC_CODE, nestedDataItems));
+            numericMetrics.add(MetricCodes.createScreenDescriptorNestedDataItemsMetric(nestedDataItems));
         }
 
         // Layout
         Layout layout = screenInfo.getLayout();
 
-        if(layout != null) {
+        if (layout != null) {
             List<LayoutItem> allItems = layout.getAllItems();
             AtomicInteger nonIssuedUiComponents = new AtomicInteger();
-            List<UiComponentIssue> absentUiComponentIssues = new ArrayList<>();
             AtomicInteger combinedExtraComplexityScore = new AtomicInteger();
 
             allItems.forEach(layoutItem -> {
                 UiComponentIssue issue = uiComponentIssuesRegistry.getIssue(layoutItem.getName());
-                if(issue != null) {
-                    if(!issue.getType().equals(UiComponentIssueType.ABSENT)) {
+                if (issue != null) {
+                    if (!issue.getType().equals(UiComponentIssueType.ABSENT)) {
                         combinedExtraComplexityScore.addAndGet(issue.getExtraComplexityScore());
                     }
                 } else {
                     nonIssuedUiComponents.incrementAndGet();
                 }
             });
-            numericMetrics.add(new NumericMetric(SCREEN_DESCRIPTOR_CHANGED_UI_COMPONENTS_SCORE_METRIC_CODE, combinedExtraComplexityScore.get()));
+            numericMetrics.add(MetricCodes.createScreenDescriptorChangedUiComponentsScoreMetric(combinedExtraComplexityScore.get()));
         }
 
         // Controller
         ScreenControllerDetails controllerDetails = screenInfo.getControllerDetails();
-        if(controllerDetails != null) {
+        if (controllerDetails != null) {
             Map<String, Integer> combinedMethodMetricsValues = new HashMap<>();
             List<MethodDetails> methods = controllerDetails.getMethods();
             methods.forEach(methodDetails -> {
@@ -138,7 +137,7 @@ public class ScreenEstimator {
         }
 
         String screenName;
-        if(controllerDetails != null) {
+        if (controllerDetails != null) {
             screenName = controllerDetails.getClassName();
         } else {
             screenName = screenInfo.getDescriptorFile();
@@ -153,7 +152,7 @@ public class ScreenEstimator {
         ScreenComplexityScore score = new ScreenComplexityScore();
         numericMetrics.forEach(metric -> {
             int scoreForMetric = getScoreForMetric(metric);
-            if(scoreForMetric > 0) {
+            if (scoreForMetric > 0) {
                 score.addRawValue(scoreForMetric);
             }
         });
@@ -163,7 +162,7 @@ public class ScreenEstimator {
 
     protected int getScoreForMetric(NumericMetric metric) {
         NumericMetricRule numericMetricRule = numericMetricRules.get(metric.getCode());
-        if(numericMetricRule != null) {
+        if (numericMetricRule != null) {
             return numericMetricRule.apply(metric.getValue());
         } else {
             // todo rule not found
@@ -174,10 +173,9 @@ public class ScreenEstimator {
 
     @Nullable
     protected String resolveScreenName(ScreenInfo screenInfo) {
-        if(StringUtils.isNotEmpty(screenInfo.getScreenId())) {
+        if (StringUtils.isNotEmpty(screenInfo.getScreenId())) {
             return screenInfo.getScreenId();
         }
         return StringUtils.firstNonEmpty(screenInfo.getScreenId(), screenInfo.getDescriptorFile(), screenInfo.getControllerClass());
     }
-
 }

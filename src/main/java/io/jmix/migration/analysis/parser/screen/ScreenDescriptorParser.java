@@ -1,7 +1,6 @@
 package io.jmix.migration.analysis.parser.screen;
 
-import io.jmix.migration.analysis.parser.ScreensCollector;
-import io.jmix.migration.model.*;
+import io.jmix.migration.analysis.model.*;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +36,8 @@ public class ScreenDescriptorParser {
         return "fragment".equals(tagName);
     }
 
-    public void parseXmlDescriptor2(Element rootElement, Path filePath) {
-        log.info("Start parsing XML descriptor");
+    public void parseXmlDescriptor(Element rootElement, Path filePath) {
+        log.debug("Start parsing XML descriptor");
         boolean isLegacy = false;
         boolean registered = false;
 
@@ -47,7 +46,7 @@ public class ScreenDescriptorParser {
         relativeFilePathString = relativeFilePathString.replace("\\", "/");
 
         LegacyScreenRegistration legacyScreenRegistration = screensCollector.getLegacyScreenRegistration(relativeFilePathString);
-        if(legacyScreenRegistration != null) {
+        if (legacyScreenRegistration != null) {
             // This is the descriptor of registered legacy screen
             isLegacy = true;
             registered = true;
@@ -56,7 +55,7 @@ public class ScreenDescriptorParser {
             isLegacy = true;
         }
 
-        log.info("File '{}' is a {} screen descriptor", filePath, isLegacy ? "legacy" : "'Screen API'");
+        log.debug("File '{}' is a {} screen descriptor", filePath, isLegacy ? "legacy" : "'Screen API'");
 
         ScreenInfo screenInfo;
         if (isLegacy) {
@@ -99,67 +98,6 @@ public class ScreenDescriptorParser {
 
         screenInfo.setDescriptorProcessed(true);
 
-        log.info("Finish parsing XML descriptor");
-    }
-
-    public void parseXmlDescriptor(Element rootElement, Path filePath) {
-        log.info("Start parsing XML descriptor");
-        boolean isLegacy = false;
-        boolean hasClassAttribute = false;
-        if (rootElement.attribute("class") != null) {
-            isLegacy = true; //todo get legacy flag from ScreenInfo?
-            hasClassAttribute = true;
-        }
-        log.info("File '{}' is a {} screen descriptor", filePath, isLegacy ? "legacy" : "'Screen API'");
-
-        Path relativeFilePath = moduleSrcPath.relativize(filePath);
-        String relativeFilePathString = relativeFilePath.toString();
-        relativeFilePathString = relativeFilePathString.replace("\\", "/");
-
-        ScreenInfo screenInfo;
-        if (isLegacy) {
-            // Legacy screen info should be initialized via web-screens.xml analysis
-            screenInfo = screensCollector.getScreenInfoByDescriptor(relativeFilePathString);
-            if (screenInfo == null) {
-                log.error("[ERROR] screenInfo not found for legacy screen '{}'", relativeFilePathString);
-                throw new RuntimeException("Screen Info is null");
-            }
-            String screenControllerClass = rootElement.attributeValue("class");
-            screenInfo.setControllerClass(screenControllerClass);
-            screensCollector.updateScreenInfo(screenInfo);
-        } else {
-            screenInfo = screensCollector.initScreenByXmlDescriptor(relativeFilePathString);
-            if (screenInfo == null) {
-                throw new RuntimeException("Screen Info is null");
-            }
-        }
-
-        String rootElementName = rootElement.getQualifiedName();
-        if ("fragment".equals(rootElementName)) {
-            screenInfo.setFragment(true);
-        }
-
-        String extendsAttributeValue = rootElement.attributeValue("extends");
-        if (extendsAttributeValue != null) {
-            screenInfo.setExtendedDescriptor(extendsAttributeValue);
-        }
-
-        ScreenData screenData;
-        if (isLegacy) {
-            screenData = screenDataParser.parseLegacyDsContext(rootElement);
-        } else {
-            screenData = screenDataParser.parseScreenData(rootElement);
-        }
-        screenInfo.setScreenData(screenData);
-
-        // Facets
-        List<Facet> facets = screenFacetsParser.parseFacets(rootElement);
-        screenInfo.setFacets(facets);
-
-        // Layout
-        Layout layout = screenLayoutParser.parseLayout(rootElement);
-        screenInfo.setLayout(layout);
-
-        log.info("Finish parsing XML descriptor");
+        log.debug("Finish parsing XML descriptor");
     }
 }

@@ -1,21 +1,19 @@
-package io.jmix.migration.analysis.estimation;
+package io.jmix.migration.analysis.model;
 
 import org.apache.commons.lang3.Range;
 
-import java.math.BigDecimal;
 import java.util.Objects;
 
-public class ScreenComplexityGroup {
-
+public class ThresholdItem<T, V> {
     private final String name;
-    private final Range<Integer> range;
-    private final BigDecimal cost;
+    private final Range<T> thresholdRange;
+    private final V outputValue;
     private final int order;
 
-    public ScreenComplexityGroup(String name, Range<Integer> range, BigDecimal cost, int order) {
+    public ThresholdItem(String name, Range<T> thresholdRange, V outputValue, int order) {
         this.name = name;
-        this.range = range;
-        this.cost = cost;
+        this.thresholdRange = thresholdRange;
+        this.outputValue = outputValue;
         this.order = order;
     }
 
@@ -23,12 +21,12 @@ public class ScreenComplexityGroup {
         return name;
     }
 
-    public Range<Integer> getRange() {
-        return range;
+    public Range<T> getThresholdRange() {
+        return thresholdRange;
     }
 
-    public BigDecimal getCost() {
-        return cost;
+    public V getOutputValue() {
+        return outputValue;
     }
 
     public int getOrder() {
@@ -39,7 +37,7 @@ public class ScreenComplexityGroup {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ScreenComplexityGroup that = (ScreenComplexityGroup) o;
+        ThresholdItem<?, ?> that = (ThresholdItem<?, ?>) o;
         return Objects.equals(name, that.name);
     }
 

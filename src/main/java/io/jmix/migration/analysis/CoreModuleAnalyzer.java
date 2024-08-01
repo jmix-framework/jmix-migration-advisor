@@ -1,7 +1,7 @@
 package io.jmix.migration.analysis;
 
+import io.jmix.migration.analysis.model.CoreModuleAnalysisResult;
 import io.jmix.migration.analysis.parser.general.WebXmlParser;
-import io.jmix.migration.model.CoreModuleAnalysisResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

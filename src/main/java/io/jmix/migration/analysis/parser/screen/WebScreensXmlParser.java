@@ -1,6 +1,5 @@
 package io.jmix.migration.analysis.parser.screen;
 
-import io.jmix.migration.analysis.parser.ScreensCollector;
 import io.jmix.migration.util.XmlUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
@@ -51,8 +50,8 @@ public class WebScreensXmlParser {
     }
 
     protected void processScreensFile(File file, String module) {
-        log.info("Process file: {}", file);
-        if(processedFiles.contains(file.getAbsolutePath())) {
+        log.debug("Process file: {}", file);
+        if (processedFiles.contains(file.getAbsolutePath())) {
             throw new RuntimeException("Cycle is detected within web-screens inclusion");
         }
         processedFiles.add(file.getAbsolutePath());
@@ -72,7 +71,7 @@ public class WebScreensXmlParser {
         for (Element screenElement : screenElements) {
             String screenId = screenElement.attributeValue("id");
             String descriptor = screenElement.attributeValue("template");
-            if(descriptor == null) {
+            if (descriptor == null) {
                 //todo check case with class instead of template
                 continue;
             }
@@ -100,11 +99,11 @@ public class WebScreensXmlParser {
         File webModuleFileCandidate = webModuleFilePathCandidate.toFile();
         Path guiModuleFilePathCandidate = guiSrcPath.resolve(basePackage).resolve(includedPath);
         File guiModuleFileCandidate = guiModuleFilePathCandidate.toFile();
-        if(webModuleFileCandidate.exists()) {
-            log.info("Found file in WEB module '{}'", webModuleFilePathCandidate);
+        if (webModuleFileCandidate.exists()) {
+            log.debug("Found file in WEB module '{}'", webModuleFilePathCandidate);
             processScreensFile(webModuleFileCandidate, "web");
         } else if (guiModuleFileCandidate.exists()) {
-            log.info("Found file in GUI module '{}'", guiModuleFilePathCandidate);
+            log.debug("Found file in GUI module '{}'", guiModuleFilePathCandidate);
             processScreensFile(guiModuleFileCandidate, "gui");
         } else {
             log.error("File '{}' not found in WEB/GUI modules", includedPath);
@@ -112,9 +111,6 @@ public class WebScreensXmlParser {
     }
 
     protected String removeLeadingSlash(String source) {
-        if(source == null) {
-            int i = 1;
-        }
         if (source.startsWith("/")) {
             source = source.substring(1);
         }

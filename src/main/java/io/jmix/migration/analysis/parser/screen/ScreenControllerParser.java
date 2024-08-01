@@ -10,29 +10,23 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import io.jmix.migration.analysis.parser.ScreensCollector;
-import io.jmix.migration.model.*;
+import io.jmix.migration.analysis.MetricCodes;
+import io.jmix.migration.analysis.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
 
 public class ScreenControllerParser {
 
     private static final Logger log = LoggerFactory.getLogger(ScreenControllerParser.class);
-
-    protected static final Pattern PACKAGE_PATTERN = Pattern.compile("^package ([\\w|.]*);$");
-    protected static final Pattern UI_CONTROLLER_PATTERN = Pattern.compile("^@UiController\\(\"(.+)\"\\)$");
-    protected static final Pattern UI_DESCRIPTOR_PATTERN = Pattern.compile("^@UiDescriptor\\(\"(.+)\"\\)$");
 
     protected final Path moduleSrcPath;
     protected final List<Path> allSrcPaths;
@@ -48,7 +42,7 @@ public class ScreenControllerParser {
 
     public void parseJavaFile(Path filePath) {
         File file = filePath.toFile();
-        if(file.length() == 0) {
+        if (file.length() == 0) {
             return;
         }
 
@@ -65,15 +59,6 @@ public class ScreenControllerParser {
     }
 
     protected ParseResult<CompilationUnit> parseJavaFile(File file) {
-        /*CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
-        combinedTypeSolver.add(new ReflectionTypeSolver());
-        combinedTypeSolver.add((new JavaParserTypeSolver(moduleSrcPath)));
-        JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);
-
-        ParserConfiguration parserConfiguration = new ParserConfiguration();
-        parserConfiguration.setSymbolResolver(symbolSolver);
-        JavaParser javaParser = new JavaParser(parserConfiguration);*/
-
         try {
             return javaParser.parse(file);
         } catch (FileNotFoundException e) {
@@ -85,13 +70,10 @@ public class ScreenControllerParser {
         String packageValue = compilationUnit.getPackageDeclaration()
                 .map(PackageDeclaration::getNameAsString)
                 .orElseThrow(() -> new RuntimeException("Package not found"));
-        log.info("[Package] {}", packageValue);
+        log.debug("[Package] {}", packageValue);
 
         NodeList<ImportDeclaration> importDeclarations = compilationUnit.getImports();
         ImportsHolder importsHolder = ImportsHolder.create(importDeclarations, allSrcPaths);
-
-        Optional<String> primaryTypeNameOpt = compilationUnit.getPrimaryTypeName();
-        primaryTypeNameOpt.ifPresent(primaryType -> log.info("[Primary Type] {}", primaryType));
 
         Optional<TypeDeclaration<?>> primaryTypeOpt = compilationUnit.getPrimaryType();
         if (primaryTypeOpt.isEmpty()) {
@@ -109,7 +91,7 @@ public class ScreenControllerParser {
         String classFqn = classDeclaration.getFullyQualifiedName().orElseThrow(() -> new RuntimeException("Unable to get class name"));
         String simpleName = classDeclaration.getName().asString();
 
-        log.info("[CLASS] {}", classFqn);
+        log.debug("[CLASS] {}", classFqn);
 
         //Extends
         NodeList<ClassOrInterfaceType> extendedTypes = classDeclaration.getExtendedTypes();
@@ -120,9 +102,7 @@ public class ScreenControllerParser {
             String extendedClassName = extendedClass.getNameAsString();
             superClassDetails = importsHolder.analyzeSuperClass3(extendedClassName, packageValue);
         }
-
         boolean isExtendBasicScreenClass = isExtendBasicScreenClass(superClassDetails);
-
 
         // Annotations
         String descriptorLocalName = null;
@@ -133,7 +113,7 @@ public class ScreenControllerParser {
             Name annotationName = annotationExpr.getName();
 
             if ("UiDescriptor".equals(annotationName.asString())) {
-                log.info("[UiDescriptor]");
+                log.debug("[UiDescriptor]");
                 if (annotationExpr.isSingleMemberAnnotationExpr()) {
                     descriptorLocalName = extractSingleValueAnnotationStringValue(annotationExpr.asSingleMemberAnnotationExpr());
                 } else {
@@ -149,7 +129,6 @@ public class ScreenControllerParser {
                     log.warn("Multi-member annotation is not supported yet: {}", annotationExpr);
                 }
             }
-            // todo @LoadDataBeforeShow?
         }
 
         boolean isControllerClass = false;
@@ -180,14 +159,14 @@ public class ScreenControllerParser {
                 isControllerClass = true;
                 log.info("Screen info exists. legacy = {}", isLegacy);
             } else {
-                if(isExtendBasicScreenClass) {
+                if (isExtendBasicScreenClass) {
                     screenInfo = screensCollector.initScreenInfo(null, null, classFqn, false);
                 }
             }
         }
 
 
-        if(isControllerClass) {
+        if (isControllerClass) {
             // Controller class for specific screen
             analyzeControllerClass(classDeclaration, screenInfo, superClassDetails);
         } else if (isExtendBasicScreenClass) {
@@ -196,49 +175,20 @@ public class ScreenControllerParser {
         } else {
             // Class can't be defined as controller yet.
             ClassGeneralDetails superClassGeneralDetails = null;
-            if(superClassDetails != null) {
+            if (superClassDetails != null) {
                 superClassGeneralDetails = new ClassGeneralDetails(superClassDetails.getSimpleName(), superClassDetails.getFqn(), null);
             }
             ClassGeneralDetails classGeneralDetails = new ClassGeneralDetails(simpleName, classFqn, superClassGeneralDetails);
-            screensCollector.addUnknownClass(classGeneralDetails);
+            screensCollector.addUnknownClass(classGeneralDetails); //todo
         }
 
 
         if (!isControllerClass && !isExtendBasicScreenClass) {
-            log.info("Class '{}' is not a controller/intermediate class", classFqn);
+            log.debug("Class '{}' is not a controller/intermediate class", classFqn);
             return;
         }
 
         analyzeControllerClass(classDeclaration, screenInfo, superClassDetails);
-
-        /* Extends
-        NodeList<ClassOrInterfaceType> extendedTypes = classDeclaration.getExtendedTypes();
-        extendedTypes.forEach(extendedType -> {
-            // ResolvedType resolve = extendedType.resolve(); // Requires SymbolResolver in parser config
-            ClassOrInterfaceTypeMetaModel metaModel = extendedType.getMetaModel();
-            String nameAsString = extendedType.getNameAsString();
-            SimpleName name = extendedType.getName();
-            int i = 1;
-        });
-        //*/
-
-        /*Optional<ClassOrInterfaceType> firstExtendedTypeOpt = classDeclaration.getExtendedTypes().getFirst();
-        if (firstExtendedTypeOpt.isPresent()) {
-            String name = firstExtendedTypeOpt.get().getNameAsString();
-            screenInfo.setExtendedController(name);
-        }
-
-        // Methods
-        List<MethodDetails> methodDetailsList = processMethods(classDeclaration);
-
-        Integer linesCount = classDeclaration.getRange().map(Range::getLineCount).orElse(0);
-
-        ScreenControllerDetails controllerDetails = ScreenControllerDetails.builder(classFqn)
-                .setOverallLines(linesCount)
-                .setMethods(methodDetailsList)
-                .build();
-
-        screenInfo.setControllerDetails(controllerDetails);*/
     }
 
     protected void analyzeControllerClass(ClassOrInterfaceDeclaration primaryClassDeclaration,
@@ -268,7 +218,7 @@ public class ScreenControllerParser {
             public void visit(ClassOrInterfaceDeclaration n, Object arg) {
                 super.visit(n, arg);
                 if (n.isNestedType()) {
-                    log.info("Find nested class {}", n.getFullyQualifiedName());
+                    log.debug("Find nested class {}", n.getFullyQualifiedName());
                     List<MethodDetails> methodDetails = processMethods(n);
                     builder.putNestedClassMethods(n.getNameAsString(), methodDetails);
                 }
@@ -276,7 +226,6 @@ public class ScreenControllerParser {
         }, null);
 
         ScreenControllerDetails controllerDetails = builder.setSuperClassDetails(superClassDetails).build();
-
         screenInfo.setControllerDetails(controllerDetails);
     }
 
@@ -317,15 +266,16 @@ public class ScreenControllerParser {
             }
         }, null);
 
-        NumericMetric uiComponentsCreateAmountMetric = MethodMetrics.createUiComponentsCreateAmountMetric(uiComponentsCreateCalls.get());
-        NumericMetric methodCallsAmountMetric = MethodMetrics.createMethodCallsAmountMetric(methodCalls.size());
+        NumericMetric uiComponentsCreateAmountMetric = MetricCodes.createUiComponentsCreateAmountMetric(uiComponentsCreateCalls.get());
+        NumericMetric methodCallsAmountMetric = MetricCodes.createMethodCallsAmountMetric(methodCalls.size());
         return new MethodDetails(
                 methodDeclaration.getSignature().asString(),
                 List.of(uiComponentsCreateAmountMetric, methodCallsAmountMetric)
         );
     }
+
     protected boolean isExtendBasicScreenClass(@Nullable ScreenControllerSuperClassDetails superClassDetails) {
-        if(superClassDetails == null) {
+        if (superClassDetails == null) {
             return false;
         }
         return !superClassDetails.getSuperClassKind().equals(ScreenControllerSuperClassKind.CUSTOM);

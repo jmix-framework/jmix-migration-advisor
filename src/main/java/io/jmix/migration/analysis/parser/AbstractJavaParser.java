@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 
-public abstract class AbstractJavaParser<R> {
+public abstract class AbstractJavaParser {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractJavaParser.class);
 
@@ -22,26 +22,26 @@ public abstract class AbstractJavaParser<R> {
     }
 
     @Nullable
-    public R parseJavaFile(Path filePath) {
+    public void parseJavaFile(Path filePath) {
         File file = filePath.toFile();
-        if(!shouldBeProcessed(file)) {
-            return null;
+        if (!shouldBeProcessed(file)) {
+            return;
         }
 
         ParseResult<CompilationUnit> parseResult = parseJavaFile(file);
 
         if (!parseResult.isSuccessful()) {
-            return handleFailedParsingResult(parseResult);
+            handleFailedParsingResult(parseResult);
         }
         if (parseResult.getResult().isEmpty()) {
-            return handleEmptyParsingResult(parseResult);
+            handleEmptyParsingResult(parseResult);
         }
 
-        return processCompilationUnit(parseResult.getResult().get());
+        processCompilationUnit(parseResult.getResult().get());
     }
 
     @Nullable
-    protected abstract R processCompilationUnit(CompilationUnit compilationUnit);
+    protected abstract void processCompilationUnit(CompilationUnit compilationUnit);
 
     protected boolean shouldBeProcessed(File file) {
         return !isFileEmpty(file);
@@ -51,11 +51,11 @@ public abstract class AbstractJavaParser<R> {
         return file.length() == 0; //todo
     }
 
-    protected R handleFailedParsingResult(ParseResult<CompilationUnit> parseResult) {
+    protected void handleFailedParsingResult(ParseResult<CompilationUnit> parseResult) {
         throw new RuntimeException("Java file parsing failed");
     }
 
-    protected R handleEmptyParsingResult(ParseResult<CompilationUnit> parseResult) {
+    protected void handleEmptyParsingResult(ParseResult<CompilationUnit> parseResult) {
         throw new RuntimeException("Parse result is empty");
     }
 
