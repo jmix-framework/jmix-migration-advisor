@@ -117,5 +117,25 @@
           </tbody>
         </table>
     </div>
+
+    <h2>Misc</h2>
+    <div>
+        <table style="width:100%">
+          <thead>
+            <tr>
+               <th>Item</th>
+               <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <#list miscNotes as row>
+                <tr>
+                    <td>${row.name}</td>
+                    <td>${row.notes}</td>
+                </tr>
+            </#list>
+          </tbody>
+        </table>
+    </div>
 </body>
 </html>

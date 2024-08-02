@@ -59,9 +59,7 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
         analyzeWebModule(screensCollector);
         analyzeGuiModule(screensCollector);
 
-        UiModulesAnalysisResult uiModulesAnalysisResult = new UiModulesAnalysisResult(screensCollector, webAppProperties);
-
-        return uiModulesAnalysisResult;
+        return new UiModulesAnalysisResult(screensCollector, webAppProperties);
 
         // todo advanced inheritance
         /*Map<String, ScreenInfo> screensByControllers = screensCollector.getScreensByControllers();

@@ -13,11 +13,14 @@ import io.jmix.migration.analysis.estimation.ScreenEstimator;
 import io.jmix.migration.analysis.estimation.ScreenTimeEstimator;
 import io.jmix.migration.analysis.estimation.rules.LegacyEntityListenersRule;
 import io.jmix.migration.analysis.estimation.rules.NumericMetricRule;
+import io.jmix.migration.analysis.issue.MiscNote;
+import io.jmix.migration.analysis.issue.MiscNotes;
 import io.jmix.migration.analysis.issue.UiComponentIssue;
 import io.jmix.migration.analysis.issue.UiComponentIssuesRegistry;
 import io.jmix.migration.analysis.model.*;
 import io.jmix.migration.analysis.parser.screen.ScreensCollector;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,6 +134,9 @@ public class ProjectAnalyzer {
 
         // Total
         data.put("totalEstimation", result.getTotalEstimation());
+
+        // Misc
+        data.put("miscNotes", result.getMiscNotes());
 
         // Write to file
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
@@ -256,12 +262,12 @@ public class ProjectAnalyzer {
         List<CubaAppComponentInfo> appComponents = new ArrayList<>();
         appComponentPackages.forEach(componentPackage -> {
             CubaAppComponentInfo appComponentInfo = appComponentsInfoRegistry.getAppComponentInfo(componentPackage);
-            if(appComponentInfo == null) {
+            if (appComponentInfo == null) {
                 appComponents.add(CubaAppComponentInfo.createMissing(componentPackage));
                 return;
             }
 
-            if(AppComponentType.BASE_APP.equals(appComponentInfo.getAppComponentType())) {
+            if (AppComponentType.BASE_APP.equals(appComponentInfo.getAppComponentType())) {
                 return;
             }
 
@@ -269,6 +275,15 @@ public class ProjectAnalyzer {
         });
 
         ScreensTotalInfo screensTotalInfo = createScreensTotalInfo(screensCollector);
+
+        List<MiscNote> miscNotes = new ArrayList<>();
+        Properties webAppProperties = uiModulesAnalysisResult.getWebAppProperties();
+        if (webAppProperties != null) {
+            boolean foldersPaneEnabled = isFoldersPaneEnabled(webAppProperties);
+            if(foldersPaneEnabled) {
+                miscNotes.add(MiscNotes.folderPaneEnabled());
+            }
+        }
 
         ProjectEstimationResult.Builder resultBuilder = ProjectEstimationResult.builder();
         return resultBuilder
@@ -281,6 +296,7 @@ public class ProjectAnalyzer {
                 .setLegacyListeners(new ArrayList<>(globalModuleAnalysisResult.getLegacyListeners()))
                 .setScreensTotalCost(screenSumHours)
                 .setAppComponents(appComponents)
+                .setMiscNotes(miscNotes)
                 .build();
     }
 
@@ -330,5 +346,36 @@ public class ProjectAnalyzer {
         screensTotalInfo.setUiComponents(totalUiComponents);
 
         return screensTotalInfo;
+    }
+
+    protected boolean isFoldersPaneEnabled(Properties webAppProperties) {
+        Object foldersPaneEnabledPropertyValue = getPropertyValue(webAppProperties, "cuba.web.folders-pane-enabled", false);
+        if (foldersPaneEnabledPropertyValue instanceof Boolean) {
+            return (boolean) foldersPaneEnabledPropertyValue;
+        }
+        if (foldersPaneEnabledPropertyValue instanceof String) {
+            return Boolean.parseBoolean((String) foldersPaneEnabledPropertyValue);
+        }
+        return false;
+    }
+
+    protected Object getPropertyValue(Properties properties, String property, Object defaultValue) {
+        Object value = properties.get(property);
+        if (value != null) {
+            return value;
+        }
+
+        if (property.contains("-")) {
+            String ccProperty = property.toLowerCase();
+            String[] tokens = ccProperty.split("-");
+            StringBuilder internalPropertyBuilder = new StringBuilder(tokens[0]);
+            for (int i = 1; i < tokens.length; i++) {
+                internalPropertyBuilder.append(tokens[i].substring(0, 1).toUpperCase()).append(tokens[i].substring(1));
+            }
+            ccProperty = internalPropertyBuilder.toString();
+            value = properties.get(ccProperty);
+        }
+
+        return value == null ? defaultValue : value;
     }
 }

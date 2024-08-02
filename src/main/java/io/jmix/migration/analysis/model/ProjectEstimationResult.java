@@ -1,6 +1,7 @@
 package io.jmix.migration.analysis.model;
 
 import io.jmix.migration.analysis.addon.CubaAppComponentInfo;
+import io.jmix.migration.analysis.issue.MiscNote;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -33,6 +34,9 @@ public class ProjectEstimationResult {
     private final List<CubaAppComponentInfo> appComponents;
     //
 
+    // Misc
+    private final List<MiscNote> miscNotes;
+
     private final BigDecimal totalEstimation;
 
     private ProjectEstimationResult(Builder builder) {
@@ -46,6 +50,7 @@ public class ProjectEstimationResult {
         this.legacyListenersCost = builder.legacyListenersCost;
         this.legacyListeners = builder.legacyListeners;
         this.appComponents = builder.appComponents;
+        this.miscNotes = builder.miscNotes;
 
         this.totalEstimation = createTotalEstimation(initialMigrationCost, baseEntitiesMigrationCost, screensTotalCost, legacyListenersCost);
     }
@@ -102,6 +107,10 @@ public class ProjectEstimationResult {
         return appComponents;
     }
 
+    public List<MiscNote> getMiscNotes() {
+        return miscNotes;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -120,6 +129,8 @@ public class ProjectEstimationResult {
         private BigDecimal legacyListenersCost;
 
         private List<CubaAppComponentInfo> appComponents;
+
+        private List<MiscNote> miscNotes;
 
         public Builder() {
         }
@@ -166,6 +177,11 @@ public class ProjectEstimationResult {
 
         public Builder setAppComponents(List<CubaAppComponentInfo> appComponents) {
             this.appComponents = appComponents;
+            return this;
+        }
+
+        public Builder setMiscNotes(List<MiscNote> miscNotes) {
+            this.miscNotes = miscNotes;
             return this;
         }
 
