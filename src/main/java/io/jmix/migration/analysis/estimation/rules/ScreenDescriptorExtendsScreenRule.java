@@ -1,6 +1,6 @@
 package io.jmix.migration.analysis.estimation.rules;
 
-import static io.jmix.migration.analysis.MetricCodes.SCREEN_DESCRIPTOR_EXTENDS_SCREEN_METRIC_CODE;
+import static io.jmix.migration.analysis.Metrics.SCREEN_DESCRIPTOR_EXTENDS_SCREEN_METRIC_CODE;
 
 // todo Create BooleanMetricRule?
 public class ScreenDescriptorExtendsScreenRule implements NumericMetricRule {

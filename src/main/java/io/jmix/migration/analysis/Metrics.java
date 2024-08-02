@@ -2,7 +2,7 @@ package io.jmix.migration.analysis;
 
 import io.jmix.migration.analysis.model.NumericMetric;
 
-public class MetricCodes {
+public class Metrics {
 
     public static final String METHOD_CALLS_AMOUNT_METRIC_CODE = "screen-controller-method-calls";
     public static final String UI_COMPONENT_CREATE_CALLS_AMOUNT_METRIC_CODE = "ui-component-create-calls";

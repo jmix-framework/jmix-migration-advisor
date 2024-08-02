@@ -15,8 +15,6 @@ public class CliRunner {
     private static final Logger log = LoggerFactory.getLogger(CliRunner.class);
 
     public static void main(String[] args) {
-        log.info("Start CLI Runner");
-
         Map<String, BaseCommand> commands = new HashMap<>();
         commands.put("analyze-cuba", new AnalyzeCubaProjectCommand());
 

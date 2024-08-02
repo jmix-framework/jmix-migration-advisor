@@ -1,6 +1,6 @@
 package io.jmix.migration.analysis.estimation.rules;
 
-import static io.jmix.migration.analysis.MetricCodes.LEGACY_ENTITY_LISTENERS_METRIC_CODE;
+import static io.jmix.migration.analysis.Metrics.LEGACY_ENTITY_LISTENERS_METRIC_CODE;
 
 public class LegacyEntityListenersRule implements NumericMetricRule {
 

@@ -10,7 +10,7 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import io.jmix.migration.analysis.MetricCodes;
+import io.jmix.migration.analysis.Metrics;
 import io.jmix.migration.analysis.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,7 +121,7 @@ public class ScreenControllerParser {
                     log.warn("Multi-member annotation is not supported yet: {}", annotationExpr);
                 }
             } else if ("UiController".equals(annotationName.asString())) {
-                log.info("[UiController]");
+                log.debug("[UiController]");
                 if (annotationExpr.isSingleMemberAnnotationExpr()) {
                     screenId = extractSingleValueAnnotationStringValue(annotationExpr.asSingleMemberAnnotationExpr());
                 } else {
@@ -138,14 +138,14 @@ public class ScreenControllerParser {
             // Found Screens API screen controller
             isControllerClass = true;
             String descriptorFullName = packageValue.replace(".", "/") + "/" + descriptorLocalName;
-            log.info("Processing screen controller class: id = {}, descriptor = {}, controller = {}", screenId, descriptorFullName, classFqn);
+            log.debug("Processing screen controller class: id = {}, descriptor = {}, controller = {}", screenId, descriptorFullName, classFqn);
 
             screenInfo = screensCollector.getScreenInfoByDescriptor(descriptorFullName);
             if (screenInfo == null) {
                 log.error("Screen info NOT FOUND by descriptor '{}'", descriptorFullName);
                 screenInfo = screensCollector.initScreenInfo(screenId, descriptorFullName, classFqn);
             } else {
-                log.info("Screen info FOUND by descriptor '{}'", descriptorFullName);
+                log.debug("Screen info FOUND by descriptor '{}'", descriptorFullName);
                 screenInfo.setScreenId(screenId);
                 screenInfo.setControllerClass(classFqn);
                 screensCollector.updateScreenInfo(screenInfo);
@@ -153,11 +153,11 @@ public class ScreenControllerParser {
         } else {
             // check if it's a legacy screen controller
             screenInfo = screensCollector.getScreenInfoByController(classFqn);
-            log.info("ScreenInfo by controller class '{}': {}", classFqn, screenInfo);
+            log.debug("ScreenInfo by controller class '{}': {}", classFqn, screenInfo);
             if (screenInfo != null) {
                 isLegacy = screenInfo.isLegacy();
                 isControllerClass = true;
-                log.info("Screen info exists. legacy = {}", isLegacy);
+                log.debug("Screen info exists. legacy = {}", isLegacy);
             } else {
                 if (isExtendBasicScreenClass) {
                     screenInfo = screensCollector.initScreenInfo(null, null, classFqn, false);
@@ -266,8 +266,8 @@ public class ScreenControllerParser {
             }
         }, null);
 
-        NumericMetric uiComponentsCreateAmountMetric = MetricCodes.createUiComponentsCreateAmountMetric(uiComponentsCreateCalls.get());
-        NumericMetric methodCallsAmountMetric = MetricCodes.createMethodCallsAmountMetric(methodCalls.size());
+        NumericMetric uiComponentsCreateAmountMetric = Metrics.createUiComponentsCreateAmountMetric(uiComponentsCreateCalls.get());
+        NumericMetric methodCallsAmountMetric = Metrics.createMethodCallsAmountMetric(methodCalls.size());
         return new MethodDetails(
                 methodDeclaration.getSignature().asString(),
                 List.of(uiComponentsCreateAmountMetric, methodCallsAmountMetric)

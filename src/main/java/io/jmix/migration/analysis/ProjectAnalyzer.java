@@ -32,7 +32,7 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.jmix.migration.analysis.MetricCodes.LEGACY_ENTITY_LISTENERS_METRIC_CODE;
+import static io.jmix.migration.analysis.Metrics.LEGACY_ENTITY_LISTENERS_METRIC_CODE;
 import static java.time.temporal.ChronoField.*;
 
 public class ProjectAnalyzer {
@@ -237,7 +237,6 @@ public class ProjectAnalyzer {
                                                       UiModulesAnalysisResult uiModulesAnalysisResult) {
         ScreensCollector screensCollector = uiModulesAnalysisResult.getScreensCollector();
         Map<String, ScreenComplexityScore> screenScores = screenEstimator.estimate(screensCollector);
-        StringBuilder screenScoresSb = new StringBuilder("Screens Scores:");
         Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerComplexity = new HashMap<>();
         BigDecimal screenSumHours = screenScores.entrySet().stream().map(entry -> {
             String name = entry.getKey();
@@ -246,22 +245,8 @@ public class ProjectAnalyzer {
 
             List<String> screensInGroup = screensPerComplexity.computeIfAbsent(complexityThreshold, key -> new ArrayList<>());
             screensInGroup.add(name);
-
-            screenScoresSb.append("\nScreen: '").append(name).append("'. Score: ").append(score.getValue()).append(". Hours: ").append(complexityThreshold.getOutputValue());
             return complexityThreshold.getOutputValue();
         }).reduce(BigDecimal::add).orElse(new BigDecimal("0"));
-
-        screenScoresSb.append("\n\nTotal screens hours: ").append(screenSumHours);
-
-        screensPerComplexity.forEach((complexityThreshold, screens) -> {
-            screenScoresSb
-                    .append("\n\nGroup: ").append(complexityThreshold.getName())
-                    .append(", Cost: ").append(complexityThreshold.getOutputValue())
-                    .append(", Amount: ").append(screens.size())
-                    .append(", TotalCost: ").append(complexityThreshold.getOutputValue().multiply(BigDecimal.valueOf(screens.size())));
-        });
-
-        log.info("{}", screenScoresSb);
 
         NumericMetric legacyListenersAmountMetric = globalModuleAnalysisResult.getLegacyListenersAmount();
         NumericMetricRule legacyListenersAmountMetricRule = numericMetricRules.get(legacyListenersAmountMetric.getCode());

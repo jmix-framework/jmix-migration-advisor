@@ -1,6 +1,6 @@
 package io.jmix.migration.analysis.model;
 
-import io.jmix.migration.analysis.MetricCodes;
+import io.jmix.migration.analysis.Metrics;
 
 import java.util.List;
 import java.util.Map;
@@ -15,7 +15,7 @@ public class GlobalModuleAnalysisResult {
     public GlobalModuleAnalysisResult(Map<String, List<String>> entitiesPerPersistenceUnit, Set<String> legacyListeners) {
         this.entitiesPerPersistenceUnit = entitiesPerPersistenceUnit;
         this.legacyListeners = legacyListeners;
-        this.legacyListenersAmount = MetricCodes.createLegacyEntityListenersMetric(legacyListeners.size());
+        this.legacyListenersAmount = Metrics.createLegacyEntityListenersMetric(legacyListeners.size());
     }
 
     public Map<String, List<String>> getEntitiesPerPersistenceUnit() {

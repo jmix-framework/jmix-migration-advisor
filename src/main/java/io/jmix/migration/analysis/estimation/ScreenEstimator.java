@@ -1,6 +1,6 @@
 package io.jmix.migration.analysis.estimation;
 
-import io.jmix.migration.analysis.MetricCodes;
+import io.jmix.migration.analysis.Metrics;
 import io.jmix.migration.analysis.estimation.rules.*;
 import io.jmix.migration.analysis.issue.UiComponentIssue;
 import io.jmix.migration.analysis.issue.UiComponentIssueType;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.jmix.migration.analysis.MetricCodes.*;
+import static io.jmix.migration.analysis.Metrics.*;
 
 public class ScreenEstimator {
 
@@ -71,7 +71,7 @@ public class ScreenEstimator {
         // Descriptor extension
         String extendedDescriptor = screenInfo.getExtendedDescriptor();
         if (StringUtils.isNotEmpty(extendedDescriptor)) {
-            numericMetrics.add(MetricCodes.createScreenDescriptorExtendsScreenMetric());
+            numericMetrics.add(Metrics.createScreenDescriptorExtendsScreenMetric());
         }
 
         // screen data
@@ -92,7 +92,7 @@ public class ScreenEstimator {
                 }
             }
             //numericMetrics.add(new NumericMetric("screen-descriptor-data-items-without-query", dataItemsWithoutQuery)); //todo exclude single value data items
-            numericMetrics.add(MetricCodes.createScreenDescriptorNestedDataItemsMetric(nestedDataItems));
+            numericMetrics.add(Metrics.createScreenDescriptorNestedDataItemsMetric(nestedDataItems));
         }
 
         // Layout
@@ -113,7 +113,7 @@ public class ScreenEstimator {
                     nonIssuedUiComponents.incrementAndGet();
                 }
             });
-            numericMetrics.add(MetricCodes.createScreenDescriptorChangedUiComponentsScoreMetric(combinedExtraComplexityScore.get()));
+            numericMetrics.add(Metrics.createScreenDescriptorChangedUiComponentsScoreMetric(combinedExtraComplexityScore.get()));
         }
 
         // Controller
@@ -147,7 +147,7 @@ public class ScreenEstimator {
         numericMetrics.forEach(metric -> {
             metricsSb.append("\nMetric '").append(metric.getCode()).append("' : '").append(metric.getValue()).append("'");
         });
-        log.info("Screen: {}: metrics:{}", screenName, metricsSb);
+        log.debug("Screen: {}: metrics:{}", screenName, metricsSb);
 
         ScreenComplexityScore score = new ScreenComplexityScore();
         numericMetrics.forEach(metric -> {
@@ -166,7 +166,7 @@ public class ScreenEstimator {
             return numericMetricRule.apply(metric.getValue());
         } else {
             // todo rule not found
-            log.info("Rule not found for metric '{}'", metric.getCode());
+            log.warn("Rule not found for metric '{}'", metric.getCode());
             return 0;
         }
     }

@@ -38,7 +38,7 @@ public class PersistenceXmlParser {
     }
 
     protected Map<String, List<String>> processFile(File file) {
-        log.info("Process file: {}", file);
+        log.debug("Process file: {}", file);
 
         Document document = XmlUtils.readDocument(file);
         Element rootElement = document.getRootElement();

@@ -1,6 +1,6 @@
 package io.jmix.migration.analysis.estimation.rules;
 
-import static io.jmix.migration.analysis.MetricCodes.SCREEN_DESCRIPTOR_CHANGED_UI_COMPONENTS_SCORE_METRIC_CODE;
+import static io.jmix.migration.analysis.Metrics.SCREEN_DESCRIPTOR_CHANGED_UI_COMPONENTS_SCORE_METRIC_CODE;
 
 public class ScreenDescriptorChangedUiComponentsScoreRule implements NumericMetricRule {
 

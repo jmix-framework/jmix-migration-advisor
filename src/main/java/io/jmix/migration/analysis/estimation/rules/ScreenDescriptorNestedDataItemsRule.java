@@ -1,6 +1,6 @@
 package io.jmix.migration.analysis.estimation.rules;
 
-import io.jmix.migration.analysis.MetricCodes;
+import io.jmix.migration.analysis.Metrics;
 
 public class ScreenDescriptorNestedDataItemsRule implements NumericMetricRule {
 
@@ -12,7 +12,7 @@ public class ScreenDescriptorNestedDataItemsRule implements NumericMetricRule {
 
     @Override
     public String getMetricCode() {
-        return MetricCodes.SCREEN_DESCRIPTOR_NESTED_DATA_ITEMS_METRIC_CODE;
+        return Metrics.SCREEN_DESCRIPTOR_NESTED_DATA_ITEMS_METRIC_CODE;
     }
 
     @Override
