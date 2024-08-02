@@ -84,17 +84,17 @@
                 </threshold>
                 <threshold>
                     <name>Simple</name>
-                    <threshold-value>25</threshold-value>
+                    <threshold-value>35</threshold-value>
                     <output-value>2</output-value>
                 </threshold>
                 <threshold>
                     <name>Medium</name>
-                    <threshold-value>50</threshold-value>
+                    <threshold-value>85</threshold-value>
                     <output-value>8</output-value>
                 </threshold>
                 <threshold>
                     <name>Complex</name>
-                    <threshold-value>100</threshold-value>
+                    <threshold-value>200</threshold-value>
                     <output-value>16</output-value>
                 </threshold>
                 <threshold>
