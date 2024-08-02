@@ -1,5 +1,13 @@
 package io.jmix.migration.analysis;
 
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
+import io.jmix.migration.CliRunner;
+import io.jmix.migration.analysis.addon.AppComponentType;
+import io.jmix.migration.analysis.addon.CubaAppComponentInfo;
+import io.jmix.migration.analysis.addon.CubaAppComponentsInfoRegistry;
 import io.jmix.migration.analysis.estimation.EstimationDataProvider;
 import io.jmix.migration.analysis.estimation.ScreenEstimator;
 import io.jmix.migration.analysis.estimation.ScreenTimeEstimator;
@@ -38,14 +46,19 @@ public class ProjectAnalyzer {
     public static final String GUI_MODULE_DIR = "gui";
     public static final String SRC_DIR = "src";
 
-    private final UiComponentIssuesRegistry uiComponentIssuesRegistry = UiComponentIssuesRegistry.create();
-    private final EstimationDataProvider estimationDataProvider = new EstimationDataProvider(); //todo provide external file
-    private final ScreenEstimator screenEstimator = new ScreenEstimator(uiComponentIssuesRegistry, estimationDataProvider);
-    private final ScreenTimeEstimator screenTimeEstimator = new ScreenTimeEstimator(estimationDataProvider.getScreenComplexityTimeEstimationThresholds());
-
+    private final UiComponentIssuesRegistry uiComponentIssuesRegistry;
+    private final EstimationDataProvider estimationDataProvider;
+    private final ScreenEstimator screenEstimator;
+    private final ScreenTimeEstimator screenTimeEstimator;
+    private final CubaAppComponentsInfoRegistry appComponentsInfoRegistry;
     private final Map<String, NumericMetricRule> numericMetricRules;
 
     public ProjectAnalyzer() {
+        this.uiComponentIssuesRegistry = UiComponentIssuesRegistry.create();
+        this.estimationDataProvider = new EstimationDataProvider(); //todo provide external file
+        this.screenEstimator = new ScreenEstimator(uiComponentIssuesRegistry, estimationDataProvider);
+        this.screenTimeEstimator = new ScreenTimeEstimator(estimationDataProvider.getScreenComplexityTimeEstimationThresholds());
+        this.appComponentsInfoRegistry = CubaAppComponentsInfoRegistry.create();
         this.numericMetricRules = generateMetricRules();
     }
 
@@ -82,110 +95,141 @@ public class ProjectAnalyzer {
         Path guiSrcPath = projectPath.resolve(MODULES_DIR).resolve(GUI_MODULE_DIR).resolve(SRC_DIR);
         UiModulesAnalyzer uiModulesAnalyzer = new UiModulesAnalyzer(webSrcPath, guiSrcPath, basePackage);
         UiModulesAnalysisResult uiModulesAnalysisResult = uiModulesAnalyzer.analyzeUiModules();
-        ScreensCollector screensCollector = uiModulesAnalysisResult.getScreensCollector();
-
-        log.info("\n\n-----===== TOTALS =====-----");
-        ScreensTotalInfo screensTotalInfo = createScreensTotalInfo(screensCollector);
-        log.info("Screens (all types): {}", screensTotalInfo.getScreens() + screensTotalInfo.getLegacyScreens() + screensTotalInfo.getFragments());
-        log.info("Legacy screens: {}", screensTotalInfo.getLegacyScreens());
-        log.info("Non-legacy screens: {}", screensTotalInfo.getScreens());
-        log.info("Fragments: {}", screensTotalInfo.getFragments());
-        log.info("Facets: {}", screensTotalInfo.getFacets());
-        Map<String, Integer> uiComponents = screensTotalInfo.getUiComponents();
-        StringBuilder uiCompSb = new StringBuilder("UiComponents:");
-        uiComponents.forEach((name, count) -> {
-            uiCompSb.append("\n").append(name).append(": ").append(count);
-        });
-        log.info(uiCompSb.toString());
-
-        //screenEstimator.estimate(screensCollector);
 
         ProjectEstimationResult projectEstimationResult = estimateProject(coreModuleAnalysisResult, globalModuleAnalysisResult, uiModulesAnalysisResult);
-        generateReport(projectEstimationResult);
+        generateHtmlReport(projectPathString, projectEstimationResult);
     }
 
-    protected void generateReport(ProjectEstimationResult result) {
-        /*Configuration configuration = new Configuration(Configuration.VERSION_2_3_23);
+    protected void generateHtmlReport(String project, ProjectEstimationResult result) {
+        Configuration configuration = createFremarkerConfiguration();
+        String fileName = createResultFileName();
+
+        Map<String, Object> data = new HashMap<>();
+
+        data.put("projectName", project);
+
+        //Entities amount
+        data.put("entitiesAmount", result.getEntitiesAmount());
+
+        //Screens
+        List<Map<String, Object>> complexityGroupRows = createComplexityGroupRows(result);
+        data.put("screenComplexityGroups", complexityGroupRows);
+        data.put("screensTotalHours", result.getScreensTotalCost());
+        data.put("screensTotalAmount", result.getScreensTotalAmount());
+
+        // UI components
+        List<Map<String, Object>> uiComponentIssuesRows = createUiComponentIssuesRows(result);
+        data.put("uiComponentIssues", uiComponentIssuesRows);
+
+        //Addons
+        List<Map<String, Object>> appComponentsRows = createAppComponentsRows(result);
+        data.put("appComponents", appComponentsRows);
+
+        // General estimations
+        List<Map<String, Object>> estimationItemsRows = createEstimationItemsRows(result);
+        data.put("estimationItems", estimationItemsRows);
+
+        // Total
+        data.put("totalEstimation", result.getTotalEstimation());
+
+        // Write to file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
+            Template template = configuration.getTemplate("report-template.ftl");
+
+            template.process(data, writer);
+            writer.flush();
+        } catch (IOException | TemplateException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected Configuration createFremarkerConfiguration() {
+        Configuration configuration = new Configuration(Configuration.VERSION_2_3_23);
         configuration.setDefaultEncoding("UTF-8");
         configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         configuration.setLogTemplateExceptions(false);
-
         configuration.setClassForTemplateLoading(CliRunner.class, "/templates");
+        return configuration;
+    }
 
+    protected List<Map<String, Object>> createComplexityGroupRows(ProjectEstimationResult result) {
+        Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerComplexity = result.getScreensPerComplexity();
+        List<Map<String, Object>> complexityGroupRows = new ArrayList<>();
+        screensPerComplexity.forEach(((thresholdItem, screens) -> {
+            String name = thresholdItem.getName();
+            int order = thresholdItem.getOrder();
+            BigDecimal cost = thresholdItem.getOutputValue();
+            int amount = screens.size();
+            BigDecimal total = cost.multiply(BigDecimal.valueOf(amount));
+            Map<String, Object> rowData = new HashMap<>();
+            rowData.put("name", name);
+            rowData.put("order", order);
+            rowData.put("cost", cost);
+            rowData.put("amount", amount);
+            rowData.put("total", total);
+            complexityGroupRows.add(rowData);
+        }));
+        complexityGroupRows.sort((o1, o2) -> {
+            int order1 = (int) o1.get("order");
+            int order2 = (int) o2.get("order");
+            return Integer.compare(order1, order2);
+        });
 
-        Map<String, Object> data = new HashMap<>();
-        List<Map<String, Object>> groups;
-        List<Map.Entry<ScreenComplexityGroup, List<String>>> entries = new ArrayList<>(result.getScreensPerGroup().entrySet());
-        data.put("userDetails", model.getUserDetails());
+        return complexityGroupRows;
+    }
 
-        try {
-            Template template = configuration.getTemplate("commonTemplate.ftl");
+    protected List<Map<String, Object>> createUiComponentIssuesRows(ProjectEstimationResult result) {
+        List<String> components = new ArrayList<>(result.getAllUiComponents().keySet());
+        components.sort(String::compareTo);
+        List<Map<String, Object>> uiComponentIssuesRows = new ArrayList<>();
+        components.forEach(component -> {
+            UiComponentIssue issue = uiComponentIssuesRegistry.getIssue(component);
+            if (issue != null) {
+                uiComponentIssuesRows.add(Map.of(
+                        "name", issue.getComponent(),
+                        "notes", issue.getNotes()
+                ));
+            }
+        });
+        return uiComponentIssuesRows;
+    }
 
-            // Console output
-            Writer out = new OutputStreamWriter(System.out);
-            template.process(prepareData(), out);
-            out.flush();
+    protected List<Map<String, Object>> createAppComponentsRows(ProjectEstimationResult result) {
+        List<Map<String, Object>> appComponentsRows = new ArrayList<>();
+        List<CubaAppComponentInfo> appComponents = result.getAppComponents();
+        appComponents.forEach(addon -> {
+            appComponentsRows.add(Map.of("name", addon.getCubaName(), "notes", addon.getNotes()));
+        });
+        return appComponentsRows;
+    }
 
-        } catch (IOException | TemplateException e) {
-            throw new RuntimeException(e);
-        }*/
+    protected List<Map<String, Object>> createEstimationItemsRows(ProjectEstimationResult result) {
+        List<Map<String, Object>> estimationItemsRows = new ArrayList<>();
+        estimationItemsRows.add(createEstimationItemRow("Initial migration", result.getInitialMigrationCost()));
+        estimationItemsRows.add(createEstimationItemRow("Base entities", result.getBaseEntitiesMigrationCost()));
+        estimationItemsRows.add(createEstimationItemRow("Legacy listeners", result.getBaseEntitiesMigrationCost()));
+        estimationItemsRows.add(createEstimationItemRow("Screens", result.getScreensTotalCost()));
+        return estimationItemsRows;
+    }
 
+    protected Map<String, Object> createEstimationItemRow(String category, BigDecimal estimation) {
+        return Map.of(
+                "category", category,
+                "estimation", estimation
+        );
+    }
+
+    protected String createResultFileName() {
         DateTimeFormatter formatter = new DateTimeFormatterBuilder()
                 .append(DateTimeFormatter.ISO_LOCAL_DATE)
                 .appendLiteral('T')
                 .appendValue(HOUR_OF_DAY, 2)
-                //.appendLiteral(':')
                 .appendValue(MINUTE_OF_HOUR, 2)
-                //.optionalStart()
-                //.appendLiteral(':')
                 .appendValue(SECOND_OF_MINUTE, 2)
-                //.optionalStart()
                 .appendFraction(MILLI_OF_SECOND, 0, 3, false)
                 .toFormatter();
 
-        String fileName = "results_" + LocalDateTime.now().format(formatter) + ".txt";
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
-            writer.write("General");
-            writer.newLine();
-            writer.newLine();
-
-            writer.write("Entities: " + result.getEntitiesAmount());
-
-            Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerGroup = result.getScreensPerComplexity();
-            List<ThresholdItem<Integer, BigDecimal>> groups = new ArrayList<>(screensPerGroup.keySet());
-            groups.sort(Comparator.comparingInt(ThresholdItem::getOrder));
-
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append(System.lineSeparator()).append(System.lineSeparator())
-                    .append("Screens complexity groups:");
-            groups.forEach(group -> {
-                int amount = screensPerGroup.get(group).size();
-                stringBuilder.append(System.lineSeparator()).append("\t")
-                        .append(group.getName())
-                        .append(": Amount=").append(amount)
-                        .append(", Cost=").append(group.getOutputValue())
-                        .append(", Total=").append(group.getOutputValue().multiply(BigDecimal.valueOf(amount)));
-            });
-            writer.write(stringBuilder.toString());
-
-
-            stringBuilder.delete(0, stringBuilder.length());
-            stringBuilder.append(System.lineSeparator()).append(System.lineSeparator()).append("UiComponents");
-            List<String> components = new ArrayList<>(result.getAllUiComponents().keySet());
-            components.sort(String::compareTo);
-            components.forEach(component -> {
-                UiComponentIssue issue = uiComponentIssuesRegistry.getIssue(component);
-                if (issue != null) {
-                    stringBuilder.append(System.lineSeparator()).append("\t")
-                            .append(issue.getComponent()).append(": ").append(issue.getNotes());
-                }
-            });
-            writer.write(stringBuilder.toString());
-
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return "results_" + LocalDateTime.now().format(formatter) + ".html";
     }
 
     protected ProjectEstimationResult estimateProject(CoreModuleAnalysisResult coreModuleAnalysisResult,
@@ -223,18 +267,36 @@ public class ProjectAnalyzer {
         NumericMetricRule legacyListenersAmountMetricRule = numericMetricRules.get(legacyListenersAmountMetric.getCode());
         int legacyListenersCost = legacyListenersAmountMetricRule.apply(legacyListenersAmountMetric.getValue());
 
+        List<String> appComponentPackages = coreModuleAnalysisResult.getAppComponents();
+        List<CubaAppComponentInfo> appComponents = new ArrayList<>();
+        appComponentPackages.forEach(componentPackage -> {
+            CubaAppComponentInfo appComponentInfo = appComponentsInfoRegistry.getAppComponentInfo(componentPackage);
+            if(appComponentInfo == null) {
+                appComponents.add(CubaAppComponentInfo.createMissing(componentPackage));
+                return;
+            }
+
+            if(AppComponentType.BASE_APP.equals(appComponentInfo.getAppComponentType())) {
+                return;
+            }
+
+            appComponents.add(appComponentInfo);
+        });
+
         ScreensTotalInfo screensTotalInfo = createScreensTotalInfo(screensCollector);
 
         ProjectEstimationResult.Builder resultBuilder = ProjectEstimationResult.builder();
-        ProjectEstimationResult result = resultBuilder
-                .setInitialMigrationCost(estimationDataProvider.getInitialMigrationCost()) // todo rule based on amount of entities?
-                .setBaseEntitiesMigrationCost(estimationDataProvider.getBaseEntitiesMigrationCost())
+        return resultBuilder
+                .setInitialMigrationCost(BigDecimal.valueOf(estimationDataProvider.getInitialMigrationCost())) // todo rule based on amount of entities?
+                .setBaseEntitiesMigrationCost(BigDecimal.valueOf(estimationDataProvider.getBaseEntitiesMigrationCost()))
                 .setScreensPerComplexity(screensPerComplexity)
                 .setEntitiesPerPersistenceUnit(globalModuleAnalysisResult.getEntitiesPerPersistenceUnit())
                 .setAllUiComponents(screensTotalInfo.getUiComponents())
-                .setLegacyListenersCost(legacyListenersCost)
+                .setLegacyListenersCost(BigDecimal.valueOf(legacyListenersCost))
+                .setLegacyListeners(new ArrayList<>(globalModuleAnalysisResult.getLegacyListeners()))
+                .setScreensTotalCost(screenSumHours)
+                .setAppComponents(appComponents)
                 .build();
-        return result;
     }
 
     protected ScreensTotalInfo createScreensTotalInfo(ScreensCollector screensCollector) {
@@ -283,46 +345,5 @@ public class ProjectAnalyzer {
         screensTotalInfo.setUiComponents(totalUiComponents);
 
         return screensTotalInfo;
-    }
-
-    protected void printScreenInfo(ScreenInfo screenInfo) {
-        boolean legacy = screenInfo.isLegacy();
-        String screenId = screenInfo.getScreenId();
-        String descriptorFile = screenInfo.getDescriptorFile();
-        String controllerClass = screenInfo.getControllerClass();
-
-        log.info("\n\nScreen: Descriptor = {}, ID = {}, Controller = {}, Legacy = {}", descriptorFile, screenId, controllerClass, legacy);
-
-        StringBuilder screenDataSb = new StringBuilder();
-        ScreenData screenData = screenInfo.getScreenData();
-        if (screenData == null) {
-            screenDataSb.append("NONE");
-        } else {
-            List<ScreenDataItem> screenDataItems = screenData.getItems();
-            screenDataItems.forEach(item -> screenDataSb.append("\n").append(item));
-        }
-        log.info("Screen data: {}", screenDataSb);
-
-        StringBuilder screenFacetsSb = new StringBuilder();
-        List<Facet> facets = screenInfo.getFacets();
-        if (facets == null) {
-            screenFacetsSb.append("NONE");
-        } else {
-            facets.forEach(facet -> screenFacetsSb.append("\n").append(facet));
-        }
-        log.info("Screen facets: {}", screenFacetsSb);
-
-        StringBuilder screenLayoutSb = new StringBuilder();
-        Layout layout = screenInfo.getLayout();
-        if (layout == null) {
-            screenLayoutSb.append("NONE");
-        } else {
-            List<LayoutItem> allLayoutItems = layout.getAllItems();
-            allLayoutItems.forEach(item -> screenLayoutSb.append("\n").append(item));
-        }
-        log.info("Screen layout: {}", screenLayoutSb);
-
-        log.info("---=== ESTIMATION ===---");
-        //screenEstimator.estimate(screenInfo);
     }
 }

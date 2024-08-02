@@ -40,6 +40,7 @@ public class UiComponentIssuesRegistry {
                 new UiComponentIssue("embedded", CHANGED, "Legacy API. Use 'image' or 'iframe'", 2),
                 new UiComponentIssue("fieldGroup", CHANGED, "Legacy API. Use 'formLayout'", 2),
                 new UiComponentIssue("fileMultiUploadField", CHANGED, "Legacy API. Use 'upload' with 'MULTI_FILE_*' receiver type (https://docs.jmix.io/jmix/flow-ui/vc/components/upload.html)", 2),
+                new UiComponentIssue("groupTable", ABSENT, "Not implemented yet"),
                 new UiComponentIssue("link", CHANGED, "Use html 'anchor' (https://docs.jmix.io/jmix/flow-ui/vc/html.html)", 1),
                 new UiComponentIssue("linkButton", HAS_ALTERNATIVE, "Use 'button' with custom styles (https://docs.jmix.io/jmix/flow-ui/vc/components/button.html#variants)", 1),
                 new UiComponentIssue("maskedField", ABSENT, "Not implemented. TextField supports input restriction via regex pattern (https://docs.jmix.io/jmix/flow-ui/vc/common-attributes.html#allowedCharPattern)"),

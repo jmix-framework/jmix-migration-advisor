@@ -1,20 +1,39 @@
 package io.jmix.migration.analysis.model;
 
+import io.jmix.migration.analysis.addon.CubaAppComponentInfo;
+
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProjectEstimationResult {
+    // Screens
     private final Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerComplexity;
+    private final BigDecimal screensTotalCost;
+    //
+
     private final Map<String, Integer> allUiComponents;
+
+    // Entities
     private final int entitiesAmount;
     private final Map<String, List<String>> entitiesPerPersistenceUnit;
-    private final BigDecimal totalScreensCost;
+    private final List<String> legacyListeners;
+    private final BigDecimal legacyListenersCost;
+    //
 
-    private final int initialMigrationCost;
-    private final int baseEntitiesMigrationCost;
-    private final int legacyListenersCost;
+    // General
+    private final BigDecimal initialMigrationCost;
+    private final BigDecimal baseEntitiesMigrationCost;
+    //
+
+    // Addons
+    private final List<CubaAppComponentInfo> appComponents;
+    //
+
+    private final BigDecimal totalEstimation;
 
     private ProjectEstimationResult(Builder builder) {
         this.screensPerComplexity = builder.screensPerComplexity;
@@ -23,8 +42,12 @@ public class ProjectEstimationResult {
         this.entitiesPerPersistenceUnit = builder.entitiesPerPersistenceUnit;
         this.initialMigrationCost = builder.initialMigrationCost;
         this.baseEntitiesMigrationCost = builder.baseEntitiesMigrationCost;
-        this.totalScreensCost = builder.totalScreensCost;
+        this.screensTotalCost = builder.screensTotalCost;
         this.legacyListenersCost = builder.legacyListenersCost;
+        this.legacyListeners = builder.legacyListeners;
+        this.appComponents = builder.appComponents;
+
+        this.totalEstimation = createTotalEstimation(initialMigrationCost, baseEntitiesMigrationCost, screensTotalCost, legacyListenersCost);
     }
 
     public Map<ThresholdItem<Integer, BigDecimal>, List<String>> getScreensPerComplexity() {
@@ -43,20 +66,40 @@ public class ProjectEstimationResult {
         return entitiesPerPersistenceUnit;
     }
 
-    public int getInitialMigrationCost() {
+    public BigDecimal getInitialMigrationCost() {
         return initialMigrationCost;
     }
 
-    public int getBaseEntitiesMigrationCost() {
+    public BigDecimal getBaseEntitiesMigrationCost() {
         return baseEntitiesMigrationCost;
     }
 
-    public BigDecimal getTotalScreensCost() {
-        return totalScreensCost;
+    public BigDecimal getScreensTotalCost() {
+        return screensTotalCost;
     }
 
-    public int getLegacyListenersCost() {
+    public BigDecimal getLegacyListenersCost() {
         return legacyListenersCost;
+    }
+
+    public long getScreensTotalAmount() {
+        return screensPerComplexity.values().stream().mapToLong(Collection::size).sum();
+    }
+
+    public List<String> getLegacyListeners() {
+        return legacyListeners;
+    }
+
+    public BigDecimal getTotalEstimation() {
+        return totalEstimation;
+    }
+
+    protected BigDecimal createTotalEstimation(BigDecimal... values) {
+        return Arrays.stream(values).reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
+    }
+
+    public List<CubaAppComponentInfo> getAppComponents() {
+        return appComponents;
     }
 
     public static Builder builder() {
@@ -68,11 +111,15 @@ public class ProjectEstimationResult {
         private Map<String, Integer> allUiComponents;
         private Map<String, List<String>> entitiesPerPersistenceUnit;
 
-        private BigDecimal totalScreensCost;
+        private BigDecimal screensTotalCost;
 
-        private int initialMigrationCost;
-        private int baseEntitiesMigrationCost;
-        private int legacyListenersCost;
+        private List<String> legacyListeners;
+
+        private BigDecimal initialMigrationCost;
+        private BigDecimal baseEntitiesMigrationCost;
+        private BigDecimal legacyListenersCost;
+
+        private List<CubaAppComponentInfo> appComponents;
 
         public Builder() {
         }
@@ -92,23 +139,33 @@ public class ProjectEstimationResult {
             return this;
         }
 
-        public Builder setInitialMigrationCost(int initialMigrationCost) {
+        public Builder setInitialMigrationCost(BigDecimal initialMigrationCost) {
             this.initialMigrationCost = initialMigrationCost;
             return this;
         }
 
-        public Builder setBaseEntitiesMigrationCost(int baseEntitiesMigrationCost) {
+        public Builder setBaseEntitiesMigrationCost(BigDecimal baseEntitiesMigrationCost) {
             this.baseEntitiesMigrationCost = baseEntitiesMigrationCost;
             return this;
         }
 
-        public Builder setTotalScreensCost(BigDecimal totalScreensCost) {
-            this.totalScreensCost = totalScreensCost;
+        public Builder setScreensTotalCost(BigDecimal screensTotalCost) {
+            this.screensTotalCost = screensTotalCost;
             return this;
         }
 
-        public Builder setLegacyListenersCost(int legacyListenersCost) {
+        public Builder setLegacyListenersCost(BigDecimal legacyListenersCost) {
             this.legacyListenersCost = legacyListenersCost;
+            return this;
+        }
+
+        public Builder setLegacyListeners(List<String> legacyListeners) {
+            this.legacyListeners = legacyListeners;
+            return this;
+        }
+
+        public Builder setAppComponents(List<CubaAppComponentInfo> appComponents) {
+            this.appComponents = appComponents;
             return this;
         }
 

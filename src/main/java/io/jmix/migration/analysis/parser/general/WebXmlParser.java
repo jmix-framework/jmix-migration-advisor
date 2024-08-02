@@ -1,6 +1,7 @@
 package io.jmix.migration.analysis.parser.general;
 
 import io.jmix.migration.util.XmlUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.slf4j.Logger;
@@ -64,7 +65,7 @@ public class WebXmlParser {
                     continue;
                 }
                 String paramValueElementValue = paramValueElement.getText();
-                appComponents = Arrays.stream(paramValueElementValue.split(" ")).toList();
+                appComponents = Arrays.stream(StringUtils.normalizeSpace(paramValueElementValue).split(" ")).toList();
             }
         }
 
