@@ -52,7 +52,7 @@ public class EstimationDataProvider {
         this(null);
     }
 
-    public EstimationDataProvider(String externalFileName) {
+    public EstimationDataProvider(@Nullable String externalFileName) {
         this.saxReader = XmlUtils.getSaxReader();
         initData(externalFileName);
     }

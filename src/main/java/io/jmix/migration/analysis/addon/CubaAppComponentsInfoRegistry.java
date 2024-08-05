@@ -26,6 +26,7 @@ public class CubaAppComponentsInfoRegistry {
         return registry.get(appComponentPackage);
     }
 
+    // TODO full list
     protected static Map<String, CubaAppComponentInfo> createInternalRegistry() {
         return Stream.of(
                 CubaAppComponentInfo.create("com.haulmont.cuba", "Application", BASE_APP, FRAMEWORK, "CUBA base application"),

@@ -104,14 +104,16 @@
           <thead>
             <tr>
                <th>Component</th>
+               <th>Amount</th>
                <th>Notes</th>
             </tr>
           </thead>
           <tbody>
-            <#list uiComponentIssues as issue>
+            <#list uiComponentNotes as note>
                 <tr>
-                    <td>${issue.name}</td>
-                    <td>${issue.notes}</td>
+                    <td>${note.name}</td>
+                    <td>${note.amount}</td>
+                    <td>${note.notes}</td>
                 </tr>
             </#list>
           </tbody>

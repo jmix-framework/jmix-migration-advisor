@@ -15,11 +15,14 @@ public class AnalyzeCubaProjectCommand implements BaseCommand {
     @Parameter(names = {"--base-package"}, description = "Base package of the project", required = true, order = 1)
     private String basePackage;
 
+    @Parameter(names = {"--estimation-data-file"}, description = "External file with estimation data", required = false, order = 2)
+    private String estimationDataFile;
+
     @Override
     public void run() {
         log.info("Start 'AnalyzeCubaProjectCommand'");
 
-        ProjectAnalyzer projectAnalyzer = new ProjectAnalyzer();
+        ProjectAnalyzer projectAnalyzer = new ProjectAnalyzer(estimationDataFile);
         projectAnalyzer.analyzeProject(projectDirectory, basePackage);
     }
 }

@@ -20,10 +20,10 @@ import io.jmix.migration.analysis.issue.UiComponentIssuesRegistry;
 import io.jmix.migration.analysis.model.*;
 import io.jmix.migration.analysis.parser.screen.ScreensCollector;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -56,9 +56,9 @@ public class ProjectAnalyzer {
     private final CubaAppComponentsInfoRegistry appComponentsInfoRegistry;
     private final Map<String, NumericMetricRule> numericMetricRules;
 
-    public ProjectAnalyzer() {
+    public ProjectAnalyzer(@Nullable String estimationDataFile) {
         this.uiComponentIssuesRegistry = UiComponentIssuesRegistry.create();
-        this.estimationDataProvider = new EstimationDataProvider(); //todo provide external file
+        this.estimationDataProvider = new EstimationDataProvider(estimationDataFile);
         this.screenEstimator = new ScreenEstimator(uiComponentIssuesRegistry, estimationDataProvider);
         this.screenTimeEstimator = new ScreenTimeEstimator(estimationDataProvider.getScreenComplexityTimeEstimationThresholds());
         this.appComponentsInfoRegistry = CubaAppComponentsInfoRegistry.create();
@@ -121,8 +121,8 @@ public class ProjectAnalyzer {
         data.put("screensTotalAmount", result.getScreensTotalAmount());
 
         // UI components
-        List<Map<String, Object>> uiComponentIssuesRows = createUiComponentIssuesRows(result);
-        data.put("uiComponentIssues", uiComponentIssuesRows);
+        List<UiComponentNotesRow> uiComponentNotesRows = createUiComponentIssuesRows(result);
+        data.put("uiComponentNotes", uiComponentNotesRows);
 
         //Addons
         List<Map<String, Object>> appComponentsRows = createAppComponentsRows(result);
@@ -184,17 +184,21 @@ public class ProjectAnalyzer {
         return complexityGroupRows;
     }
 
-    protected List<Map<String, Object>> createUiComponentIssuesRows(ProjectEstimationResult result) {
-        List<String> components = new ArrayList<>(result.getAllUiComponents().keySet());
+    protected List<UiComponentNotesRow> createUiComponentIssuesRows(ProjectEstimationResult result) {
+        Map<String, Integer> allUiComponents = result.getAllUiComponents();
+        List<String> components = new ArrayList<>(allUiComponents.keySet());
         components.sort(String::compareTo);
-        List<Map<String, Object>> uiComponentIssuesRows = new ArrayList<>();
+        List<UiComponentNotesRow> uiComponentIssuesRows = new ArrayList<>();
         components.forEach(component -> {
             UiComponentIssue issue = uiComponentIssuesRegistry.getIssue(component);
             if (issue != null) {
-                uiComponentIssuesRows.add(Map.of(
-                        "name", issue.getComponent(),
-                        "notes", issue.getNotes()
-                ));
+                uiComponentIssuesRows.add(
+                        new UiComponentNotesRow(
+                                issue.getComponent(),
+                                allUiComponents.get(issue.getComponent()),
+                                issue.getNotes()
+                        )
+                );
             }
         });
         return uiComponentIssuesRows;
@@ -213,7 +217,7 @@ public class ProjectAnalyzer {
         List<Map<String, Object>> estimationItemsRows = new ArrayList<>();
         estimationItemsRows.add(createEstimationItemRow("Initial migration", result.getInitialMigrationCost()));
         estimationItemsRows.add(createEstimationItemRow("Base entities", result.getBaseEntitiesMigrationCost()));
-        estimationItemsRows.add(createEstimationItemRow("Legacy listeners", result.getBaseEntitiesMigrationCost()));
+        estimationItemsRows.add(createEstimationItemRow("Legacy listeners", result.getLegacyListenersCost()));
         estimationItemsRows.add(createEstimationItemRow("Screens", result.getScreensTotalCost()));
         return estimationItemsRows;
     }
@@ -280,7 +284,7 @@ public class ProjectAnalyzer {
         Properties webAppProperties = uiModulesAnalysisResult.getWebAppProperties();
         if (webAppProperties != null) {
             boolean foldersPaneEnabled = isFoldersPaneEnabled(webAppProperties);
-            if(foldersPaneEnabled) {
+            if (foldersPaneEnabled) {
                 miscNotes.add(MiscNotes.folderPaneEnabled());
             }
         }
