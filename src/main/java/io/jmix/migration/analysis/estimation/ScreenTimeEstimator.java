@@ -18,15 +18,13 @@ public class ScreenTimeEstimator {
     public ThresholdItem<Integer, BigDecimal> estimate(ScreenComplexityScore score) {
         int value = adjustValue(score.getValue());
 
-        ThresholdItem<Integer, BigDecimal> thresholdItem = thresholds.stream()
+        return thresholds.stream()
                 .filter(item -> {
                     Range<Integer> thresholdRange = item.getThresholdRange();
                     return thresholdRange.contains(value);
                 })
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("No range found for score " + score.getValue()));
-
-        return thresholdItem;
     }
 
     protected int adjustValue(int value) {

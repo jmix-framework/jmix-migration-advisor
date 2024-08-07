@@ -1,4 +1,4 @@
-package io.jmix.migration.analysis.issue;
+package io.jmix.migration.analysis.issue.uicomponent;
 
 public enum UiComponentIssueType {
 

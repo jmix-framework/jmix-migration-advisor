@@ -8,7 +8,6 @@ import com.github.javaparser.ast.expr.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +24,6 @@ public class GlobalModuleJavaParser extends AbstractJavaParser {
         this.listenersCollector = listenersCollector;
     }
 
-    @Nullable
     protected void processCompilationUnit(CompilationUnit compilationUnit) {
         Optional<TypeDeclaration<?>> primaryTypeOpt = compilationUnit.getPrimaryType();
         if (primaryTypeOpt.isEmpty()) {
@@ -41,7 +39,6 @@ public class GlobalModuleJavaParser extends AbstractJavaParser {
 
     protected void processPrimaryClassDeclaration(ClassOrInterfaceDeclaration classDeclaration) {
         // Annotations
-
         NodeList<AnnotationExpr> annotations = classDeclaration.getAnnotations();
         for (AnnotationExpr annotationExpr : annotations) {
             Name annotationName = annotationExpr.getName();

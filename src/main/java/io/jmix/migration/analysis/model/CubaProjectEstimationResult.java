@@ -1,6 +1,6 @@
 package io.jmix.migration.analysis.model;
 
-import io.jmix.migration.analysis.addon.CubaAppComponentInfo;
+import io.jmix.migration.analysis.appcomponent.CubaAppComponentInfo;
 import io.jmix.migration.analysis.issue.MiscNote;
 
 import java.math.BigDecimal;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ProjectEstimationResult {
+public class CubaProjectEstimationResult {
     // Screens
     private final Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerComplexity;
     private final BigDecimal screensTotalCost;
@@ -39,7 +39,7 @@ public class ProjectEstimationResult {
 
     private final BigDecimal totalEstimation;
 
-    private ProjectEstimationResult(Builder builder) {
+    private CubaProjectEstimationResult(Builder builder) {
         this.screensPerComplexity = builder.screensPerComplexity;
         this.allUiComponents = builder.allUiComponents;
         this.entitiesAmount = countTotalEntities(builder.entitiesPerPersistenceUnit);
@@ -185,8 +185,8 @@ public class ProjectEstimationResult {
             return this;
         }
 
-        public ProjectEstimationResult build() {
-            return new ProjectEstimationResult(this);
+        public CubaProjectEstimationResult build() {
+            return new CubaProjectEstimationResult(this);
         }
     }
 

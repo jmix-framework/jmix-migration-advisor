@@ -1,4 +1,4 @@
-package io.jmix.migration.analysis.issue;
+package io.jmix.migration.analysis.issue.uicomponent;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static io.jmix.migration.analysis.issue.UiComponentIssueType.*;
+import static io.jmix.migration.analysis.issue.uicomponent.UiComponentIssueType.*;
 
 public class UiComponentIssuesRegistry {
 

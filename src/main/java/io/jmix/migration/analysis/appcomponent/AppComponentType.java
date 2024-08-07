@@ -1,4 +1,4 @@
-package io.jmix.migration.analysis.addon;
+package io.jmix.migration.analysis.appcomponent;
 
 public enum AppComponentType {
     BASE_APP,

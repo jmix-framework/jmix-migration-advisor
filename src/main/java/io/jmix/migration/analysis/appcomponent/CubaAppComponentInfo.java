@@ -1,15 +1,15 @@
-package io.jmix.migration.analysis.addon;
+package io.jmix.migration.analysis.appcomponent;
 
 public class CubaAppComponentInfo {
     private final String appComponentPackage;
-    private final String cubaName;
+    private final String name;
     private final AppComponentType appComponentType;
     private final AppComponentOrigin origin;
     private final String notes;
 
-    protected CubaAppComponentInfo(String appComponentPackage, String cubaName, AppComponentType appComponentType, AppComponentOrigin origin, String notes) {
+    protected CubaAppComponentInfo(String appComponentPackage, String name, AppComponentType appComponentType, AppComponentOrigin origin, String notes) {
         this.appComponentPackage = appComponentPackage;
-        this.cubaName = cubaName;
+        this.name = name;
         this.appComponentType = appComponentType;
         this.origin = origin;
         this.notes = notes;
@@ -27,8 +27,8 @@ public class CubaAppComponentInfo {
         return appComponentPackage;
     }
 
-    public String getCubaName() {
-        return cubaName;
+    public String getName() {
+        return name;
     }
 
     public AppComponentType getAppComponentType() {

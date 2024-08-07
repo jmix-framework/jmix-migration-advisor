@@ -1,4 +1,4 @@
-package io.jmix.migration.analysis.addon;
+package io.jmix.migration.analysis.appcomponent;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -6,9 +6,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static io.jmix.migration.analysis.addon.AppComponentOrigin.EXTERNAL;
-import static io.jmix.migration.analysis.addon.AppComponentOrigin.FRAMEWORK;
-import static io.jmix.migration.analysis.addon.AppComponentType.*;
+import static io.jmix.migration.analysis.appcomponent.AppComponentOrigin.EXTERNAL;
+import static io.jmix.migration.analysis.appcomponent.AppComponentOrigin.FRAMEWORK;
+import static io.jmix.migration.analysis.appcomponent.AppComponentType.*;
 
 public class CubaAppComponentsInfoRegistry {
     private final Map<String, CubaAppComponentInfo> registry;

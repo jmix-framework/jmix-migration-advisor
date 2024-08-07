@@ -2,9 +2,9 @@ package io.jmix.migration.analysis.estimation;
 
 import io.jmix.migration.analysis.Metrics;
 import io.jmix.migration.analysis.estimation.rules.*;
-import io.jmix.migration.analysis.issue.UiComponentIssue;
-import io.jmix.migration.analysis.issue.UiComponentIssueType;
-import io.jmix.migration.analysis.issue.UiComponentIssuesRegistry;
+import io.jmix.migration.analysis.issue.uicomponent.UiComponentIssue;
+import io.jmix.migration.analysis.issue.uicomponent.UiComponentIssueType;
+import io.jmix.migration.analysis.issue.uicomponent.UiComponentIssuesRegistry;
 import io.jmix.migration.analysis.model.*;
 import io.jmix.migration.analysis.parser.screen.ScreensCollector;
 import org.apache.commons.lang3.StringUtils;

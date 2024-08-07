@@ -1,7 +1,7 @@
 package io.jmix.migration.command;
 
 import com.beust.jcommander.Parameter;
-import io.jmix.migration.analysis.ProjectAnalyzer;
+import io.jmix.migration.analysis.CubaProjectAnalyzer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +22,7 @@ public class AnalyzeCubaProjectCommand implements BaseCommand {
     public void run() {
         log.info("Start 'AnalyzeCubaProjectCommand'");
 
-        ProjectAnalyzer projectAnalyzer = new ProjectAnalyzer(estimationDataFile);
-        projectAnalyzer.analyzeProject(projectDirectory, basePackage);
+        CubaProjectAnalyzer cubaProjectAnalyzer = new CubaProjectAnalyzer(estimationDataFile);
+        cubaProjectAnalyzer.analyzeProject(projectDirectory, basePackage);
     }
 }

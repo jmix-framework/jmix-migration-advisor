@@ -26,6 +26,9 @@ import java.util.function.Function;
 
 import static org.dom4j.Node.ELEMENT_NODE;
 
+/**
+ * Provides data about estimation weights for different metrics
+ */
 public class EstimationDataProvider {
 
     private static final Logger log = LoggerFactory.getLogger(EstimationDataProvider.class);
