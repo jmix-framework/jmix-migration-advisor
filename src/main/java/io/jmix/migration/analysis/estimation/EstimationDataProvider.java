@@ -16,9 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.InputStream;
 import java.math.BigDecimal;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,7 +32,7 @@ public class EstimationDataProvider {
 
     private static final Logger log = LoggerFactory.getLogger(EstimationDataProvider.class);
 
-    private static final String DEFAULT_FILE = "estimation/estimation-data.xml";
+    private static final String DEFAULT_FILE = "/estimation/estimation-data.xml";
 
     private static final String THRESHOLDS_XPATH_TEMPLATE = "./estimation-unit[name = '%s']/content/thresholds/threshold";
     private static final String SIMPLE_COST_VALUE_XPATH_TEMPLATE = "./estimation-unit[name = '%s']/content/cost";
@@ -97,15 +96,9 @@ public class EstimationDataProvider {
     }
 
     protected void initData(String externalFileName) {
-        URL defaultFileResource = Thread.currentThread().getContextClassLoader().getResource(DEFAULT_FILE);
-        if (defaultFileResource == null) {
-            throw new RuntimeException("Resource is null");
-        }
-        File defaultFile = null;
-        try {
-            defaultFile = new File(defaultFileResource.toURI());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+        InputStream defaultFileResourceStream = EstimationDataProvider.class.getResourceAsStream(DEFAULT_FILE);
+        if (defaultFileResourceStream == null) {
+            throw new RuntimeException("Default estimation file resource is null");
         }
 
         Element externalFileElement = null;
@@ -114,9 +107,9 @@ public class EstimationDataProvider {
             externalFileElement = loadDataFile(externalFile, false);
         }
 
-        Element defaultFileElement = loadDataFile(defaultFile, true);
+        Element defaultFileElement = loadDataFile(defaultFileResourceStream, true);
         if (defaultFileElement == null) {
-            throw new RuntimeException("Default file '" + defaultFile.getAbsolutePath() + "' was not loaded");
+            throw new RuntimeException("Default file '" + DEFAULT_FILE + "' was not loaded");
         }
 
         this.changedUiComponentsComplexityBaseValue = loadChangedUiComponentsComplexityBaseValue(defaultFileElement, externalFileElement);
@@ -265,7 +258,6 @@ public class EstimationDataProvider {
         return SIMPLE_COST_VALUE_XPATH_TEMPLATE.formatted(estimationUnitName);
     }
 
-
     protected int stringToInt(String stringValue) {
         if ("MAX".equalsIgnoreCase(stringValue)) {
             return Integer.MAX_VALUE;
@@ -298,18 +290,34 @@ public class EstimationDataProvider {
 
         Document document = parseDocument(file);
         Element rootElement = document.getRootElement();
+        validateEstimationDataElement(rootElement, strict);
+        return rootElement;
+    }
+
+    @Nullable
+    protected Element loadDataFile(InputStream inputStream, boolean strict) {
+        Document document = parseDocument(inputStream);
+        Element rootElement = document.getRootElement();
+        validateEstimationDataElement(rootElement, strict);
+        return rootElement;
+    }
+
+    protected void validateEstimationDataElement(Element rootElement, boolean strict) {
         if (!rootElement.getName().equalsIgnoreCase("data")) {
             if (strict) {
-                throw new RuntimeException("Incorrect structure of file '" + file.getAbsolutePath() + "'");
+                throw new RuntimeException("Incorrect structure of file");
             } else {
-                log.error("Incorrect structure of file '{}'", file.getAbsolutePath());
+                log.error("Incorrect structure of file");
             }
         }
-        return rootElement;
     }
 
     protected Document parseDocument(File file) {
         return XmlUtils.readDocument(file, saxReader);
+    }
+
+    protected Document parseDocument(InputStream inputStream) {
+        return XmlUtils.readDocument(inputStream, saxReader);
     }
 
     protected interface ThresholdItemGenerator<V> {
