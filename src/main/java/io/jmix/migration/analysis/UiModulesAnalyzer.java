@@ -37,7 +37,7 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
     }
 
     public UiModulesAnalysisResult analyzeUiModules() {
-        log.info("---=== Start analyze UI modules ===---");
+        log.info("Start UI modules analysis");
 
         Path basePackageLocalPath = packageToPath(basePackage);
         Path webModuleBasePackagePath = webSrcPath.resolve(basePackageLocalPath);

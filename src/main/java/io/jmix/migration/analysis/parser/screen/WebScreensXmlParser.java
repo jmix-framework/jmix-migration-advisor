@@ -33,7 +33,7 @@ public class WebScreensXmlParser {
     }
 
     public ScreensCollector processWebScreensXml(Path webScreensFilePath) {
-        log.info("---=== Start analyze web-screens.xml ===---");
+        log.info("Start web-screens.xml analysis");
 
         File file = webScreensFilePath.toFile();
         if (!file.exists()) {

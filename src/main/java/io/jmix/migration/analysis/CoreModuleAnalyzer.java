@@ -25,7 +25,7 @@ public class CoreModuleAnalyzer extends BaseAnalyzer {
     }
 
     public CoreModuleAnalysisResult analyzeCoreModule() {
-        log.info("---=== Start CORE module analysis ===---");
+        log.info("Start CORE module analysis");
 
         Path webXmlFullPath = getCoreWebXmlRelativePathFilePath();
         List<String> appComponents = new WebXmlParser().processWebXml(webXmlFullPath);

@@ -23,7 +23,7 @@ public class PersistenceXmlParser {
 
     @Nullable
     public Map<String, List<String>> processPersistenceXml(Path persistenceFilePath) {
-        log.info("---=== Start analyze persistence.xml ===---");
+        log.info("Start persistence.xml analysis");
 
         File file = persistenceFilePath.toFile();
         if (!file.exists()) {

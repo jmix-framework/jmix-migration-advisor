@@ -21,7 +21,7 @@ public class WebXmlParser {
     }
 
     public List<String> processWebXml(Path filePath) {
-        log.info("---=== Start analyze web.xml ===---");
+        log.info("Start web.xml analysis");
 
         File file = filePath.toFile();
         if (!file.exists()) {

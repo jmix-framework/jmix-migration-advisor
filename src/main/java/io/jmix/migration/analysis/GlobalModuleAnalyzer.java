@@ -30,7 +30,7 @@ public class GlobalModuleAnalyzer extends BaseAnalyzer {
     }
 
     public GlobalModuleAnalysisResult analyzeGlobalModule() {
-        log.info("---=== Start GLOBAL module analysis ===---");
+        log.info("Start GLOBAL module analysis");
 
         Path globalModuleBasePackagePath = globalSrcPath.resolve(packageToPath(basePackage));
         Path persistenceFilePath = getPersistenceFilePath(globalModuleBasePackagePath);

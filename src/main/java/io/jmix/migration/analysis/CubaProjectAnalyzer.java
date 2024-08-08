@@ -65,7 +65,7 @@ public class CubaProjectAnalyzer {
         }
 
         Path projectPath = Path.of(projectPathString).toAbsolutePath().normalize();
-        log.info("---=== Start project analysis ===---");
+        log.info("Start project analysis");
         log.info("Project path = '{}', Base package = '{}'", projectPath, basePackage);
 
         // Core module
