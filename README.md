@@ -56,7 +56,11 @@ Contains notes about UI components present in project which are absent or change
 Contains misc notes about some CUBA project functionality what should be taken into account
 
 ## Estimation Data
-TODO
+Estimation weights for different metrics are stored in [estimation-data.xml](src/main/resources/estimation/estimation-data.xml). 
+
+Description of metrics can be found inside the file.
+
+You can adjust the values by cloning the file, changing values and providing new file via `--estimation-data-file` command option.
 
 ## Building the Distribution
 To build the distribution locally run the following command to build the migration-advisor distribution:
