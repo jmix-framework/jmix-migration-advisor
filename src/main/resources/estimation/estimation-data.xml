@@ -1,48 +1,75 @@
 <data>
     <estimation-unit>
         <name>screen-changed-ui-components-complexity-base-value</name>
+        <description>
+            Additional screen complexity score value for each UI component with changes between CUBA and Jmix.
+            Units: screen complexity score
+        </description>
         <content>
             <cost>1</cost>
         </content>
     </estimation-unit>
     <estimation-unit>
         <name>screen-descriptor-extends-screen-complexity-score</name>
+        <description>
+            Additional screen complexity score value for the case when screen descriptor extends some another screen.
+            Units: screen complexity score
+        </description>
         <content>
             <cost>5</cost>
         </content>
     </estimation-unit>
     <estimation-unit>
         <name>screen-descriptor-has-nested-data-item-complexity-score</name>
+        <description>
+            Additional screen complexity score value for the case when screen descriptor has nested data container/data source.
+            Units: screen complexity score
+        </description>
         <content>
             <cost>15</cost>
         </content>
     </estimation-unit>
     <estimation-unit>
         <name>screen-descriptor-ui-component-create-call-complexity-score</name>
+        <description>
+            Additional screen complexity score for each uiComponents.create() call within screen controller class.
+            Units: screen complexity score
+        </description>
         <content>
             <cost>10</cost>
         </content>
     </estimation-unit>
     <estimation-unit>
         <name>initial-migration-cost</name>
+        <description>Estimation for the base migration process. Units: hours</description>
         <content>
             <cost>100</cost>
         </content>
     </estimation-unit>
     <estimation-unit>
         <name>base-entities-migration-cost</name>
+        <description>
+            Estimation for the restoration of entities structure/creation of new base entities due to Jmix doesn't have any OOB base entities.
+            Units: hours
+        </description>
         <content>
             <cost>16</cost>
         </content>
     </estimation-unit>
     <estimation-unit>
         <name>legacy-entity-listener-cost</name>
+        <description>Estimation for refactoring of single legacy entity listener. Units: hours</description>
         <content>
             <cost>1</cost>
         </content>
     </estimation-unit>
     <estimation-unit>
         <name>screen-controller-method-calls</name>
+        <description>
+            Threshold estimations for amount of method calls performed within screen controller class.
+            Input threshold value units: amount of method calls.
+            Output value units: screen complexity score.
+        </description>
         <content>
             <thresholds>
                 <threshold>
@@ -75,6 +102,11 @@
     </estimation-unit>
     <estimation-unit>
         <name>screen-complexity-time-estimation</name>
+        <description>
+            Threshold estimation for screen complexity score.
+            Input threshold value units: screen complexity score.
+            Output value units: hours
+        </description>
         <content>
             <thresholds>
                 <threshold>
