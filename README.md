@@ -4,6 +4,8 @@ This tool helps to make project migration by providing some estimations and note
 > **IMPORTANT**: this is not a comprehensive estimation - some aspects can't be automatically estimated properly and required manual analysis.
 > Consider this data as rough low-range estimate.
 
+> **IMPORTANT**: Analysis of Kotlin classes is not supported now.
+
 ## Installation
 Download or build distibution (zip archive).
 
