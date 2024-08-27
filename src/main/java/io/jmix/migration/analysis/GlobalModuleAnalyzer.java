@@ -12,14 +12,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class GlobalModuleAnalyzer extends BaseAnalyzer {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalModuleAnalyzer.class);
+    public static final String PERSISTENCE_XML = "persistence.xml";
 
     protected final Path globalSrcPath;
     protected final String basePackage;
@@ -33,7 +31,7 @@ public class GlobalModuleAnalyzer extends BaseAnalyzer {
         log.info("Start GLOBAL module analysis");
 
         Path globalModuleBasePackagePath = globalSrcPath.resolve(packageToPath(basePackage));
-        Path persistenceFilePath = getPersistenceFilePath(globalModuleBasePackagePath);
+        Path persistenceFilePath = getPersistenceFilePath(globalModuleBasePackagePath, globalSrcPath);
 
         PersistenceXmlParser persistenceXmlParser = new PersistenceXmlParser();
         Map<String, List<String>> entitiesPerPersistenceUnit = persistenceXmlParser.processPersistenceXml(persistenceFilePath);
@@ -64,7 +62,11 @@ public class GlobalModuleAnalyzer extends BaseAnalyzer {
         return listeners;
     }
 
-    protected Path getPersistenceFilePath(Path moduleBasePackagePath) {
-        return Path.of(moduleBasePackagePath.toString(), "persistence.xml");
+    protected Path getPersistenceFilePath(Path moduleBasePackagePath, Path globalSrcPath) {
+        Path path = Path.of(moduleBasePackagePath.toString(), PERSISTENCE_XML);
+        if (!path.toFile().exists()) {
+            path = Path.of(globalSrcPath.toString(), PERSISTENCE_XML);
+        }
+        return path;
     }
 }
