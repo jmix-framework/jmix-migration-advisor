@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
@@ -95,16 +96,25 @@ public class WebScreensXmlParser {
             return;
         }
         Path includedPath = Path.of(includedFile);
+        if (includedPath.isAbsolute()) {
+            includedPath = includedPath.subpath(0, includedPath.getNameCount());
+        }
         Path webModuleFilePathCandidate = webSrcPath.resolve(basePackage).resolve(includedPath);
-        File webModuleFileCandidate = webModuleFilePathCandidate.toFile();
+        Path webSrcFilePathCandidate = webSrcPath.resolve(includedPath);
         Path guiModuleFilePathCandidate = guiSrcPath.resolve(basePackage).resolve(includedPath);
-        File guiModuleFileCandidate = guiModuleFilePathCandidate.toFile();
-        if (webModuleFileCandidate.exists()) {
+        Path guiSrcFilePathCandidate = guiSrcPath.resolve(includedPath);
+        if (webModuleFilePathCandidate.toFile().exists()) {
             log.debug("Found file in WEB module '{}'", webModuleFilePathCandidate);
-            processScreensFile(webModuleFileCandidate, "web");
-        } else if (guiModuleFileCandidate.exists()) {
+            processScreensFile(webModuleFilePathCandidate.toFile(), "web");
+        } else if (webSrcFilePathCandidate.toFile().exists()) {
+            log.debug("Found file in WEB module src root '{}'", webSrcFilePathCandidate);
+            processScreensFile(webSrcFilePathCandidate.toFile(), "web");
+        } else if (guiModuleFilePathCandidate.toFile().exists()) {
             log.debug("Found file in GUI module '{}'", guiModuleFilePathCandidate);
-            processScreensFile(guiModuleFileCandidate, "gui");
+            processScreensFile(guiModuleFilePathCandidate.toFile(), "gui");
+        } else if (guiSrcFilePathCandidate.toFile().exists()) {
+            log.debug("Found file in GUI module src root '{}'", guiSrcFilePathCandidate);
+            processScreensFile(guiSrcFilePathCandidate.toFile(), "gui");
         } else {
             log.error("File '{}' not found in WEB/GUI modules", includedPath);
         }

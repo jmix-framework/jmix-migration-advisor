@@ -23,6 +23,8 @@ import java.util.Set;
 public class UiModulesAnalyzer extends BaseAnalyzer {
 
     private static final Logger log = LoggerFactory.getLogger(UiModulesAnalyzer.class);
+    public static final String WEB_APP_PROPERTIES = "web-app.properties";
+    public static final String WEB_SCREENS_XML = "web-screens.xml";
 
     protected final Path webSrcPath;
     protected final Path guiSrcPath;
@@ -44,12 +46,12 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
 
         Properties webAppProperties = null;
         PropertiesParser propertiesParser = new PropertiesParser();
-        Path webAppPropertiesFilePath = getWebAppPropertiesFilePath(webModuleBasePackagePath);
+        Path webAppPropertiesFilePath = getWebAppPropertiesFilePath(webModuleBasePackagePath, webSrcPath);
         if (webAppPropertiesFilePath.toFile().exists()) {
             webAppProperties = propertiesParser.parsePropertiesFile(webAppPropertiesFilePath);
         }
 
-        Path webScreensFilePath = getWebScreensXmlFilePath(webModuleBasePackagePath);
+        Path webScreensFilePath = getWebScreensXmlFilePath(webModuleBasePackagePath, webSrcPath);
 
         ScreensCollector screensCollector = new ScreensCollector();
 
@@ -199,12 +201,19 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
         screenControllerParser.parseJavaFile(filePath);
     }
 
-    protected Path getWebScreensXmlFilePath(Path basePackagePath) {
-        //todo check 'web-screens.xml' location property
-        return Path.of(basePackagePath.toString(), "web-screens.xml");
+    protected Path getWebScreensXmlFilePath(Path basePackagePath, Path webSrcPath) {
+        Path path = Path.of(basePackagePath.toString(), WEB_SCREENS_XML);
+        if (!path.toFile().exists()) {
+            path = Path.of(webSrcPath.toString(), WEB_SCREENS_XML);
+        }
+        return path;
     }
 
-    protected Path getWebAppPropertiesFilePath(Path basePackagePath) {
-        return Path.of(basePackagePath.toString(), "web-app.properties");
+    protected Path getWebAppPropertiesFilePath(Path basePackagePath, Path webSrcPath) {
+        Path path = Path.of(basePackagePath.toString(), WEB_APP_PROPERTIES);
+        if (!path.toFile().exists()) {
+            path = Path.of(webSrcPath.toString(), WEB_APP_PROPERTIES);
+        }
+        return path;
     }
 }
