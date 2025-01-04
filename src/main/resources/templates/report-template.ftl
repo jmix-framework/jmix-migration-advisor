@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html>
 <style>
+    table {
+        border-collapse: collapse;
+    }
     table, th, td {
-        border:1px solid black;
+        border: 1px solid black;
+    }
+    th, td {
+        padding: 2px;
     }
     #total {
         text-align:right;
@@ -45,7 +51,7 @@
           <thead>
             <tr>
                <th>Category</th>
-               <th>Estimation (h)</th>
+               <th>Estimation (man-hours)</th>
             </tr>
           </thead>
           <tbody>
@@ -73,8 +79,8 @@
             <tr>
                <th>Group</th>
                <th>Amount</th>
-               <th>Cost (h)</th>
-               <th>Total (h)</th>
+               <th>Cost (man-hours)</th>
+               <th>Total (man-hours)</th>
             </tr>
           </thead>
           <tbody>
