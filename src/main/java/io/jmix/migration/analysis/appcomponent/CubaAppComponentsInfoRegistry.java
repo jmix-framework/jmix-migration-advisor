@@ -34,7 +34,7 @@ public class CubaAppComponentsInfoRegistry {
                 CubaAppComponentInfo.create("com.haulmont.fts", "Full Text Search", ADDON, FRAMEWORK, "Search add-on has been reworked in Jmix"),
                 CubaAppComponentInfo.create("com.haulmont.addon.maps", "Maps", ADDON, FRAMEWORK, "Available for Jmix"),
                 CubaAppComponentInfo.create("com.haulmont.webdav", "WebDAV", ADDON, FRAMEWORK, "Available for Jmix"),
-                CubaAppComponentInfo.create("com.haulmont.addon.grapesjs", "GrapesJS HTML Editor", ADDON, FRAMEWORK, "Unavailable for Jmix"),
+                CubaAppComponentInfo.create("com.haulmont.addon.grapesjs", "GrapesJS HTML Editor", ADDON, FRAMEWORK, "Available for Jmix"),
                 CubaAppComponentInfo.create("com.haulmont.addon.bproc", "BProc", ADDON, FRAMEWORK, "Available for Jmix"),
                 CubaAppComponentInfo.create("com.haulmont.bpm", "BPM", ADDON, FRAMEWORK, "Legacy business process management add-on. Jmix BPM is similar to CUBA BProc"),
                 CubaAppComponentInfo.create("com.haulmont.addon.restapi", "REST API", ADDON, FRAMEWORK, "Available for Jmix"),
