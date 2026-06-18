@@ -35,11 +35,19 @@ public class CubaAppComponentInfo {
         return appComponentType;
     }
 
+    public String getAppComponentTypeName() {
+        return appComponentType == null ? "" : appComponentType.name();
+    }
+
     public String getNotes() {
         return notes;
     }
 
     public AppComponentOrigin getOrigin() {
         return origin;
+    }
+
+    public String getOriginName() {
+        return origin == null ? "" : origin.name();
     }
 }
