@@ -5,6 +5,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import io.jmix.migration.CliRunner;
+import io.jmix.migration.analysis.appcomponent.AppComponentType;
 import io.jmix.migration.analysis.appcomponent.CubaAppComponentInfo;
 import io.jmix.migration.analysis.issue.uicomponent.UiComponentIssue;
 import io.jmix.migration.analysis.issue.uicomponent.UiComponentIssuesRegistry;
@@ -24,6 +25,9 @@ import static java.time.temporal.ChronoField.MILLI_OF_SECOND;
 
 public class HtmlReportGenerator {
 
+    private static final DateTimeFormatter DISPLAY_DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
     private final UiComponentIssuesRegistry uiComponentIssuesRegistry;
 
     public HtmlReportGenerator(UiComponentIssuesRegistry uiComponentIssuesRegistry) {
@@ -37,15 +41,26 @@ public class HtmlReportGenerator {
         Map<String, Object> data = new HashMap<>();
 
         data.put("projectName", project);
+        data.put("generatedAt", LocalDateTime.now().format(DISPLAY_DATE_FORMATTER));
 
         //Entities amount
         data.put("entitiesAmount", result.getEntitiesAmount());
+        data.put("entitiesPerPersistenceUnit", result.getEntitiesPerPersistenceUnit());
 
         //Screens
         List<ScreenComplexityGroup> complexityGroupRows = createComplexityGroupRows(result);
         data.put("screenComplexityGroups", complexityGroupRows);
         data.put("screensTotalHours", result.getScreensTotalCost());
         data.put("screensTotalAmount", result.getScreensTotalAmount());
+        data.put("screensMaxGroupTotal", complexityGroupRows.stream()
+                .map(ScreenComplexityGroup::getTotal)
+                .max(Comparator.naturalOrder())
+                .orElse(BigDecimal.ZERO));
+
+        //Legacy entity listeners
+        List<String> legacyListeners = result.getLegacyListeners();
+        data.put("legacyListeners", legacyListeners);
+        data.put("legacyListenersAmount", legacyListeners == null ? 0 : legacyListeners.size());
 
         // UI components
         List<UiComponentNotesRow> uiComponentNotesRows = createUiComponentIssuesRows(result);
@@ -54,6 +69,10 @@ public class HtmlReportGenerator {
         //Addons
         List<CubaAppComponentInfo> appComponents = result.getAppComponents();
         data.put("appComponents", appComponents);
+        data.put("appComponentsAmount", appComponents.size());
+        data.put("missingAppComponentsAmount", appComponents.stream()
+                .filter(c -> c.getAppComponentType() == AppComponentType.MISSING)
+                .count());
 
         // General estimations
         List<EstimationItem> estimationItemsRows = createEstimationItemsRows(result);
@@ -66,7 +85,7 @@ public class HtmlReportGenerator {
         data.put("miscNotes", result.getMiscNotes());
 
         // Write to file
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             Template template = configuration.getTemplate("report-template.ftl");
 
             template.process(data, writer);
@@ -81,6 +100,10 @@ public class HtmlReportGenerator {
         configuration.setDefaultEncoding("UTF-8");
         configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         configuration.setLogTemplateExceptions(false);
+        // Render numbers with a dot decimal separator and no grouping (e.g. "1234.5", not "1.234,5"),
+        // independent of the host locale, so values stay clean and safe to embed into inline CSS.
+        configuration.setLocale(Locale.US);
+        configuration.setNumberFormat("0.##");
         configuration.setClassForTemplateLoading(CliRunner.class, "/templates");
         return configuration;
     }
@@ -95,7 +118,7 @@ public class HtmlReportGenerator {
             int amount = screens.size();
             BigDecimal total = cost.multiply(BigDecimal.valueOf(amount));
 
-            ScreenComplexityGroup screenComplexityGroup = new ScreenComplexityGroup(name, order, amount, cost, total);
+            ScreenComplexityGroup screenComplexityGroup = new ScreenComplexityGroup(name, order, amount, cost, total, screens);
             complexityGroupRows.add(screenComplexityGroup);
         }));
         complexityGroupRows.sort(Comparator.comparingInt(ScreenComplexityGroup::getOrder));
@@ -115,7 +138,9 @@ public class HtmlReportGenerator {
                         new UiComponentNotesRow(
                                 issue.getComponent(),
                                 allUiComponents.get(issue.getComponent()),
-                                issue.getNotes()
+                                issue.getNotes(),
+                                issue.getType() == null ? null : issue.getType().name(),
+                                issue.getExtraComplexityScore()
                         )
                 );
             }
