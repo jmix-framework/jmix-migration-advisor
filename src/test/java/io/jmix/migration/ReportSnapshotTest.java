@@ -1,9 +1,9 @@
 package io.jmix.migration;
 
-import io.jmix.migration.analysis.CubaProjectAnalyzer;
-import io.jmix.migration.analysis.HtmlReportGenerator;
-import io.jmix.migration.analysis.issue.uicomponent.UiComponentIssuesRegistry;
-import io.jmix.migration.analysis.model.CubaProjectEstimationResult;
+import io.jmix.migration.cuba.CubaProjectAnalyzer;
+import io.jmix.migration.cuba.HtmlReportGenerator;
+import io.jmix.migration.core.incident.UiComponentIssuesRegistry;
+import io.jmix.migration.cuba.model.CubaProjectEstimationResult;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

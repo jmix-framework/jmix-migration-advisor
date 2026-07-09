@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Registry of classic UI (CUBA / Jmix 1.x) components that are changed, replaced or absent
+    in Jmix Flow UI. Components WITHOUT an entry have a direct Flow UI equivalent.
+
+    Entry attributes:
+      component - exact component name (XML tag in a screen descriptor); mutually exclusive with 'match'
+      match     - prefix pattern for namespaced add-on components, e.g. "chart:*"
+      type      - changed | has-alternative | has-workaround | absent
+                  (see UiComponentIssueType for the exact semantics of each status)
+      score     - extra complexity score added to each screen using the component;
+                  FORBIDDEN for type="absent": such cost is indeterminate and the screen
+                  is escalated as "requires decision" instead of being priced
+
+    Nested elements:
+      notes     - migration note shown in the report (required)
+      requires  - 0..n dependencies of the primary replacement recipe; several elements mean
+                  a conjunction (all are needed). kind: addon | commercial-addon | third-party.
+                  FORBIDDEN for type="absent". The requirement is not strict: a simpler recipe
+                  may work without the dependency; such gradations belong to the notes text.
+-->
+<ui-component-issues>
+    <issue component="appMenu" type="changed" score="3">
+        <notes>Use 'horizontalMenu' (https://docs.jmix.io/jmix/flow-ui/vc/components/horizontalMenu.html)</notes>
+    </issue>
+    <issue component="browserFrame" type="changed" score="1">
+        <notes>Use html 'iframe' (https://docs.jmix.io/jmix/flow-ui/vc/html.html)</notes>
+    </issue>
+    <issue component="bulkEditor" type="changed" score="3">
+        <notes>BulkEditor component is legacy. Add Jmix add-on 'Bulk Editor' and use the 'bulked_edit' action (https://docs.jmix.io/jmix/bulk-edit/index.html)</notes>
+        <requires kind="addon" subject="Bulk Editor (io.jmix.bulkeditor)"/>
+    </issue>
+    <issue component="calendar" type="changed" score="3">
+        <notes>Add Jmix add-on 'Calendar' (jmix-fullcalendar) and use 'calendar' component (https://docs.jmix.io/jmix/calendar/index.html)</notes>
+        <requires kind="addon" subject="Calendar (io.jmix.fullcalendar)"/>
+    </issue>
+    <issue component="capsLockIndicator" type="absent">
+        <notes>Not implemented. No built-in caps lock indicator in Jmix Flow UI; if needed, implement a custom component detecting Caps Lock via client-side JS (KeyboardEvent.getModifierState('CapsLock'))</notes>
+    </issue>
+    <issue component="colorPicker" type="has-alternative" score="1">
+        <notes>No dedicated component. Use html 'input' with type='color' for a native color picker (https://docs.jmix.io/jmix/flow-ui/vc/html.html). The plain tag is not value-source bindable; for data binding wrap it in a small custom component</notes>
+    </issue>
+    <issue component="currencyField" type="has-alternative" score="1">
+        <notes>Use 'textField' with prefix (https://docs.jmix.io/jmix/flow-ui/vc/components/textField.html). But there is no integration with '@CurrencyValue' annotation</notes>
+    </issue>
+    <issue component="datePicker" type="has-alternative" score="2">
+        <notes>CUBA datePicker is an inline (always visible) calendar. Jmix Flow UI 'datePicker' is a popup date input field with the same name but different UX (https://docs.jmix.io/jmix/flow-ui/vc/components/datePicker.html). Use it if a popup field is acceptable; for an always-visible calendar use the Calendar add-on (jmix-fullcalendar) or a custom component</notes>
+    </issue>
+    <issue component="embedded" type="changed" score="2">
+        <notes>Use 'image' for images (https://docs.jmix.io/jmix/flow-ui/vc/html-components/image.html), html 'iframe' for embedded web pages, or 'htmlObject' for embedded objects</notes>
+    </issue>
+    <issue component="fieldGroup" type="changed" score="2">
+        <notes>Use 'formLayout'</notes>
+    </issue>
+    <issue component="fileMultiUploadField" type="changed" score="2">
+        <notes>Use 'upload' with 'MULTI_FILE_*' receiver type (https://docs.jmix.io/jmix/flow-ui/vc/components/upload.html)</notes>
+    </issue>
+    <issue component="groupTable" type="changed" score="3">
+        <notes>Add the commercial 'Grouping Data Grid' add-on (io.jmix.groupgrid, requires Enterprise subscription) and use 'groupDataGrid' (https://docs.jmix.io/jmix/groupdatagrid/index.html)</notes>
+        <requires kind="commercial-addon" subject="Grouping Data Grid (io.jmix.groupgrid)"/>
+    </issue>
+    <issue component="link" type="changed" score="1">
+        <notes>Use html 'anchor' (https://docs.jmix.io/jmix/flow-ui/vc/html.html)</notes>
+    </issue>
+    <issue component="linkButton" type="changed" score="1">
+        <notes>Use 'button' with themeNames="tertiary-inline" for a borderless, link-style button (https://docs.jmix.io/jmix/flow-ui/vc/components/button.html#variants)</notes>
+    </issue>
+    <issue component="lookupField" type="changed" score="1">
+        <notes>Use 'comboBox' for plain values or 'entityComboBox' for entity references (https://docs.jmix.io/jmix/flow-ui/vc/components/comboBox.html)</notes>
+    </issue>
+    <issue component="lookupPickerField" type="changed" score="1">
+        <notes>Use 'entityComboBox' - it combines dropdown selection with picker actions (https://docs.jmix.io/jmix/flow-ui/vc/components/entityComboBox.html)</notes>
+    </issue>
+    <issue component="maskedField" type="has-alternative" score="2">
+        <notes>No built-in masked input. Use the 3rd-party Vaadin 'Input Mask' add-on: apply programmatically via new InputMask("...").extend(field) (~2 lines), or wrap it in a small custom component for declarative XML use (https://demo.jmix.io/ui-samples/sample/input-mask-addon-advanced). For plain character restriction without formatting, use textField 'allowedCharPattern'</notes>
+        <requires kind="third-party" subject="Vaadin 'Input Mask' add-on"/>
+    </issue>
+    <issue component="optionsGroup" type="changed" score="1">
+        <notes>Use 'checkboxGroup' for multi-select or 'radioButtonGroup' for single-select</notes>
+    </issue>
+    <issue component="optionsList" type="changed" score="2">
+        <notes>Use 'listBox' for single selection or 'multiSelectListBox' for multiple selection</notes>
+    </issue>
+    <issue component="pickerField" type="changed" score="1">
+        <notes>Use 'entityPicker' (https://docs.jmix.io/jmix/flow-ui/vc/components/entityPicker.html)</notes>
+    </issue>
+    <issue component="popupButton" type="changed" score="1">
+        <notes>Use 'dropdownButton' (https://docs.jmix.io/jmix/flow-ui/vc/components/dropdownButton.html)</notes>
+    </issue>
+    <issue component="popupView" type="has-workaround" score="5">
+        <notes>No direct equivalent. Open a 'dialog' with custom layout (https://docs.jmix.io/jmix/flow-ui/dialogs.html); 'sideDialog' and 'sidePanelLayout' are additional alternatives</notes>
+    </issue>
+    <issue component="relatedEntities" type="has-workaround" score="5">
+        <notes>Use 'dropdownButton' with manual screen opening action</notes>
+    </issue>
+    <issue component="resizableTextArea" type="has-alternative" score="1">
+        <notes>Use 'textArea' and enable resizing via a CSS class applying the native 'resize' property (https://demo.jmix.io/ui-samples/sample/text-area-resizable). No built-in resizableDirection attribute or resize event</notes>
+    </issue>
+    <issue component="searchPickerField" type="changed" score="2">
+        <notes>Use 'entityComboBox' with nested 'itemsQuery' for query-driven lazy search (also supports picker actions); use 'comboBox' + 'itemsQuery' for non-entity values (https://docs.jmix.io/jmix/flow-ui/vc/components/entityComboBox.html)</notes>
+    </issue>
+    <issue component="sideMenu" type="changed" score="3">
+        <notes>Use 'listMenu'</notes>
+    </issue>
+    <issue component="slider" type="has-alternative" score="2">
+        <notes>Use HTML 'rangeInput' (an &lt;input type='range'&gt; supporting min/max/step/orientation, value type Double) for a basic range/slider input. It is not declaratively bindable to a data container - bind its value to the entity attribute manually in the controller. For a full-featured slider (tooltips, ticks, multiple handles), create a custom component with a 3rd-party JS library</notes>
+    </issue>
+    <issue component="sourceCodeEditor" type="changed" score="2">
+        <notes>Use 'codeEditor' (https://docs.jmix.io/jmix/flow-ui/vc/components/codeEditor.html). Check highlight mode support - the set of supported languages differs</notes>
+    </issue>
+    <issue component="suggestionField" type="changed" score="2">
+        <notes>Use 'comboBox'. It works with suggestion by default for non-entity values. See also its 'itemsQuery' parameter (https://demo.jmix.io/ui-samples/sample/combobox-items-query)</notes>
+    </issue>
+    <issue component="suggestionPickerField" type="changed" score="2">
+        <notes>Use 'entityComboBox' with nested 'itemsQuery' for search-as-you-type entity selection with picker actions (https://docs.jmix.io/jmix/flow-ui/vc/components/entityComboBox.html)</notes>
+    </issue>
+    <issue component="tokenList" type="has-alternative" score="2">
+        <notes>Use 'multiSelectComboBox' (chips), 'multiSelectComboBoxPicker' (with action buttons) or 'multiValuePicker'. Not a 1:1 token control - labels/wrapping differ, treat as an alternative (https://docs.jmix.io/jmix/flow-ui/vc/components/multiSelectComboBox.html)</notes>
+    </issue>
+    <issue component="tree" type="has-alternative" score="3">
+        <notes>No tree component in Jmix Flow UI. Use 'treeDataGrid' with a single column for hierarchical data (https://docs.jmix.io/jmix/flow-ui/vc/components/treeDataGrid.html)</notes>
+    </issue>
+    <issue component="flowBox" type="changed" score="2">
+        <notes>Use 'flexLayout' with flexWrap="WRAP" (https://docs.jmix.io/jmix/flow-ui/vc/layouts/flexLayout.html)</notes>
+    </issue>
+    <issue component="buttonsPanel" type="changed" score="1">
+        <notes>Use 'hbox' with classNames="buttons-panel" (https://docs.jmix.io/jmix/flow-ui/vc/layouts/hbox.html)</notes>
+    </issue>
+    <issue component="cssLayout" type="changed" score="0">
+        <notes>Use 'flexLayout' for a CSS-driven container or 'div' for a plain styled container; CSS styling via 'classNames'/'css' is supported by all layouts (https://docs.jmix.io/jmix/flow-ui/vc/layouts/flexLayout.html)</notes>
+    </issue>
+    <issue component="frame" type="changed" score="5">
+        <notes>Use 'fragment' (https://docs.jmix.io/jmix/flow-ui/fragments/fragments.html)</notes>
+    </issue>
+    <issue component="grid" type="changed" score="2">
+        <notes>Use 'gridLayout' for a 2D grid (https://docs.jmix.io/jmix/flow-ui/vc/layouts/gridLayout.html), or 'formLayout' for a form-like layout</notes>
+    </issue>
+    <issue component="htmlBox" type="has-alternative" score="3">
+        <notes>Use 'html' to render HTML markup as string/CDATA or from a file (https://docs.jmix.io/jmix/flow-ui/vc/components/html.html). It does not support HtmlBoxLayout component 'location' placeholders; re-lay-out nested components with standard layout containers</notes>
+    </issue>
+
+    <!-- Namespaced add-on components: matched by prefix, one entry covers the whole family -->
+    <issue match="chart:*" type="has-alternative" score="5">
+        <notes>CUBA Charts (AmCharts-based) components are replaced by the Jmix Charts add-on (ECharts-based). Chart types and configuration API differ significantly; recreate each chart configuration (https://docs.jmix.io/jmix/charts/index.html)</notes>
+        <requires kind="addon" subject="Charts (jmix-charts)"/>
+    </issue>
+    <issue match="maps:*" type="has-alternative" score="4">
+        <notes>CUBA Maps components are replaced by the Jmix Maps add-on. Layers and configuration API differ; recreate map configuration (https://docs.jmix.io/jmix/maps/index.html)</notes>
+        <requires kind="addon" subject="Maps (jmix-maps)"/>
+    </issue>
+</ui-component-issues>

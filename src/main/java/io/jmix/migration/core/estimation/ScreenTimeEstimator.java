@@ -1,0 +1,34 @@
+package io.jmix.migration.core.estimation;
+
+import io.jmix.migration.core.estimation.ScreenComplexityScore;
+import io.jmix.migration.core.estimation.ThresholdItem;
+import org.apache.commons.lang3.Range;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+public class ScreenTimeEstimator {
+
+    protected final List<? extends ThresholdItem<Integer, BigDecimal>> thresholds;
+
+    public ScreenTimeEstimator(List<? extends ThresholdItem<Integer, BigDecimal>> thresholds) {
+        this.thresholds = thresholds;
+    }
+
+    public ThresholdItem<Integer, BigDecimal> estimate(ScreenComplexityScore score) {
+        int value = adjustValue(score.getValue());
+
+        return thresholds.stream()
+                .filter(item -> {
+                    Range<Integer> thresholdRange = item.getThresholdRange();
+                    return thresholdRange.contains(value);
+                })
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No range found for score " + score.getValue()));
+    }
+
+    protected int adjustValue(int value) {
+        //todo possible reduce value by some "default complexity".
+        return value;
+    }
+}

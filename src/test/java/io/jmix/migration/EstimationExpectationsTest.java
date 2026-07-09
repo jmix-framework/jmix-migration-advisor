@@ -1,7 +1,7 @@
 package io.jmix.migration;
 
-import io.jmix.migration.analysis.CubaProjectAnalyzer;
-import io.jmix.migration.analysis.model.CubaProjectEstimationResult;
+import io.jmix.migration.cuba.CubaProjectAnalyzer;
+import io.jmix.migration.cuba.model.CubaProjectEstimationResult;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

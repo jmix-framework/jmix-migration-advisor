@@ -40,12 +40,253 @@
   </#switch>
   <span class="badge ${cls}" title="${req.subject}">${label}</span>
 </#macro>
+
+<#-- ============ Section macros: one per ReportSection type ============ -->
+
+<#macro overviewSection s>
+    <section id="${s.id}">
+      <h2>${s.title}</h2>
+      <div class="cards">
+        <#list s.kpis as kpi>
+        <div class="card<#if kpi.accent> accent</#if>">
+          <div class="label">${kpi.label}</div>
+          <div class="num">${kpi.value}</div>
+          <#if kpi.sub??><div class="sub">${kpi.sub}</div></#if>
+        </div>
+        </#list>
+      </div>
+      <div class="callout" style="margin-top:18px">
+        ${s.disclaimer}
+      </div>
+    </section>
+</#macro>
+
+<#macro estimationsSection s>
+    <section id="${s.id}">
+      <h2>${s.title} <span class="count">${s.total} man-hours total</span></h2>
+      <div class="stack" role="img" aria-label="Effort distribution by category">
+        <#list s.rows as row>
+          <span class="seg-${row?index % 4 + 1}" style="flex-grow:${row.hours?c}" title="${row.category}: ${row.hours} h"></span>
+        </#list>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Category</th><th class="num">Man-hours</th><th class="num">Share</th></tr></thead>
+          <tbody>
+            <#list s.rows as row>
+              <tr>
+                <td><span class="swatch seg-${row?index % 4 + 1}"></span>${row.category}</td>
+                <td class="num">${row.hours}</td>
+                <td class="num"><#if (s.total > 0)>${(row.hours * 100 / s.total)?string("0")}%<#else>—</#if></td>
+              </tr>
+            </#list>
+          </tbody>
+          <tfoot><tr><th>Total</th><td class="num">${s.total}</td><td class="num">100%</td></tr></tfoot>
+        </table>
+      </div>
+    </section>
+</#macro>
+
+<#macro complexitySection s>
+    <section id="${s.id}">
+      <h2>${s.title} <span class="count">${s.totalAmount} screens · ${s.totalHours} man-hours</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Group</th><th class="num">Screens</th><th class="num">Cost, h</th><th class="num">Total, h</th><th>Weight</th></tr></thead>
+          <tbody>
+            <#list s.groups as group>
+              <tr>
+                <td>
+                  ${group.name}
+                  <#if group.screens?has_content>
+                    <details>
+                      <summary>${group.screens?size} screen<#if group.screens?size != 1>s</#if></summary>
+                      <div class="drill"><#list group.screens as screenName><span class="mono">${screenName}</span></#list></div>
+                    </details>
+                  </#if>
+                </td>
+                <td class="num">${group.amount}</td>
+                <td class="num">${group.cost}</td>
+                <td class="num">${group.total}</td>
+                <td>
+                  <#assign wpct = 0>
+                  <#if (s.maxGroupTotal > 0)><#assign wpct = (group.total * 100 / s.maxGroupTotal)></#if>
+                  <div class="minibar" title="${group.total} h"><span style="width:${wpct?string("0.#")}%"></span></div>
+                </td>
+              </tr>
+            </#list>
+          </tbody>
+          <tfoot><tr><th>Total</th><td class="num">${s.totalAmount}</td><td></td><td class="num">${s.totalHours}</td><td></td></tr></tfoot>
+        </table>
+      </div>
+      <#if s.requiresDecision?has_content>
+      <div class="callout" style="margin-top:14px">
+        <strong>Requires decision:</strong> ${s.requiresDecision?size} screen<#if s.requiresDecision?size != 1>s</#if>
+        contain<#if s.requiresDecision?size == 1>s</#if> components with no Jmix equivalent (marked "Absent").
+        The replacement cost of such components is not included in the estimations above: decide per screen whether
+        to drop the functionality, redesign it, or build a custom component.
+        <details>
+          <summary>Show screens</summary>
+          <div class="drill">
+            <#list s.requiresDecision as screenName, components>
+              <span class="mono">${screenName}: ${components?join(", ")}</span>
+            </#list>
+          </div>
+        </details>
+      </div>
+      </#if>
+    </section>
+</#macro>
+
+<#macro uiComponentsSection s>
+    <section id="${s.id}">
+      <h2>${s.title} <span class="count">${s.rows?size} noted</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Component</th><th class="num">Used</th><th>Status</th><th>Notes</th></tr></thead>
+          <tbody>
+            <#if s.rows?has_content>
+              <#list s.rows as note>
+                <tr>
+                  <td><code>${note.name}</code><#if (note.extraComplexityScore > 0)> <span class="chip" title="extra complexity score">+${note.extraComplexityScore}</span></#if></td>
+                  <td class="num">${note.amount}</td>
+                  <td>
+                    <#if note.typeName??><@badge note.typeName "uiType"/></#if>
+                    <#list note.requires as req> <@requiresBadge req/></#list>
+                  </td>
+                  <td>${note.notes}</td>
+                </tr>
+              </#list>
+            <#else>
+              <tr><td colspan="4" class="empty">No noteworthy UI components found.</td></tr>
+            </#if>
+          </tbody>
+        </table>
+      </div>
+      <div class="legend">
+        <span><span class="badge ok">Changed</span> direct analog with renames or minor differences; mechanical XML/code edit</span>
+        <span><span class="badge info">Has alternative</span> a different ready-made component achieves the same or similar result</span>
+        <span><span class="badge warn">Has workaround</span> achievable partially or with custom glue code following a known recipe</span>
+        <span><span class="badge bad">Absent</span> no recipe: drop the functionality, redesign, or build from scratch (not included in complexity scores)</span>
+        <span><span class="chip">+N</span> extra complexity score added to each screen using the component</span>
+        <span class="note">Components not listed here have a direct Jmix equivalent. Dependency badges (Add-on, Commercial add-on, 3rd-party) refer to the primary replacement recipe; simpler fallbacks, if any, are described in the notes.</span>
+      </div>
+    </section>
+</#macro>
+
+<#macro appComponentsSection s>
+    <section id="${s.id}">
+      <h2>${s.title} <span class="count">${s.rows?size} found</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Type</th><th>Origin</th><th>Notes</th></tr></thead>
+          <tbody>
+            <#if s.rows?has_content>
+              <#list s.rows as appComponent>
+                <tr>
+                  <td>${appComponent.name}<#if appComponent.packageName?? && appComponent.packageName != appComponent.name><br><span class="chip">${appComponent.packageName}</span></#if></td>
+                  <td><@badge appComponent.typeName "compType"/></td>
+                  <td><@badge appComponent.originName "origin"/></td>
+                  <td>${appComponent.notes}</td>
+                </tr>
+              </#list>
+            <#else>
+              <tr><td colspan="4" class="empty">No application components detected.</td></tr>
+            </#if>
+          </tbody>
+        </table>
+      </div>
+    </section>
+</#macro>
+
+<#macro dataModelSection s>
+    <section id="${s.id}">
+      <h2>${s.title} <span class="count">${s.entitiesAmount} entities</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Persistence unit</th><th class="num">Entities</th></tr></thead>
+          <tbody>
+            <#if s.entitiesPerUnit?? && s.entitiesPerUnit?size gt 0>
+              <#list s.entitiesPerUnit as unit, entities>
+                <tr>
+                  <td>
+                    <code>${unit}</code>
+                    <#if entities?has_content>
+                      <details>
+                        <summary>${entities?size} entit<#if entities?size != 1>ies<#else>y</#if></summary>
+                        <div class="drill"><#list entities as ent><span class="mono">${ent}</span></#list></div>
+                      </details>
+                    </#if>
+                  </td>
+                  <td class="num">${entities?size}</td>
+                </tr>
+              </#list>
+            <#else>
+              <tr><td colspan="2" class="empty">No persistence units detected.</td></tr>
+            </#if>
+          </tbody>
+        </table>
+      </div>
+      <#if s.legacyListeners?has_content>
+        <details style="margin-top:14px">
+          <summary>${s.legacyListeners?size} legacy entity listener<#if s.legacyListeners?size != 1>s</#if></summary>
+          <div class="drill"><#list s.legacyListeners as listener><span class="mono">${listener}</span></#list></div>
+        </details>
+      </#if>
+    </section>
+</#macro>
+
+<#macro notesSection s>
+    <section id="${s.id}">
+      <h2>${s.title} <span class="count">${s.rows?size}</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Item</th><th>Notes</th></tr></thead>
+          <tbody>
+            <#if s.rows?has_content>
+              <#list s.rows as row>
+                <tr>
+                  <td>${row.name}<#if row.code?? && row.code?length gt 0><br><span class="chip">${row.code}</span></#if></td>
+                  <td>${row.notes}</td>
+                </tr>
+              </#list>
+            <#else>
+              <tr><td colspan="2" class="empty">Nothing to report.</td></tr>
+            </#if>
+          </tbody>
+        </table>
+      </div>
+    </section>
+</#macro>
+
+<#macro unparsedSection s>
+    <section id="${s.id}">
+      <h2>${s.title} <span class="count">${s.files?size} file<#if s.files?size != 1>s</#if></span></h2>
+      <div class="callout" style="margin-bottom:14px">
+        These files could not be parsed and are excluded from all metrics and estimations,
+        so the numbers above are underestimated. Review the files manually.
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>File</th><th>Reason</th></tr></thead>
+          <tbody>
+            <#list s.files as unparsedFile>
+              <tr>
+                <td><span class="mono">${unparsedFile.path}</span></td>
+                <td>${unparsedFile.reason}</td>
+              </tr>
+            </#list>
+          </tbody>
+        </table>
+      </div>
+    </section>
+</#macro>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Migration report — ${projectName}</title>
+<title>Migration report — ${model.projectName}</title>
 <style>
   :root {
     color-scheme: light dark;
@@ -198,8 +439,8 @@
 
 <header class="hero">
   <div class="inner">
-    <div class="eyebrow">CUBA → Jmix migration report</div>
-    <h1>${projectName}</h1>
+    <div class="eyebrow">${model.reportTitle}</div>
+    <h1>${model.projectName}</h1>
     <div class="meta">Generated ${generatedAt} · rough lower-bound estimate</div>
   </div>
 </header>
@@ -209,257 +450,23 @@
 <div class="layout">
   <nav class="toc">
     <div class="toc-title">Sections</div>
-    <a href="#overview">Overview</a>
-    <a href="#estimations">Estimations</a>
-    <a href="#screens">Screens complexity</a>
-    <a href="#ui">UI components</a>
-    <a href="#app-components">App components</a>
-    <a href="#data-model">Data model</a>
-    <a href="#misc">Misc notes</a>
-    <#if unparsedFiles?has_content><a href="#unparsed">Not analyzed</a></#if>
+    <#list model.sections as s><a href="#${s.id}">${s.title}</a>
+    </#list>
   </nav>
 
   <main>
-    <section id="overview">
-      <h2>Overview</h2>
-      <div class="cards">
-        <div class="card accent">
-          <div class="label">Total effort</div>
-          <div class="num">${totalEstimation}</div>
-          <div class="sub">man-hours (lower bound)</div>
-        </div>
-        <div class="card">
-          <div class="label">Entities</div>
-          <div class="num">${entitiesAmount}</div>
-        </div>
-        <div class="card">
-          <div class="label">Screens</div>
-          <div class="num">${screensTotalAmount}</div>
-          <div class="sub">${screensTotalHours} man-hours</div>
-        </div>
-        <div class="card">
-          <div class="label">App components</div>
-          <div class="num">${appComponentsAmount}</div>
-          <div class="sub"><#if (missingAppComponentsAmount > 0)>${missingAppComponentsAmount} without Jmix data<#else>all recognized</#if></div>
-        </div>
-        <div class="card">
-          <div class="label">Legacy listeners</div>
-          <div class="num">${legacyListenersAmount}</div>
-        </div>
-      </div>
-      <div class="callout" style="margin-top:18px">
-        This is not a comprehensive estimation. Some aspects cannot be evaluated automatically and need manual analysis — treat the numbers as a rough lower-range estimate. Analysis of Kotlin classes is not supported.
-      </div>
-    </section>
-
-    <section id="estimations">
-      <h2>Estimations <span class="count">${totalEstimation} man-hours total</span></h2>
-      <div class="stack" role="img" aria-label="Effort distribution by category">
-        <#list estimationItems as e>
-          <span class="seg-${e?index % 4 + 1}" style="flex-grow:${e.estimation?c}" title="${e.category}: ${e.estimation} h"></span>
-        </#list>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Category</th><th class="num">Man-hours</th><th class="num">Share</th></tr></thead>
-          <tbody>
-            <#list estimationItems as e>
-              <tr>
-                <td><span class="swatch seg-${e?index % 4 + 1}"></span>${e.category}</td>
-                <td class="num">${e.estimation}</td>
-                <td class="num"><#if (totalEstimation > 0)>${(e.estimation * 100 / totalEstimation)?string("0")}%<#else>—</#if></td>
-              </tr>
-            </#list>
-          </tbody>
-          <tfoot><tr><th>Total</th><td class="num">${totalEstimation}</td><td class="num">100%</td></tr></tfoot>
-        </table>
-      </div>
-    </section>
-
-    <section id="screens">
-      <h2>Screens complexity <span class="count">${screensTotalAmount} screens · ${screensTotalHours} man-hours</span></h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Group</th><th class="num">Screens</th><th class="num">Cost, h</th><th class="num">Total, h</th><th>Weight</th></tr></thead>
-          <tbody>
-            <#list screenComplexityGroups as group>
-              <tr>
-                <td>
-                  ${group.name}
-                  <#if group.screens?has_content>
-                    <details>
-                      <summary>${group.screens?size} screen<#if group.screens?size != 1>s</#if></summary>
-                      <div class="drill"><#list group.screens as s><span class="mono">${s}</span></#list></div>
-                    </details>
-                  </#if>
-                </td>
-                <td class="num">${group.amount}</td>
-                <td class="num">${group.cost}</td>
-                <td class="num">${group.total}</td>
-                <td>
-                  <#assign wpct = 0>
-                  <#if (screensMaxGroupTotal > 0)><#assign wpct = (group.total * 100 / screensMaxGroupTotal)></#if>
-                  <div class="minibar" title="${group.total} h"><span style="width:${wpct?string("0.#")}%"></span></div>
-                </td>
-              </tr>
-            </#list>
-          </tbody>
-          <tfoot><tr><th>Total</th><td class="num">${screensTotalAmount}</td><td></td><td class="num">${screensTotalHours}</td><td></td></tr></tfoot>
-        </table>
-      </div>
-      <#if screensRequireDecision?has_content>
-      <div class="callout" style="margin-top:14px">
-        <strong>Requires decision:</strong> ${screensRequireDecision?size} screen<#if screensRequireDecision?size != 1>s</#if>
-        contain<#if screensRequireDecision?size == 1>s</#if> components with no Jmix equivalent (marked "Absent").
-        The replacement cost of such components is not included in the estimations above: decide per screen whether
-        to drop the functionality, redesign it, or build a custom component.
-        <details>
-          <summary>Show screens</summary>
-          <div class="drill">
-            <#list screensRequireDecision as screenName, components>
-              <span class="mono">${screenName}: ${components?join(", ")}</span>
-            </#list>
-          </div>
-        </details>
-      </div>
-      </#if>
-    </section>
-
-    <section id="ui">
-      <h2>UI components <span class="count">${uiComponentNotes?size} noted</span></h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Component</th><th class="num">Used</th><th>Status</th><th>Notes</th></tr></thead>
-          <tbody>
-            <#if uiComponentNotes?has_content>
-              <#list uiComponentNotes as note>
-                <tr>
-                  <td><code>${note.name}</code><#if (note.extraComplexityScore > 0)> <span class="chip" title="extra complexity score">+${note.extraComplexityScore}</span></#if></td>
-                  <td class="num">${note.amount}</td>
-                  <td>
-                    <#if note.type??><@badge note.type "uiType"/></#if>
-                    <#list note.requires as req> <@requiresBadge req/></#list>
-                  </td>
-                  <td>${note.notes}</td>
-                </tr>
-              </#list>
-            <#else>
-              <tr><td colspan="4" class="empty">No noteworthy UI components found.</td></tr>
-            </#if>
-          </tbody>
-        </table>
-      </div>
-      <div class="legend">
-        <span><span class="badge ok">Changed</span> direct analog with renames or minor differences; mechanical XML/code edit</span>
-        <span><span class="badge info">Has alternative</span> a different ready-made component achieves the same or similar result</span>
-        <span><span class="badge warn">Has workaround</span> achievable partially or with custom glue code following a known recipe</span>
-        <span><span class="badge bad">Absent</span> no recipe: drop the functionality, redesign, or build from scratch (not included in complexity scores)</span>
-        <span><span class="chip">+N</span> extra complexity score added to each screen using the component</span>
-        <span class="note">Components not listed here have a direct Jmix equivalent. Dependency badges (Add-on, Commercial add-on, 3rd-party) refer to the primary replacement recipe; simpler fallbacks, if any, are described in the notes.</span>
-      </div>
-    </section>
-
-    <section id="app-components">
-      <h2>App components <span class="count">${appComponentsAmount} found</span></h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Name</th><th>Type</th><th>Origin</th><th>Notes</th></tr></thead>
-          <tbody>
-            <#if appComponents?has_content>
-              <#list appComponents as appComponent>
-                <tr>
-                  <td>${appComponent.name}<#if appComponent.appComponentPackage?? && appComponent.appComponentPackage != appComponent.name><br><span class="chip">${appComponent.appComponentPackage}</span></#if></td>
-                  <td><@badge appComponent.appComponentTypeName "compType"/></td>
-                  <td><@badge appComponent.originName "origin"/></td>
-                  <td>${appComponent.notes}</td>
-                </tr>
-              </#list>
-            <#else>
-              <tr><td colspan="4" class="empty">No application components detected.</td></tr>
-            </#if>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section id="data-model">
-      <h2>Data model <span class="count">${entitiesAmount} entities</span></h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Persistence unit</th><th class="num">Entities</th></tr></thead>
-          <tbody>
-            <#if entitiesPerPersistenceUnit?? && entitiesPerPersistenceUnit?size gt 0>
-              <#list entitiesPerPersistenceUnit as unit, entities>
-                <tr>
-                  <td>
-                    <code>${unit}</code>
-                    <#if entities?has_content>
-                      <details>
-                        <summary>${entities?size} entit<#if entities?size != 1>ies<#else>y</#if></summary>
-                        <div class="drill"><#list entities as ent><span class="mono">${ent}</span></#list></div>
-                      </details>
-                    </#if>
-                  </td>
-                  <td class="num">${entities?size}</td>
-                </tr>
-              </#list>
-            <#else>
-              <tr><td colspan="2" class="empty">No persistence units detected.</td></tr>
-            </#if>
-          </tbody>
-        </table>
-      </div>
-      <#if legacyListeners?has_content>
-        <details style="margin-top:14px">
-          <summary>${legacyListenersAmount} legacy entity listener<#if legacyListenersAmount != 1>s</#if></summary>
-          <div class="drill"><#list legacyListeners as l><span class="mono">${l}</span></#list></div>
-        </details>
-      </#if>
-    </section>
-
-    <section id="misc">
-      <h2>Misc notes <span class="count">${miscNotes?size}</span></h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Item</th><th>Notes</th></tr></thead>
-          <tbody>
-            <#if miscNotes?has_content>
-              <#list miscNotes as row>
-                <tr>
-                  <td>${row.name}<#if row.code?? && row.code?length gt 0><br><span class="chip">${row.code}</span></#if></td>
-                  <td>${row.notes}</td>
-                </tr>
-              </#list>
-            <#else>
-              <tr><td colspan="2" class="empty">Nothing to report.</td></tr>
-            </#if>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <#if unparsedFiles?has_content>
-    <section id="unparsed">
-      <h2>Not analyzed <span class="count">${unparsedFiles?size} file<#if unparsedFiles?size != 1>s</#if></span></h2>
-      <div class="callout" style="margin-bottom:14px">
-        These files could not be parsed and are excluded from all metrics and estimations,
-        so the numbers above are underestimated. Review the files manually.
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>File</th><th>Reason</th></tr></thead>
-          <tbody>
-            <#list unparsedFiles as unparsedFile>
-              <tr>
-                <td><span class="mono">${unparsedFile.path}</span></td>
-                <td>${unparsedFile.reason}</td>
-              </tr>
-            </#list>
-          </tbody>
-        </table>
-      </div>
-    </section>
-    </#if>
+    <#list model.sections as s>
+      <#switch s.type>
+        <#case "overview"><@overviewSection s/><#break>
+        <#case "estimations"><@estimationsSection s/><#break>
+        <#case "complexity"><@complexitySection s/><#break>
+        <#case "ui-components"><@uiComponentsSection s/><#break>
+        <#case "app-components"><@appComponentsSection s/><#break>
+        <#case "data-model"><@dataModelSection s/><#break>
+        <#case "notes"><@notesSection s/><#break>
+        <#case "unparsed"><@unparsedSection s/><#break>
+      </#switch>
+    </#list>
   </main>
 </div>
 

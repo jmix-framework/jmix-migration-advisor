@@ -70,7 +70,7 @@ Contains miscellaneous notes about CUBA project functionality that should be tak
 
 ## Estimation Data
 
-Estimation weights for different metrics are stored in [estimation-data.xml](src/main/resources/estimation/estimation-data.xml). Description of metrics can be found in the file.
+Estimation weights for different metrics are stored in [estimation-data-cuba.xml](src/main/resources/estimation/estimation-data-cuba.xml). Description of metrics can be found in the file.
 
 You can adjust the values by copying the file, changing values and providing new file via `--estimation-data-file` command option.
 
