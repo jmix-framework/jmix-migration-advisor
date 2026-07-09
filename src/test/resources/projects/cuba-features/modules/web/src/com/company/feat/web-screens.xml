@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<screen-config>
+    <screen id="feat_Customer.lookup" template="/com/company/feat/web/screens/customer/legacy-customer-browse.xml"/>
+    <include file="/com/company/feat/web/screens/more-screens.xml"/>
+</screen-config>

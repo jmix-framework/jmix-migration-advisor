@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,6 +35,7 @@ public class CubaProjectAnalyzer {
     public static final String GLOBAL_MODULE_DIR = "global";
     public static final String WEB_MODULE_DIR = "web";
     public static final String GUI_MODULE_DIR = "gui";
+    public static final String WEB_TOOLKIT_MODULE_DIR = "web-toolkit";
     public static final String SRC_DIR = "src";
 
     private final EstimationDataProvider estimationDataProvider;
@@ -98,15 +100,18 @@ public class CubaProjectAnalyzer {
         UiModulesAnalyzer uiModulesAnalyzer = new UiModulesAnalyzer(webSrcPath, guiSrcPath, basePackage, unparsedFilesCollector);
         UiModulesAnalysisResult uiModulesAnalysisResult = uiModulesAnalyzer.analyzeUiModules();
 
+        boolean webToolkitModulePresent = Files.isDirectory(projectPath.resolve(MODULES_DIR).resolve(WEB_TOOLKIT_MODULE_DIR));
+
         return estimateProject(
                 coreModuleAnalysisResult, globalModuleAnalysisResult, uiModulesAnalysisResult,
-                unparsedFilesCollector.getEntries());
+                unparsedFilesCollector.getEntries(), webToolkitModulePresent);
     }
 
     protected CubaProjectEstimationResult estimateProject(CoreModuleAnalysisResult coreModuleAnalysisResult,
                                                           GlobalModuleAnalysisResult globalModuleAnalysisResult,
                                                           UiModulesAnalysisResult uiModulesAnalysisResult,
-                                                          List<UnparsedFileEntry> unparsedFiles) {
+                                                          List<UnparsedFileEntry> unparsedFiles,
+                                                          boolean webToolkitModulePresent) {
         ScreensCollector screensCollector = uiModulesAnalysisResult.getScreensCollector();
         Map<String, ScreenComplexityScore> screenScores = screenEstimator.estimate(screensCollector);
         Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerComplexity = new HashMap<>();
@@ -154,6 +159,9 @@ public class CubaProjectAnalyzer {
             if (foldersPaneEnabled) {
                 miscNotes.add(MiscNotes.folderPaneEnabled());
             }
+        }
+        if (webToolkitModulePresent) {
+            miscNotes.add(MiscNotes.customWidgetsModule());
         }
 
         CubaProjectEstimationResult.Builder resultBuilder = CubaProjectEstimationResult.builder();

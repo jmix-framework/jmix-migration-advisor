@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd" caption="msg://editorCaption">
+    <data>
+        <instance id="customerDc" class="com.company.feat.entity.Customer">
+            <loader id="customerDl">
+                <query>select c from feat_Customer c where c.id = :id</query>
+            </loader>
+            <collection id="ordersDc" property="orders"/>
+        </instance>
+    </data>
+    <facets>
+        <timer id="refreshTimer" delay="5000"/>
+        <screenSettings id="settingsFacet" auto="true"/>
+    </facets>
+    <layout>
+        <fieldGroup id="fieldGroup" datasource="customerDc"/>
+        <tabSheet id="tabs">
+            <tab id="mainTab" caption="Основное">
+                <suggestionField id="citySuggestion"/>
+            </tab>
+            <tab id="extraTab" caption="Дополнительно">
+                <popupView id="quickView"/>
+            </tab>
+        </tabSheet>
+    </layout>
+</window>

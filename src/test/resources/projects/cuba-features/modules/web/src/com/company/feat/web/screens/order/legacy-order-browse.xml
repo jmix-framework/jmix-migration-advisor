@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window class="com.company.feat.web.screens.order.LegacyOrderBrowse" caption="Заказы">
+    <dsContext>
+        <groupDatasource id="ordersDs" class="com.company.feat.entity.Order">
+            <query>select o from feat_Order o</query>
+        </groupDatasource>
+    </dsContext>
+    <layout>
+        <groupTable id="ordersTable">
+            <buttonsPanel id="buttonsPanel">
+                <button id="createBtn"/>
+            </buttonsPanel>
+            <columns>
+                <column id="number"/>
+            </columns>
+        </groupTable>
+        <calendar id="deliveryCalendar"/>
+        <grid id="detailsGrid">
+            <rows>
+                <row>
+                    <maskedField id="phoneField"/>
+                    <tokenList id="tagsList"/>
+                </row>
+            </rows>
+        </grid>
+    </layout>
+</window>

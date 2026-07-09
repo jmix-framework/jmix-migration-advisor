@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<screen-config>
+    <screen id="feat_Order.browse" template="/com/company/feat/web/screens/order/legacy-order-browse.xml"/>
+    <screen id="feat_ОтчётПродаж" template="/com/company/feat/web/screens/order/sales-report-screen.xml"/>
+</screen-config>

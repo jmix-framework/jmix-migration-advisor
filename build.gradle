@@ -38,6 +38,8 @@ tasks.withType(JavaCompile).configureEach {
 
 test {
     useJUnitPlatform()
+    // Regenerate snapshot goldens with: ./gradlew test -Dsnapshot.update=true
+    systemProperty 'snapshot.update', System.getProperty('snapshot.update', 'false')
 }
 
 def toolDir = "migration-advisor-${project.property('version')}"

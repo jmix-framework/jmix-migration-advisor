@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd" caption="Shared">
+    <layout>
+        <htmlBox id="banner"/>
+        <slider id="amountSlider"/>
+    </layout>
+</window>

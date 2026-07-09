@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<screen-config>
+    <screen id="synth_legacy&lt;script&gt;alert(1)&lt;/script&gt;" template="/com/company/synth/screens/legacy-screen.xml"/>
+    <include file="/com/company/synth/screens-included.xml"/>
+    <include file="/com/company/synth/screens-common.xml"/>
+</screen-config>
