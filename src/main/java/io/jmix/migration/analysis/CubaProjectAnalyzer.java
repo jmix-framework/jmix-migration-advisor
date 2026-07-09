@@ -60,6 +60,15 @@ public class CubaProjectAnalyzer {
     }
 
     public void analyzeProject(String projectPathString, String basePackage) {
+        CubaProjectEstimationResult result = analyzeProjectToResult(projectPathString, basePackage);
+        reportGenerator.generateHtmlReport(projectPathString, result);
+    }
+
+    /**
+     * Analysis without report generation. Separated so tests can inspect the result
+     * and render the report to a string.
+     */
+    public CubaProjectEstimationResult analyzeProjectToResult(String projectPathString, String basePackage) {
         if (StringUtils.isBlank(projectPathString)) {
             throw new RuntimeException("No project path is specified");
         }
@@ -68,44 +77,53 @@ public class CubaProjectAnalyzer {
         log.info("Start project analysis");
         log.info("Project path = '{}', Base package = '{}'", projectPath, basePackage);
 
+        UnparsedFilesCollector unparsedFilesCollector = new UnparsedFilesCollector();
+
         // Core module
         Path coreRootPath = projectPath.resolve(MODULES_DIR).resolve(CORE_MODULE_DIR);
         Path coreSrcPath = coreRootPath.resolve(SRC_DIR);
-        CoreModuleAnalyzer coreModuleAnalyzer = new CoreModuleAnalyzer(coreRootPath, coreSrcPath, basePackage);
+        CoreModuleAnalyzer coreModuleAnalyzer = new CoreModuleAnalyzer(coreRootPath, coreSrcPath, basePackage, unparsedFilesCollector);
         CoreModuleAnalysisResult coreModuleAnalysisResult = coreModuleAnalyzer.analyzeCoreModule();
 
         // Global module
         Path globalRootPath = projectPath.resolve(MODULES_DIR).resolve(GLOBAL_MODULE_DIR);
         Path globalSrcPath = globalRootPath.resolve(SRC_DIR);
-        GlobalModuleAnalyzer globalModuleAnalyzer = new GlobalModuleAnalyzer(globalSrcPath, basePackage);
+        GlobalModuleAnalyzer globalModuleAnalyzer = new GlobalModuleAnalyzer(globalSrcPath, basePackage, unparsedFilesCollector);
         GlobalModuleAnalysisResult globalModuleAnalysisResult = globalModuleAnalyzer.analyzeGlobalModule();
 
 
         // UI modules
         Path webSrcPath = projectPath.resolve(MODULES_DIR).resolve(WEB_MODULE_DIR).resolve(SRC_DIR);
         Path guiSrcPath = projectPath.resolve(MODULES_DIR).resolve(GUI_MODULE_DIR).resolve(SRC_DIR);
-        UiModulesAnalyzer uiModulesAnalyzer = new UiModulesAnalyzer(webSrcPath, guiSrcPath, basePackage);
+        UiModulesAnalyzer uiModulesAnalyzer = new UiModulesAnalyzer(webSrcPath, guiSrcPath, basePackage, unparsedFilesCollector);
         UiModulesAnalysisResult uiModulesAnalysisResult = uiModulesAnalyzer.analyzeUiModules();
 
-        CubaProjectEstimationResult cubaProjectEstimationResult = estimateProject(coreModuleAnalysisResult, globalModuleAnalysisResult, uiModulesAnalysisResult);
-        reportGenerator.generateHtmlReport(projectPathString, cubaProjectEstimationResult);
+        return estimateProject(
+                coreModuleAnalysisResult, globalModuleAnalysisResult, uiModulesAnalysisResult,
+                unparsedFilesCollector.getEntries());
     }
 
     protected CubaProjectEstimationResult estimateProject(CoreModuleAnalysisResult coreModuleAnalysisResult,
                                                           GlobalModuleAnalysisResult globalModuleAnalysisResult,
-                                                          UiModulesAnalysisResult uiModulesAnalysisResult) {
+                                                          UiModulesAnalysisResult uiModulesAnalysisResult,
+                                                          List<UnparsedFileEntry> unparsedFiles) {
         ScreensCollector screensCollector = uiModulesAnalysisResult.getScreensCollector();
         Map<String, ScreenComplexityScore> screenScores = screenEstimator.estimate(screensCollector);
         Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerComplexity = new HashMap<>();
-        BigDecimal screenSumHours = screenScores.entrySet().stream().map(entry -> {
+        Map<String, List<String>> screensRequireDecision = new TreeMap<>();
+        BigDecimal screenSumHours = BigDecimal.ZERO;
+        for (Map.Entry<String, ScreenComplexityScore> entry : screenScores.entrySet()) {
             String name = entry.getKey();
             ScreenComplexityScore score = entry.getValue();
             ThresholdItem<Integer, BigDecimal> complexityThreshold = screenTimeEstimator.estimate(score);
 
-            List<String> screensInGroup = screensPerComplexity.computeIfAbsent(complexityThreshold, key -> new ArrayList<>());
-            screensInGroup.add(name);
-            return complexityThreshold.getOutputValue();
-        }).reduce(BigDecimal::add).orElse(new BigDecimal("0"));
+            screensPerComplexity.computeIfAbsent(complexityThreshold, key -> new ArrayList<>()).add(name);
+            screenSumHours = screenSumHours.add(complexityThreshold.getOutputValue());
+
+            if (!score.getAbsentComponents().isEmpty()) {
+                screensRequireDecision.put(name, new ArrayList<>(score.getAbsentComponents()));
+            }
+        }
 
         NumericMetric legacyListenersAmountMetric = globalModuleAnalysisResult.getLegacyListenersAmount();
         NumericMetricRule legacyListenersAmountMetricRule = numericMetricRules.get(legacyListenersAmountMetric.getCode());
@@ -150,6 +168,8 @@ public class CubaProjectAnalyzer {
                 .setScreensTotalCost(screenSumHours)
                 .setAppComponents(appComponents)
                 .setMiscNotes(miscNotes)
+                .setScreensRequireDecision(screensRequireDecision)
+                .setUnparsedFiles(unparsedFiles)
                 .build();
     }
 
@@ -161,7 +181,7 @@ public class CubaProjectAnalyzer {
         Map<String, Integer> totalUiComponents = new HashMap<>();
         Map<String, Integer> totalFacets = new HashMap<>();
 
-        Collection<ScreenInfo> screenInfos = screensCollector.getScreensByDescriptors().values();
+        Collection<ScreenInfo> screenInfos = screensCollector.getAllScreens();
         screenInfos.forEach(screenInfo -> {
             List<Facet> facets = screenInfo.getFacets();
             if (facets != null) {

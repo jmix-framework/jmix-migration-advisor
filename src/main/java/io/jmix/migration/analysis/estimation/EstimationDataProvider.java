@@ -103,8 +103,10 @@ public class EstimationDataProvider {
 
         Element externalFileElement = null;
         if (StringUtils.isNotEmpty(externalFileName)) {
+            // The file is explicitly requested by the user: failing to load it must abort the run
+            // instead of silently producing a report based on default weights
             File externalFile = new File(externalFileName);
-            externalFileElement = loadDataFile(externalFile, false);
+            externalFileElement = loadDataFile(externalFile, true);
         }
 
         Element defaultFileElement = loadDataFile(defaultFileResourceStream, true);
@@ -157,6 +159,9 @@ public class EstimationDataProvider {
         String stringValue = null;
         if (externalRootElement != null) {
             stringValue = extractSingleStringValue(externalRootElement, xpath);
+            if (StringUtils.isBlank(stringValue)) {
+                log.warn("No value found in external estimation data file by xpath \"{}\", default value is used", xpath);
+            }
         }
         if (StringUtils.isBlank(stringValue)) {
             stringValue = extractSingleStringValue(defaultRootElement, xpath);
@@ -202,6 +207,9 @@ public class EstimationDataProvider {
         List<Node> thresholdItemNodes = null;
         if (externalRootElement != null) {
             thresholdItemNodes = externalRootElement.selectNodes(xpath);
+            if (thresholdItemNodes == null || thresholdItemNodes.isEmpty()) {
+                log.warn("No thresholds found in external estimation data file by xpath \"{}\", default values are used", xpath);
+            }
         }
         if (thresholdItemNodes == null || thresholdItemNodes.isEmpty()) {
             thresholdItemNodes = defaultRootElement.selectNodes(xpath);

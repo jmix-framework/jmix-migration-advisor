@@ -216,6 +216,7 @@
     <a href="#app-components">App components</a>
     <a href="#data-model">Data model</a>
     <a href="#misc">Misc notes</a>
+    <#if unparsedFiles?has_content><a href="#unparsed">Not analyzed</a></#if>
   </nav>
 
   <main>
@@ -306,6 +307,22 @@
           <tfoot><tr><th>Total</th><td class="num">${screensTotalAmount}</td><td></td><td class="num">${screensTotalHours}</td><td></td></tr></tfoot>
         </table>
       </div>
+      <#if screensRequireDecision?has_content>
+      <div class="callout" style="margin-top:14px">
+        <strong>Requires decision:</strong> ${screensRequireDecision?size} screen<#if screensRequireDecision?size != 1>s</#if>
+        contain<#if screensRequireDecision?size == 1>s</#if> components with no Jmix equivalent (marked "Absent").
+        The replacement cost of such components is not included in the estimations above: decide per screen whether
+        to drop the functionality, redesign it, or build a custom component.
+        <details>
+          <summary>Show screens</summary>
+          <div class="drill">
+            <#list screensRequireDecision as screenName, components>
+              <span class="mono">${screenName}: ${components?join(", ")}</span>
+            </#list>
+          </div>
+        </details>
+      </div>
+      </#if>
     </section>
 
     <section id="ui">
@@ -420,6 +437,29 @@
         </table>
       </div>
     </section>
+
+    <#if unparsedFiles?has_content>
+    <section id="unparsed">
+      <h2>Not analyzed <span class="count">${unparsedFiles?size} file<#if unparsedFiles?size != 1>s</#if></span></h2>
+      <div class="callout" style="margin-bottom:14px">
+        These files could not be parsed and are excluded from all metrics and estimations,
+        so the numbers above are underestimated. Review the files manually.
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>File</th><th>Reason</th></tr></thead>
+          <tbody>
+            <#list unparsedFiles as unparsedFile>
+              <tr>
+                <td><span class="mono">${unparsedFile.path}</span></td>
+                <td>${unparsedFile.reason}</td>
+              </tr>
+            </#list>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    </#if>
   </main>
 </div>
 

@@ -2,8 +2,9 @@
     <estimation-unit>
         <name>screen-changed-ui-components-complexity-base-value</name>
         <description>
-            Additional screen complexity score value for each UI component with changes between CUBA and Jmix.
-            Units: screen complexity score
+            Multiplier for the accumulated extra complexity score of UI components with changes between CUBA and Jmix.
+            The sum of per-component scores found in a screen descriptor is multiplied by this value.
+            Units: multiplier (1 = use per-component scores as is)
         </description>
         <content>
             <cost>1</cost>

@@ -46,21 +46,15 @@ public class ScreenEstimator {
     }
 
     public Map<String, ScreenComplexityScore> estimate(ScreensCollector screensCollector) {
-
-        Map<String, ScreenInfo> screensByDescriptors = screensCollector.getScreensByDescriptors();
-        List<ScreenInfo> allScreensInfos = new ArrayList<>(screensByDescriptors.values());
-        Map<String, ScreenInfo> screensByControllers = screensCollector.getScreensByControllers();
-        List<ScreenInfo> controllersWithoutDescriptors = screensByControllers.values().stream().filter(screenByController -> {
-            String descriptorFile = screenByController.getDescriptorFile();
-            return descriptorFile == null;
-        }).toList();
-
-        allScreensInfos.addAll(controllersWithoutDescriptors);
-
         Map<String, ScreenComplexityScore> result = new HashMap<>();
-        allScreensInfos.forEach(screenInfo -> {
+        screensCollector.getAllScreens().forEach(screenInfo -> {
             ScreenComplexityScore score = estimate(screenInfo);
-            result.put(resolveScreenName(screenInfo), score);
+            String screenName = resolveScreenName(screenInfo);
+            if (screenName == null) {
+                log.warn("Screen without any identifier is skipped");
+                return;
+            }
+            result.put(screenName, score);
         });
         return result;
     }
@@ -98,19 +92,21 @@ public class ScreenEstimator {
         // Layout
         Layout layout = screenInfo.getLayout();
 
+        List<String> absentComponents = new ArrayList<>();
         if (layout != null) {
             List<LayoutItem> allItems = layout.getAllItems();
-            AtomicInteger nonIssuedUiComponents = new AtomicInteger();
             AtomicInteger combinedExtraComplexityScore = new AtomicInteger();
 
             allItems.forEach(layoutItem -> {
                 UiComponentIssue issue = uiComponentIssuesRegistry.getIssue(layoutItem.getName());
                 if (issue != null) {
-                    if (!issue.getType().equals(UiComponentIssueType.ABSENT)) {
+                    if (issue.getType().equals(UiComponentIssueType.ABSENT)) {
+                        // Cost of an absent component is indeterminate: it is not scored
+                        // but escalated as a screen requiring a manual decision
+                        absentComponents.add(layoutItem.getName());
+                    } else {
                         combinedExtraComplexityScore.addAndGet(issue.getExtraComplexityScore());
                     }
-                } else {
-                    nonIssuedUiComponents.incrementAndGet();
                 }
             });
             numericMetrics.add(Metrics.createScreenDescriptorChangedUiComponentsScoreMetric(combinedExtraComplexityScore.get()));
@@ -156,6 +152,7 @@ public class ScreenEstimator {
                 score.addRawValue(scoreForMetric);
             }
         });
+        absentComponents.forEach(score::addAbsentComponent);
 
         return score;
     }

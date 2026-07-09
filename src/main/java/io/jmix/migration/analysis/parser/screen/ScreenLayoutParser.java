@@ -21,6 +21,10 @@ public class ScreenLayoutParser {
     protected static final Set<String> TABBED_CONTAINER_COMPONENT = Stream.of("accordion", "tabSheet")
             .collect(Collectors.toUnmodifiableSet());
 
+    protected static final Set<String> TABLE_COMPONENTS = Stream.of(
+            "table", "groupTable", "treeTable", "dataGrid", "treeDataGrid"
+    ).collect(Collectors.toUnmodifiableSet());
+
     public Layout parseLayout(Element rootElement) {
         Element layoutElement = rootElement.element("layout");
         if (layoutElement == null) {
@@ -68,6 +72,25 @@ public class ScreenLayoutParser {
                 }
             }
             log.debug("Finish processing tabbed component '{}'", elementName);
+        } else if (isTableLayoutItem(elementName)) {
+            // Studio-generated browse screens nest a buttonsPanel inside the table element
+            log.debug("'{}' is table component", elementName);
+            Element buttonsPanelElement = layoutItemElement.element("buttonsPanel");
+            if (buttonsPanelElement != null) {
+                processLayoutItem(layout, buttonsPanelElement);
+            }
+            log.debug("Finish processing table component '{}'", elementName);
+        } else if (isGridLayoutItem(elementName)) {
+            log.debug("'{}' is grid layout component", elementName);
+            Element rowsElement = layoutItemElement.element("rows");
+            if (rowsElement != null) {
+                for (Element rowElement : rowsElement.elements("row")) {
+                    for (Element rowChildElement : rowElement.elements()) {
+                        processLayoutItem(layout, rowChildElement);
+                    }
+                }
+            }
+            log.debug("Finish processing grid layout component '{}'", elementName);
         }
     }
 
@@ -77,5 +100,13 @@ public class ScreenLayoutParser {
 
     protected boolean isTabbedContainerLayoutItem(String name) {
         return TABBED_CONTAINER_COMPONENT.contains(name);
+    }
+
+    protected boolean isTableLayoutItem(String name) {
+        return TABLE_COMPONENTS.contains(name);
+    }
+
+    protected boolean isGridLayoutItem(String name) {
+        return "grid".equals(name);
     }
 }

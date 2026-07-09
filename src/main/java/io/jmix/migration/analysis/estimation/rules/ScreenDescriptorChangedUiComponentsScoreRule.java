@@ -18,6 +18,8 @@ public class ScreenDescriptorChangedUiComponentsScoreRule implements NumericMetr
 
     @Override
     public int apply(int inputValue) {
-        return baseValue + inputValue;
+        // inputValue is the accumulated extra complexity score of all changed UI components
+        // in the screen; baseValue scales it and must not act as a flat per-screen addition
+        return baseValue * inputValue;
     }
 }

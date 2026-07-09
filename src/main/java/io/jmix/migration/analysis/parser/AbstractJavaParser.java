@@ -2,14 +2,16 @@ package io.jmix.migration.analysis.parser;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
+import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.Problem;
 import com.github.javaparser.ast.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
+import java.util.stream.Collectors;
 
 public abstract class AbstractJavaParser {
 
@@ -21,7 +23,6 @@ public abstract class AbstractJavaParser {
         this.javaParser = createJavaParser();
     }
 
-    @Nullable
     public void parseJavaFile(Path filePath) {
         File file = filePath.toFile();
         if (!shouldBeProcessed(file)) {
@@ -40,7 +41,6 @@ public abstract class AbstractJavaParser {
         processCompilationUnit(parseResult.getResult().get());
     }
 
-    @Nullable
     protected abstract void processCompilationUnit(CompilationUnit compilationUnit);
 
     protected boolean shouldBeProcessed(File file) {
@@ -52,11 +52,18 @@ public abstract class AbstractJavaParser {
     }
 
     protected void handleFailedParsingResult(ParseResult<CompilationUnit> parseResult) {
-        throw new RuntimeException("Java file parsing failed");
+        throw new RuntimeException("Java file parsing failed: " + describeProblems(parseResult));
     }
 
     protected void handleEmptyParsingResult(ParseResult<CompilationUnit> parseResult) {
         throw new RuntimeException("Parse result is empty");
+    }
+
+    protected String describeProblems(ParseResult<CompilationUnit> parseResult) {
+        return parseResult.getProblems().stream()
+                .limit(3)
+                .map(Problem::getMessage)
+                .collect(Collectors.joining("; "));
     }
 
     protected ParseResult<CompilationUnit> parseJavaFile(File file) {
@@ -68,6 +75,10 @@ public abstract class AbstractJavaParser {
     }
 
     protected JavaParser createJavaParser() {
-        return new JavaParser();
+        // Default JavaParser language level is Java 11; newer syntax (switch expressions,
+        // records, text blocks) fails to parse without a raised level
+        ParserConfiguration configuration = new ParserConfiguration()
+                .setLanguageLevel(ParserConfiguration.LanguageLevel.BLEEDING_EDGE);
+        return new JavaParser(configuration);
     }
 }

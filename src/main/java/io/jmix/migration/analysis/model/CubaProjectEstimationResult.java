@@ -37,6 +37,12 @@ public class CubaProjectEstimationResult {
     // Misc
     private final List<MiscNote> miscNotes;
 
+    // Screens with components having no Jmix equivalent: screen name to component names
+    private final Map<String, List<String>> screensRequireDecision;
+
+    // Files skipped during analysis and excluded from all metrics
+    private final List<UnparsedFileEntry> unparsedFiles;
+
     private final BigDecimal totalEstimation;
 
     private CubaProjectEstimationResult(Builder builder) {
@@ -51,6 +57,10 @@ public class CubaProjectEstimationResult {
         this.legacyListeners = builder.legacyListeners;
         this.appComponents = builder.appComponents;
         this.miscNotes = builder.miscNotes;
+        this.screensRequireDecision = builder.screensRequireDecision == null
+                ? Map.of() : builder.screensRequireDecision;
+        this.unparsedFiles = builder.unparsedFiles == null
+                ? List.of() : builder.unparsedFiles;
 
         this.totalEstimation = createTotalEstimation(initialMigrationCost, baseEntitiesMigrationCost, screensTotalCost, legacyListenersCost);
     }
@@ -111,6 +121,14 @@ public class CubaProjectEstimationResult {
         return miscNotes;
     }
 
+    public Map<String, List<String>> getScreensRequireDecision() {
+        return screensRequireDecision;
+    }
+
+    public List<UnparsedFileEntry> getUnparsedFiles() {
+        return unparsedFiles;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -131,6 +149,10 @@ public class CubaProjectEstimationResult {
         private List<CubaAppComponentInfo> appComponents;
 
         private List<MiscNote> miscNotes;
+
+        private Map<String, List<String>> screensRequireDecision;
+
+        private List<UnparsedFileEntry> unparsedFiles;
 
         public Builder() {
         }
@@ -182,6 +204,16 @@ public class CubaProjectEstimationResult {
 
         public Builder setMiscNotes(List<MiscNote> miscNotes) {
             this.miscNotes = miscNotes;
+            return this;
+        }
+
+        public Builder setScreensRequireDecision(Map<String, List<String>> screensRequireDecision) {
+            this.screensRequireDecision = screensRequireDecision;
+            return this;
+        }
+
+        public Builder setUnparsedFiles(List<UnparsedFileEntry> unparsedFiles) {
+            this.unparsedFiles = unparsedFiles;
             return this;
         }
 

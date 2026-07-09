@@ -53,7 +53,9 @@ public class WebScreensXmlParser {
     protected void processScreensFile(File file, String module) {
         log.debug("Process file: {}", file);
         if (processedFiles.contains(file.getAbsolutePath())) {
-            throw new RuntimeException("Cycle is detected within web-screens inclusion");
+            // Legal for diamond-shaped includes; a genuine cycle is also just skipped
+            log.warn("Screens file '{}' has been processed already, skip repeated include", file);
+            return;
         }
         processedFiles.add(file.getAbsolutePath());
 
@@ -84,7 +86,7 @@ public class WebScreensXmlParser {
         }
 
         List<Element> includeElements = webScreensElement.elements("include");
-        log.debug("Find 'include' elements: {}", screenElements.size());
+        log.debug("Find 'include' elements: {}", includeElements.size());
         for (Element includeElement : includeElements) {
             String includedFile = includeElement.attributeValue("file");
             processIncludedFile(includedFile);
@@ -95,8 +97,11 @@ public class WebScreensXmlParser {
         if (StringUtils.isBlank(includedFile)) {
             return;
         }
-        Path includedPath = Path.of(includedFile);
-        if (includedPath.isAbsolute()) {
+        // CUBA convention is a leading slash: <include file="/com/company/app/screens.xml"/>.
+        // On Windows such path is drive-relative: isAbsolute() is false, but getRoot() is not null,
+        // and resolving it against a base path would produce a drive-root path like C:\com\...
+        Path includedPath = Path.of(removeLeadingSlash(includedFile.trim()));
+        if (includedPath.getRoot() != null) {
             includedPath = includedPath.subpath(0, includedPath.getNameCount());
         }
         Path webModuleFilePathCandidate = webSrcPath.resolve(basePackage).resolve(includedPath);
