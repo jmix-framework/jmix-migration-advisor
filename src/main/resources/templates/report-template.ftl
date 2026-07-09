@@ -26,6 +26,15 @@
         <#default><#local cls = "neutral">
       </#switch>
       <#break>
+    <#case "addonStatus">
+      <#switch value>
+        <#case "AVAILABLE"><#local cls = "ok"><#break>
+        <#case "RENAMED"><#case "MERGED"><#local cls = "info"><#break>
+        <#case "REPLACED"><#case "COMMERCIAL"><#local cls = "warn"><#break>
+        <#case "ABSENT"><#case "UNKNOWN"><#local cls = "bad"><#break>
+        <#default><#local cls = "neutral">
+      </#switch>
+      <#break>
   </#switch>
   <span class="badge ${cls}">${value?lower_case?replace("_", " ")?cap_first}</span>
 </#macro>
@@ -195,6 +204,39 @@
             </#if>
           </tbody>
         </table>
+      </div>
+    </section>
+</#macro>
+
+<#macro addonsSection s>
+    <section id="${s.id}">
+      <h2>${s.title} <span class="count">${s.rows?size} found</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Add-on</th><th>Status</th><th>Replacement</th><th class="num">Hint, h</th><th>Notes</th></tr></thead>
+          <tbody>
+            <#if s.rows?has_content>
+              <#list s.rows as addon>
+                <tr>
+                  <td>${addon.name}<br><span class="chip">${addon.artifact}</span></td>
+                  <td><@badge addon.statusName "addonStatus"/></td>
+                  <td><#if addon.flowArtifact??><span class="mono">${addon.flowArtifact}</span></#if></td>
+                  <td class="num"><#if addon.costHint??>${addon.costHint}</#if></td>
+                  <td>${addon.notes}</td>
+                </tr>
+              </#list>
+            <#else>
+              <tr><td colspan="5" class="empty">No Jmix add-ons detected.</td></tr>
+            </#if>
+          </tbody>
+        </table>
+      </div>
+      <div class="legend">
+        <span><span class="badge ok">Available</span> the same dependency works</span>
+        <span><span class="badge info">Renamed</span> replace the dependency with the listed artifact</span>
+        <span><span class="badge warn">Replaced</span> a different add-on covers the functionality; rework per notes</span>
+        <span><span class="badge bad">Absent</span> no equivalent in the current Jmix</span>
+        <span><span class="badge bad">Unknown</span> no data in the registry; check the marketplace manually</span>
       </div>
     </section>
 </#macro>
@@ -462,6 +504,7 @@
         <#case "complexity"><@complexitySection s/><#break>
         <#case "ui-components"><@uiComponentsSection s/><#break>
         <#case "app-components"><@appComponentsSection s/><#break>
+        <#case "addons"><@addonsSection s/><#break>
         <#case "data-model"><@dataModelSection s/><#break>
         <#case "notes"><@notesSection s/><#break>
         <#case "unparsed"><@unparsedSection s/><#break>

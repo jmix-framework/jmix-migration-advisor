@@ -1,6 +1,10 @@
 package io.jmix.migration.cuba;
 import io.jmix.migration.core.estimation.*;
 import io.jmix.migration.core.model.UnparsedFileEntry;
+import io.jmix.migration.core.project.GradleBuildParser;
+import io.jmix.migration.core.project.JmixProjectDescriptor;
+import io.jmix.migration.core.project.ProjectType;
+import io.jmix.migration.core.project.ProjectTypeDetector;
 import io.jmix.migration.core.scan.UnparsedFilesCollector;
 
 import io.jmix.migration.cuba.appcomponent.AppComponentType;
@@ -81,6 +85,8 @@ public class CubaProjectAnalyzer {
         log.info("Start project analysis");
         log.info("Project path = '{}', Base package = '{}'", projectPath, basePackage);
 
+        validateProjectType(projectPath);
+
         UnparsedFilesCollector unparsedFilesCollector = new UnparsedFilesCollector();
 
         // Core module
@@ -107,6 +113,21 @@ public class CubaProjectAnalyzer {
         return estimateProject(
                 coreModuleAnalysisResult, globalModuleAnalysisResult, uiModulesAnalysisResult,
                 unparsedFilesCollector.getEntries(), webToolkitModulePresent);
+    }
+
+    protected void validateProjectType(Path projectPath) {
+        JmixProjectDescriptor descriptor = new GradleBuildParser().parse(projectPath, null);
+        ProjectType projectType = new ProjectTypeDetector().detect(descriptor);
+        switch (projectType) {
+            case JMIX_CLASSIC -> throw new RuntimeException(
+                    "The project looks like a Jmix project. Use the 'analyze-jmix' command instead");
+            case JMIX_FLOW -> throw new RuntimeException(
+                    "The project uses Flow UI (Jmix 2+) and does not need CUBA migration analysis");
+            case UNKNOWN -> throw new RuntimeException(
+                    "Unable to detect a CUBA Platform project in '" + projectPath + "': no CUBA Gradle plugin"
+                            + " signals and no modules/global, modules/web layout. Check --project-dir");
+            case CUBA -> log.info("Project type: CUBA Platform");
+        }
     }
 
     protected CubaProjectEstimationResult estimateProject(CoreModuleAnalysisResult coreModuleAnalysisResult,

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Registry of Jmix 1.x add-ons (starter dependencies) with their status in the current Jmix
+    version (Flow UI based).
+
+    Entry elements/attributes:
+      artifact      - dependency key "group:artifact" as declared in build.gradle
+      name          - display name
+      category      - core | data | ui | ui-addon | addon | commercial | theme
+      flow-status   - available: the same starter works, nothing to do
+                      renamed:   replace the dependency with flow-artifact (mechanical)
+                      replaced:  a different add-on covers the functionality; configuration
+                                 or usage is reworked (see notes)
+                      merged:    functionality is part of another add-on or the core
+                      absent:    no equivalent in the current Jmix
+                      commercial: available with an Enterprise subscription
+      flow-artifact - replacement dependency, when flow-status is renamed/replaced
+      cost-hint     - hours for the dependency-level work itself (0 = rename only);
+                      screen/code rework driven by the add-on is estimated elsewhere
+      notes         - migration note shown in the report
+-->
+<jmix-addons>
+    <addon artifact="io.jmix.core:jmix-core-starter" name="Core" category="core" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.data:jmix-eclipselink-starter" name="EclipseLink Data" category="data" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.security:jmix-security-starter" name="Security" category="core" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.security:jmix-security-data-starter" name="Security Data" category="core" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.security:jmix-security-oauth2-starter" name="Security OAuth2" category="addon" flow-status="replaced">
+        <notes>Replaced by the Authorization Server add-on in current Jmix (https://docs.jmix.io/jmix/authserver/index.html)</notes>
+        <cost-hint>8</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.ui:jmix-ui-starter" name="Classic UI" category="ui" flow-status="replaced">
+        <flow-artifact>io.jmix.flowui:jmix-flowui-starter</flow-artifact>
+        <notes>Classic (Vaadin 8) UI is replaced by Flow UI. All screens are rewritten as views; this is the main migration effort and is estimated separately in the screens section</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.ui:jmix-ui-data-starter" name="Classic UI Data" category="ui" flow-status="replaced">
+        <flow-artifact>io.jmix.flowui:jmix-flowui-data-starter</flow-artifact>
+        <notes>Replaced together with the UI starter</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.ui:jmix-ui-themes-compiled" name="Classic UI Themes" category="theme" flow-status="replaced">
+        <flow-artifact>io.jmix.flowui:jmix-flowui-themes</flow-artifact>
+        <notes>Compiled SCSS themes (Helium/Halo) do not exist in Flow UI. A custom theme, if any, is recreated with CSS on top of Lumo</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.ui:jmix-ui-widgets-compiled" name="Classic UI Widgets" category="ui" flow-status="absent">
+        <notes>Compiled widgetset for custom Vaadin 8 client-side components. Custom widgets cannot be migrated automatically and must be re-implemented on Vaadin Flow; estimate manually</notes>
+    </addon>
+    <addon artifact="io.jmix.security:jmix-security-ui-starter" name="Security UI" category="ui-addon" flow-status="renamed">
+        <flow-artifact>io.jmix.security:jmix-security-flowui-starter</flow-artifact>
+        <notes>Role annotations move from securityui to securityflowui package; @ScreenPolicy becomes @ViewPolicy</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.datatools:jmix-datatools-starter" name="Datatools" category="addon" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.datatools:jmix-datatools-ui-starter" name="Datatools UI" category="ui-addon" flow-status="renamed">
+        <flow-artifact>io.jmix.datatools:jmix-datatools-flowui-starter</flow-artifact>
+        <notes>Dependency rename only</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.localfs:jmix-localfs-starter" name="Local File Storage" category="addon" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.webdav:jmix-webdav-starter" name="WebDAV" category="commercial" flow-status="available">
+        <notes>Available for current Jmix (Enterprise subscription)</notes>
+    </addon>
+    <addon artifact="io.jmix.webdav:jmix-webdav-ui-starter" name="WebDAV UI" category="commercial" flow-status="renamed">
+        <flow-artifact>io.jmix.webdav:jmix-webdav-flowui-starter</flow-artifact>
+        <notes>Dependency rename only (Enterprise subscription)</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.webdav:jmix-webdav-rest-starter" name="WebDAV REST" category="commercial" flow-status="available">
+        <notes>Available for current Jmix (Enterprise subscription)</notes>
+    </addon>
+    <addon artifact="io.jmix.email:jmix-email-starter" name="Email Sending" category="addon" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.email:jmix-email-ui-starter" name="Email Sending UI" category="ui-addon" flow-status="renamed">
+        <flow-artifact>io.jmix.email:jmix-email-flowui-starter</flow-artifact>
+        <notes>Dependency rename only</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+</jmix-addons>

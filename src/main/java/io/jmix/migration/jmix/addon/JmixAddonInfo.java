@@ -1,0 +1,64 @@
+package io.jmix.migration.jmix.addon;
+
+import javax.annotation.Nullable;
+
+public class JmixAddonInfo {
+
+    public enum FlowStatus {
+        AVAILABLE,
+        RENAMED,
+        REPLACED,
+        MERGED,
+        ABSENT,
+        COMMERCIAL
+    }
+
+    private final String artifact;
+    private final String name;
+    private final String category;
+    private final FlowStatus flowStatus;
+    private final String flowArtifact;
+    private final String notes;
+    private final Integer costHint;
+
+    public JmixAddonInfo(String artifact, String name, String category, FlowStatus flowStatus,
+                         @Nullable String flowArtifact, String notes, @Nullable Integer costHint) {
+        this.artifact = artifact;
+        this.name = name;
+        this.category = category;
+        this.flowStatus = flowStatus;
+        this.flowArtifact = flowArtifact;
+        this.notes = notes;
+        this.costHint = costHint;
+    }
+
+    public String getArtifact() {
+        return artifact;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public FlowStatus getFlowStatus() {
+        return flowStatus;
+    }
+
+    @Nullable
+    public String getFlowArtifact() {
+        return flowArtifact;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    @Nullable
+    public Integer getCostHint() {
+        return costHint;
+    }
+}

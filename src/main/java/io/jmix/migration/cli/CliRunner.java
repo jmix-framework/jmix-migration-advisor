@@ -2,8 +2,6 @@ package io.jmix.migration.cli;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import io.jmix.migration.cli.AnalyzeCubaProjectCommand;
-import io.jmix.migration.cli.BaseCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +15,7 @@ public class CliRunner {
     public static void main(String[] args) {
         Map<String, BaseCommand> commands = new HashMap<>();
         commands.put("analyze-cuba", new AnalyzeCubaProjectCommand());
+        commands.put("analyze-jmix", new AnalyzeJmixProjectCommand());
 
         JCommander.Builder commanderBuilder = JCommander.newBuilder();
         for (Map.Entry<String, BaseCommand> entry : commands.entrySet()) {

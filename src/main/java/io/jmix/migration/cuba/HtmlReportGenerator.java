@@ -21,19 +21,12 @@ import io.jmix.migration.cuba.appcomponent.CubaAppComponentInfo;
 import io.jmix.migration.cuba.model.CubaProjectEstimationResult;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static java.time.temporal.ChronoField.HOUR_OF_DAY;
-import static java.time.temporal.ChronoField.MILLI_OF_SECOND;
-import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
-import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
 
 /**
  * Builds the platform-neutral {@link ReportModel} from the CUBA analysis result
@@ -55,7 +48,7 @@ public class HtmlReportGenerator {
     }
 
     protected void generateHtmlReport(String project, CubaProjectEstimationResult result) {
-        reportWriter.writeToFile(createResultFileName(), buildReportModel(project, result));
+        reportWriter.writeToFile(reportWriter.createDefaultFileName(), buildReportModel(project, result));
     }
 
     /**
@@ -218,16 +211,4 @@ public class HtmlReportGenerator {
         return sorted;
     }
 
-    protected String createResultFileName() {
-        DateTimeFormatter formatter = new DateTimeFormatterBuilder()
-                .append(DateTimeFormatter.ISO_LOCAL_DATE)
-                .appendLiteral('T')
-                .appendValue(HOUR_OF_DAY, 2)
-                .appendValue(MINUTE_OF_HOUR, 2)
-                .appendValue(SECOND_OF_MINUTE, 2)
-                .appendFraction(MILLI_OF_SECOND, 0, 3, false)
-                .toFormatter();
-
-        return "results_" + LocalDateTime.now().format(formatter) + ".html";
-    }
 }
