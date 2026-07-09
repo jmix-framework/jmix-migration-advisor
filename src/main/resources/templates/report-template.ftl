@@ -19,14 +19,26 @@
       <#break>
     <#case "uiType">
       <#switch value>
+        <#case "CHANGED"><#local cls = "ok"><#break>
+        <#case "HAS_ALTERNATIVE"><#local cls = "info"><#break>
+        <#case "HAS_WORKAROUND"><#local cls = "warn"><#break>
         <#case "ABSENT"><#local cls = "bad"><#break>
-        <#case "CHANGED"><#local cls = "warn"><#break>
-        <#case "HAS_ALTERNATIVE"><#local cls = "ok"><#break>
         <#default><#local cls = "neutral">
       </#switch>
       <#break>
   </#switch>
   <span class="badge ${cls}">${value?lower_case?replace("_", " ")?cap_first}</span>
+</#macro>
+
+<#-- Dependency of the primary replacement recipe (UiComponentIssue.requires) -->
+<#macro requiresBadge req>
+  <#local cls = "info">
+  <#local label = "Add-on">
+  <#switch req.kindName>
+    <#case "COMMERCIAL_ADDON"><#local cls = "warn"><#local label = "Commercial add-on"><#break>
+    <#case "THIRD_PARTY"><#local cls = "warn"><#local label = "3rd-party"><#break>
+  </#switch>
+  <span class="badge ${cls}" title="${req.subject}">${label}</span>
 </#macro>
 <!DOCTYPE html>
 <html lang="en">
@@ -127,6 +139,10 @@
   .badge.neutral{color:var(--neutral);background:var(--neutral-bg)}
   .chip { display: inline-block; padding: 1px 8px; border-radius: 6px; background: var(--surface-2);
           border: 1px solid var(--border); font-family: var(--font-mono); font-size: .76rem; color: var(--ink-soft); }
+  .legend { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px 18px;
+            font-size: .82rem; color: var(--ink-soft); }
+  .legend > span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend > .note { flex-basis: 100%; display: block; }
 
   /* stacked effort bar */
   .stack { display: flex; height: 30px; border-radius: 8px; overflow: hidden;
@@ -200,6 +216,7 @@
     <a href="#app-components">App components</a>
     <a href="#data-model">Data model</a>
     <a href="#misc">Misc notes</a>
+    <#if unparsedFiles?has_content><a href="#unparsed">Not analyzed</a></#if>
   </nav>
 
   <main>
@@ -290,6 +307,22 @@
           <tfoot><tr><th>Total</th><td class="num">${screensTotalAmount}</td><td></td><td class="num">${screensTotalHours}</td><td></td></tr></tfoot>
         </table>
       </div>
+      <#if screensRequireDecision?has_content>
+      <div class="callout" style="margin-top:14px">
+        <strong>Requires decision:</strong> ${screensRequireDecision?size} screen<#if screensRequireDecision?size != 1>s</#if>
+        contain<#if screensRequireDecision?size == 1>s</#if> components with no Jmix equivalent (marked "Absent").
+        The replacement cost of such components is not included in the estimations above: decide per screen whether
+        to drop the functionality, redesign it, or build a custom component.
+        <details>
+          <summary>Show screens</summary>
+          <div class="drill">
+            <#list screensRequireDecision as screenName, components>
+              <span class="mono">${screenName}: ${components?join(", ")}</span>
+            </#list>
+          </div>
+        </details>
+      </div>
+      </#if>
     </section>
 
     <section id="ui">
@@ -303,7 +336,10 @@
                 <tr>
                   <td><code>${note.name}</code><#if (note.extraComplexityScore > 0)> <span class="chip" title="extra complexity score">+${note.extraComplexityScore}</span></#if></td>
                   <td class="num">${note.amount}</td>
-                  <td><#if note.type??><@badge note.type "uiType"/></#if></td>
+                  <td>
+                    <#if note.type??><@badge note.type "uiType"/></#if>
+                    <#list note.requires as req> <@requiresBadge req/></#list>
+                  </td>
                   <td>${note.notes}</td>
                 </tr>
               </#list>
@@ -312,6 +348,14 @@
             </#if>
           </tbody>
         </table>
+      </div>
+      <div class="legend">
+        <span><span class="badge ok">Changed</span> direct analog with renames or minor differences; mechanical XML/code edit</span>
+        <span><span class="badge info">Has alternative</span> a different ready-made component achieves the same or similar result</span>
+        <span><span class="badge warn">Has workaround</span> achievable partially or with custom glue code following a known recipe</span>
+        <span><span class="badge bad">Absent</span> no recipe: drop the functionality, redesign, or build from scratch (not included in complexity scores)</span>
+        <span><span class="chip">+N</span> extra complexity score added to each screen using the component</span>
+        <span class="note">Components not listed here have a direct Jmix equivalent. Dependency badges (Add-on, Commercial add-on, 3rd-party) refer to the primary replacement recipe; simpler fallbacks, if any, are described in the notes.</span>
       </div>
     </section>
 
@@ -393,6 +437,29 @@
         </table>
       </div>
     </section>
+
+    <#if unparsedFiles?has_content>
+    <section id="unparsed">
+      <h2>Not analyzed <span class="count">${unparsedFiles?size} file<#if unparsedFiles?size != 1>s</#if></span></h2>
+      <div class="callout" style="margin-bottom:14px">
+        These files could not be parsed and are excluded from all metrics and estimations,
+        so the numbers above are underestimated. Review the files manually.
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>File</th><th>Reason</th></tr></thead>
+          <tbody>
+            <#list unparsedFiles as unparsedFile>
+              <tr>
+                <td><span class="mono">${unparsedFile.path}</span></td>
+                <td>${unparsedFile.reason}</td>
+              </tr>
+            </#list>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    </#if>
   </main>
 </div>
 

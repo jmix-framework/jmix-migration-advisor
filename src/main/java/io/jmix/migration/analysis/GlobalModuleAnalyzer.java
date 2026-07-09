@@ -21,10 +21,13 @@ public class GlobalModuleAnalyzer extends BaseAnalyzer {
 
     protected final Path globalSrcPath;
     protected final String basePackage;
+    protected final UnparsedFilesCollector unparsedFilesCollector;
 
-    public GlobalModuleAnalyzer(Path globalSrcPath, String basePackage) {
+    public GlobalModuleAnalyzer(Path globalSrcPath, String basePackage,
+                                UnparsedFilesCollector unparsedFilesCollector) {
         this.globalSrcPath = globalSrcPath;
         this.basePackage = basePackage;
+        this.unparsedFilesCollector = unparsedFilesCollector;
     }
 
     public GlobalModuleAnalysisResult analyzeGlobalModule() {
@@ -33,8 +36,18 @@ public class GlobalModuleAnalyzer extends BaseAnalyzer {
         Path globalModuleBasePackagePath = globalSrcPath.resolve(packageToPath(basePackage));
         Path persistenceFilePath = getPersistenceFilePath(globalModuleBasePackagePath, globalSrcPath);
 
-        PersistenceXmlParser persistenceXmlParser = new PersistenceXmlParser();
-        Map<String, List<String>> entitiesPerPersistenceUnit = persistenceXmlParser.processPersistenceXml(persistenceFilePath);
+        Map<String, List<String>> entitiesPerPersistenceUnit = new HashMap<>();
+        if (persistenceFilePath.toFile().exists()) {
+            PersistenceXmlParser persistenceXmlParser = new PersistenceXmlParser();
+            try {
+                entitiesPerPersistenceUnit = persistenceXmlParser.processPersistenceXml(persistenceFilePath);
+            } catch (Exception e) {
+                log.warn("Failed to process '{}': {}", persistenceFilePath, e.getMessage());
+                unparsedFilesCollector.add(persistenceFilePath, e);
+            }
+        } else {
+            log.warn("'persistence.xml' file is not found (checked '{}'), entities are not counted", persistenceFilePath);
+        }
 
         Set<String> listeners = processGlobalModuleJavaFiles(globalSrcPath);
 
@@ -50,7 +63,12 @@ public class GlobalModuleAnalyzer extends BaseAnalyzer {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     if (isJavaSourceFile(file)) {
-                        globalModuleJavaParser.parseJavaFile(file);
+                        try {
+                            globalModuleJavaParser.parseJavaFile(file);
+                        } catch (Exception e) {
+                            log.warn("Failed to parse Java file '{}': {}", file, e.getMessage());
+                            unparsedFilesCollector.add(file, e);
+                        }
                     }
                     return FileVisitResult.CONTINUE;
                 }

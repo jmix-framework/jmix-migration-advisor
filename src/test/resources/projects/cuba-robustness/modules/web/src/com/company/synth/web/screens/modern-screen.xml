@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd" caption="modern">
+    <layout>
+        <groupTable id="gt">
+            <buttonsPanel id="bp2">
+                <button id="c"/>
+            </buttonsPanel>
+        </groupTable>
+    </layout>
+</window>

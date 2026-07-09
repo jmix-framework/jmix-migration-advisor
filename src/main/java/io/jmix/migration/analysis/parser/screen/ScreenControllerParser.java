@@ -2,6 +2,8 @@ package io.jmix.migration.analysis.parser.screen;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
+import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.Problem;
 import com.github.javaparser.Range;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class ScreenControllerParser {
 
@@ -37,7 +40,9 @@ public class ScreenControllerParser {
         this.moduleSrcPath = moduleSrcPath;
         this.allSrcPaths = allSrcPaths;
         this.screensCollector = screensCollector;
-        this.javaParser = new JavaParser();
+        // Default JavaParser language level is Java 11; newer syntax fails to parse without a raised level
+        this.javaParser = new JavaParser(new ParserConfiguration()
+                .setLanguageLevel(ParserConfiguration.LanguageLevel.BLEEDING_EDGE));
     }
 
     public void parseJavaFile(Path filePath) {
@@ -49,7 +54,11 @@ public class ScreenControllerParser {
         ParseResult<CompilationUnit> parseResult = parseJavaFile(file);
 
         if (!parseResult.isSuccessful()) {
-            throw new RuntimeException("Java file parsing failed");
+            String problems = parseResult.getProblems().stream()
+                    .limit(3)
+                    .map(Problem::getMessage)
+                    .collect(Collectors.joining("; "));
+            throw new RuntimeException("Java file parsing failed: " + problems);
         }
         if (parseResult.getResult().isEmpty()) {
             throw new RuntimeException("Parse result is empty");
@@ -69,7 +78,7 @@ public class ScreenControllerParser {
     protected void processCompilationUnit(CompilationUnit compilationUnit) {
         String packageValue = compilationUnit.getPackageDeclaration()
                 .map(PackageDeclaration::getNameAsString)
-                .orElseThrow(() -> new RuntimeException("Package not found"));
+                .orElse("");
         log.debug("[Package] {}", packageValue);
 
         NodeList<ImportDeclaration> importDeclarations = compilationUnit.getImports();
@@ -137,7 +146,8 @@ public class ScreenControllerParser {
         if (descriptorLocalName != null && screenId != null) {
             // Found Screens API screen controller
             isControllerClass = true;
-            String descriptorFullName = packageValue.replace(".", "/") + "/" + descriptorLocalName;
+            String packagePath = packageValue.isEmpty() ? "" : packageValue.replace(".", "/") + "/";
+            String descriptorFullName = packagePath + descriptorLocalName;
             log.debug("Processing screen controller class: id = {}, descriptor = {}, controller = {}", screenId, descriptorFullName, classFqn);
 
             screenInfo = screensCollector.getScreenInfoByDescriptor(descriptorFullName);
@@ -166,11 +176,9 @@ public class ScreenControllerParser {
         }
 
 
-        if (isControllerClass) {
-            // Controller class for specific screen
-            analyzeControllerClass(classDeclaration, screenInfo, superClassDetails);
-        } else if (isExtendBasicScreenClass) {
-            // Custom class extends some basic framework screen class: CustomEditor extends StandardEditor
+        if (isControllerClass || isExtendBasicScreenClass) {
+            // Controller class for specific screen or a custom class extending
+            // some basic framework screen class: CustomEditor extends StandardEditor
             analyzeControllerClass(classDeclaration, screenInfo, superClassDetails);
         } else {
             // Class can't be defined as controller yet.
@@ -180,15 +188,8 @@ public class ScreenControllerParser {
             }
             ClassGeneralDetails classGeneralDetails = new ClassGeneralDetails(simpleName, classFqn, superClassGeneralDetails);
             screensCollector.addUnknownClass(classGeneralDetails); //todo
-        }
-
-
-        if (!isControllerClass && !isExtendBasicScreenClass) {
             log.debug("Class '{}' is not a controller/intermediate class", classFqn);
-            return;
         }
-
-        analyzeControllerClass(classDeclaration, screenInfo, superClassDetails);
     }
 
     protected void analyzeControllerClass(ClassOrInterfaceDeclaration primaryClassDeclaration,

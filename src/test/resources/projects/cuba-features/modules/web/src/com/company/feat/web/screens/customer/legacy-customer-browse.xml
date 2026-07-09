@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window class="com.company.feat.web.screens.customer.LegacyCustomerBrowse" caption="Клиенты">
+    <dsContext>
+        <collectionDatasource id="customersDs" class="com.company.feat.entity.Customer">
+            <query>select c from feat_Customer c</query>
+            <datasource id="ordersDs" property="orders"/>
+        </collectionDatasource>
+    </dsContext>
+    <layout>
+        <filter id="genericFilter" applyTo="customersTable"/>
+        <table id="customersTable" width="100%">
+            <buttonsPanel id="buttonsPanel">
+                <button id="createBtn" action="customersTable.create"/>
+                <button id="editBtn" action="customersTable.edit"/>
+            </buttonsPanel>
+            <columns>
+                <column id="name"/>
+            </columns>
+        </table>
+        <capsLockIndicator id="capsLock"/>
+    </layout>
+</window>

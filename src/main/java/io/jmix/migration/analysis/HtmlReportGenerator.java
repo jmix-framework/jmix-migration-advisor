@@ -1,5 +1,6 @@
 package io.jmix.migration.analysis;
 
+import freemarker.core.HTMLOutputFormat;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -11,10 +12,12 @@ import io.jmix.migration.analysis.issue.uicomponent.UiComponentIssue;
 import io.jmix.migration.analysis.issue.uicomponent.UiComponentIssuesRegistry;
 import io.jmix.migration.analysis.model.*;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -35,8 +38,22 @@ public class HtmlReportGenerator {
     }
 
     protected void generateHtmlReport(String project, CubaProjectEstimationResult result) {
-        Configuration configuration = createFremarkerConfiguration();
         String fileName = createResultFileName();
+        String content = generateReportContent(project, result);
+        // The template declares UTF-8, so the file charset must not depend on the JVM default
+        try {
+            Files.writeString(Path.of(fileName), content, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Renders the report to a string. Separated from file writing so tests can capture
+     * the report content directly.
+     */
+    public String generateReportContent(String project, CubaProjectEstimationResult result) {
+        Configuration configuration = createFremarkerConfiguration();
 
         Map<String, Object> data = new HashMap<>();
 
@@ -45,7 +62,7 @@ public class HtmlReportGenerator {
 
         //Entities amount
         data.put("entitiesAmount", result.getEntitiesAmount());
-        data.put("entitiesPerPersistenceUnit", result.getEntitiesPerPersistenceUnit());
+        data.put("entitiesPerPersistenceUnit", sortedEntitiesPerPersistenceUnit(result.getEntitiesPerPersistenceUnit()));
 
         //Screens
         List<ScreenComplexityGroup> complexityGroupRows = createComplexityGroupRows(result);
@@ -58,9 +75,11 @@ public class HtmlReportGenerator {
                 .orElse(BigDecimal.ZERO));
 
         //Legacy entity listeners
-        List<String> legacyListeners = result.getLegacyListeners();
+        List<String> legacyListeners = result.getLegacyListeners() == null
+                ? List.of()
+                : result.getLegacyListeners().stream().sorted().toList();
         data.put("legacyListeners", legacyListeners);
-        data.put("legacyListenersAmount", legacyListeners == null ? 0 : legacyListeners.size());
+        data.put("legacyListenersAmount", legacyListeners.size());
 
         // UI components
         List<UiComponentNotesRow> uiComponentNotesRows = createUiComponentIssuesRows(result);
@@ -84,19 +103,34 @@ public class HtmlReportGenerator {
         // Misc
         data.put("miscNotes", result.getMiscNotes());
 
-        // Write to file
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
-            Template template = configuration.getTemplate("report-template.ftl");
+        // Screens with components having no Jmix equivalent
+        data.put("screensRequireDecision", result.getScreensRequireDecision());
 
+        // Files skipped during analysis
+        data.put("unparsedFiles", result.getUnparsedFiles());
+
+        try {
+            Template template = configuration.getTemplate("report-template.ftl");
+            StringWriter writer = new StringWriter();
             template.process(data, writer);
-            writer.flush();
+            return writer.toString();
         } catch (IOException | TemplateException e) {
             throw new RuntimeException(e);
         }
     }
 
+    protected Map<String, List<String>> sortedEntitiesPerPersistenceUnit(Map<String, List<String>> entitiesPerPersistenceUnit) {
+        Map<String, List<String>> sorted = new TreeMap<>();
+        entitiesPerPersistenceUnit.forEach((unit, entities) ->
+                sorted.put(unit, entities.stream().sorted().toList()));
+        return sorted;
+    }
+
     protected Configuration createFremarkerConfiguration() {
-        Configuration configuration = new Configuration(Configuration.VERSION_2_3_23);
+        Configuration configuration = new Configuration(Configuration.VERSION_2_3_33);
+        // Auto-escape all interpolations: many rendered values (project name, screen ids,
+        // entity/listener class names, app component packages) come from the analyzed project
+        configuration.setOutputFormat(HTMLOutputFormat.INSTANCE);
         configuration.setDefaultEncoding("UTF-8");
         configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         configuration.setLogTemplateExceptions(false);
@@ -118,7 +152,9 @@ public class HtmlReportGenerator {
             int amount = screens.size();
             BigDecimal total = cost.multiply(BigDecimal.valueOf(amount));
 
-            ScreenComplexityGroup screenComplexityGroup = new ScreenComplexityGroup(name, order, amount, cost, total, screens);
+            // Screen names come from a HashMap-backed pipeline: sort for a stable report
+            List<String> sortedScreens = screens.stream().sorted().toList();
+            ScreenComplexityGroup screenComplexityGroup = new ScreenComplexityGroup(name, order, amount, cost, total, sortedScreens);
             complexityGroupRows.add(screenComplexityGroup);
         }));
         complexityGroupRows.sort(Comparator.comparingInt(ScreenComplexityGroup::getOrder));
@@ -140,7 +176,8 @@ public class HtmlReportGenerator {
                                 allUiComponents.get(issue.getComponent()),
                                 issue.getNotes(),
                                 issue.getType() == null ? null : issue.getType().name(),
-                                issue.getExtraComplexityScore()
+                                issue.getExtraComplexityScore(),
+                                issue.getRequires()
                         )
                 );
             }

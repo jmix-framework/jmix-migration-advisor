@@ -25,7 +25,7 @@ public class WebXmlParser {
 
         File file = filePath.toFile();
         if (!file.exists()) {
-            throw new IllegalArgumentException("'persistence.xml' file not found in path: " + filePath);
+            throw new IllegalArgumentException("'web.xml' file not found in path: " + filePath);
         }
 
         if (file.isDirectory()) {

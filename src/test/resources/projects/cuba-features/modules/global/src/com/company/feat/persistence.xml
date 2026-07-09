@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence>
+    <persistence-unit name="feat">
+        <class>com.company.feat.entity.Customer</class>
+        <class>com.company.feat.entity.Order</class>
+        <class>com.company.feat.entity.Product</class>
+    </persistence-unit>
+    <persistence-unit name="additional">
+        <class>com.company.feat.entity.AuditRecord</class>
+    </persistence-unit>
+</persistence>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd"
+        extends="com/company/feat/web/screens/customer/customer-editor.xml">
+    <layout>
+        <cssLayout id="extraLayout">
+            <linkButton id="helpLink"/>
+        </cssLayout>
+    </layout>
+</window>

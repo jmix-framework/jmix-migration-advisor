@@ -13,7 +13,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 
 public class XmlUtils {
 
@@ -40,12 +39,10 @@ public class XmlUtils {
     }
 
     public static Document readDocument(InputStream stream, SAXReader xmlReader) {
-        try (InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
-            return xmlReader.read(reader);
+        // The raw stream is passed to the parser so it can honor the encoding declared in the XML prolog
+        try (InputStream is = stream) {
+            return xmlReader.read(is);
         } catch (IOException | DocumentException e) {
-            if (e.getCause() instanceof SAXParseException) {
-
-            }
             throw new RuntimeException("Unable to read XML from stream", e);
         }
     }
@@ -74,9 +71,9 @@ public class XmlUtils {
         setParserFeature(xmlReader, "http://xml.org/sax/features/namespaces", true);
         setParserFeature(xmlReader, "http://xml.org/sax/features/namespace-prefixes", false);
 
-        // external entites
-        setParserFeature(xmlReader, "http://xml.org/sax/properties/external-general-entities", false);
-        setParserFeature(xmlReader, "http://xml.org/sax/properties/external-parameter-entities", false);
+        // external entities
+        setParserFeature(xmlReader, "http://xml.org/sax/features/external-general-entities", false);
+        setParserFeature(xmlReader, "http://xml.org/sax/features/external-parameter-entities", false);
 
         // external DTD
         setParserFeature(xmlReader, "http://apache.org/xml/features/nonvalidating/load-external-dtd", false);

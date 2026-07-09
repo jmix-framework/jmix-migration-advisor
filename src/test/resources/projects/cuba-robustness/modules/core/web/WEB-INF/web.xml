@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app>
+    <context-param>
+        <param-name>appComponents</param-name>
+        <param-value>com.haulmont.cuba com.unknown.addon</param-value>
+    </context-param>
+</web-app>

@@ -1,9 +1,11 @@
 package io.jmix.migration.analysis.parser.general;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Properties;
 
@@ -20,13 +22,14 @@ public class PropertiesParser {
             throw new RuntimeException("Properties file '" + file.getAbsolutePath() + "' not found");
         }
 
-        try (FileReader fileReader = new FileReader(file)) {
-            properties.load(fileReader);
+        // CUBA tooling writes properties files in UTF-8 (a superset of ASCII), so the read
+        // must not depend on the JVM default charset. InputStreamReader replaces malformed
+        // sequences instead of failing, which keeps rare legacy-encoded files readable.
+        try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
+            properties.load(reader);
             return properties;
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("File '" + file.getAbsolutePath() + "' not found", e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Unable to read properties file '" + file.getAbsolutePath() + "'", e);
         }
     }
 }

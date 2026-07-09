@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd" caption="Граница: ровно 11">
+    <layout>
+        <groupTable id="t1"/>
+        <calendar id="c1"/>
+        <fieldGroup id="f1"/>
+        <suggestionField id="s1"/>
+        <link id="l1"/>
+    </layout>
+</window>

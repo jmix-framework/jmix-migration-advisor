@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window class="com.company.synth.web.screens.LegacyScreen" caption="Legacy">
+    <layout>
+        <popupView id="pv"/>
+        <capsLockIndicator id="cli"/>
+        <table id="tbl">
+            <buttonsPanel id="bp">
+                <button id="b1"/>
+            </buttonsPanel>
+            <columns/>
+        </table>
+        <grid id="g">
+            <rows>
+                <row>
+                    <textField id="tf"/>
+                    <maskedField id="mf"/>
+                </row>
+            </rows>
+        </grid>
+    </layout>
+</window>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window class="com.company.feat.web.screens.order.SalesReportScreen" caption="Отчёт по продажам">
+    <layout>
+        <optionsGroup id="periodOptions"/>
+        <embedded id="chartFrame"/>
+        <lookupField id="managerLookup"/>
+    </layout>
+</window>

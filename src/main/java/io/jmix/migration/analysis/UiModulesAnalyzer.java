@@ -30,12 +30,15 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
     protected final Path guiSrcPath;
     protected final String basePackage;
     protected final List<Path> allSrcPaths;
+    protected final UnparsedFilesCollector unparsedFilesCollector;
 
-    public UiModulesAnalyzer(Path webSrcPath, Path guiSrcPath, String basePackage) {
+    public UiModulesAnalyzer(Path webSrcPath, Path guiSrcPath, String basePackage,
+                             UnparsedFilesCollector unparsedFilesCollector) {
         this.webSrcPath = webSrcPath;
         this.guiSrcPath = guiSrcPath;
         this.basePackage = basePackage;
         this.allSrcPaths = List.of(webSrcPath, guiSrcPath);
+        this.unparsedFilesCollector = unparsedFilesCollector;
     }
 
     public UiModulesAnalysisResult analyzeUiModules() {
@@ -48,7 +51,12 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
         PropertiesParser propertiesParser = new PropertiesParser();
         Path webAppPropertiesFilePath = getWebAppPropertiesFilePath(webModuleBasePackagePath, webSrcPath);
         if (webAppPropertiesFilePath.toFile().exists()) {
-            webAppProperties = propertiesParser.parsePropertiesFile(webAppPropertiesFilePath);
+            try {
+                webAppProperties = propertiesParser.parsePropertiesFile(webAppPropertiesFilePath);
+            } catch (Exception e) {
+                log.warn("Failed to parse '{}': {}", webAppPropertiesFilePath, e.getMessage());
+                unparsedFilesCollector.add(webAppPropertiesFilePath, e);
+            }
         }
 
         Path webScreensFilePath = getWebScreensXmlFilePath(webModuleBasePackagePath, webSrcPath);
@@ -56,7 +64,17 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
         ScreensCollector screensCollector = new ScreensCollector();
 
         WebScreensXmlParser webScreensXmlParser = new WebScreensXmlParser(webSrcPath, guiSrcPath, basePackageLocalPath, screensCollector);
-        webScreensXmlParser.processWebScreensXml(webScreensFilePath);
+        if (webScreensFilePath.toFile().exists()) {
+            try {
+                webScreensXmlParser.processWebScreensXml(webScreensFilePath);
+            } catch (Exception e) {
+                log.warn("Failed to process '{}': {}", webScreensFilePath, e.getMessage());
+                unparsedFilesCollector.add(webScreensFilePath, e);
+            }
+        } else {
+            log.warn("'web-screens.xml' file is not found (checked '{}'), legacy screen registrations are unavailable",
+                    webScreensFilePath);
+        }
 
         analyzeWebModule(screensCollector);
         analyzeGuiModule(screensCollector);
@@ -138,7 +156,12 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     if (isXmlFile(file)) {
                         log.debug("Process file '{}'", file);
-                        processXmlFile(file, screenDescriptorParser);
+                        try {
+                            processXmlFile(file, screenDescriptorParser);
+                        } catch (Exception e) {
+                            log.warn("Failed to parse XML file '{}': {}", file, e.getMessage());
+                            unparsedFilesCollector.add(file, e);
+                        }
                     }
                     return FileVisitResult.CONTINUE;
                 }
@@ -167,11 +190,11 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
                             String fqn = fileNameNoExtension.replace(FileSystems.getDefault().getSeparator(), ".");
                             if (specificClassesToAnalyze.contains(fqn)) {
                                 log.debug("Process file `{}`", file);
-                                processJavaFile(file, screenControllerParser);
+                                processJavaFileSafely(file, screenControllerParser);
                             }
                         } else {
                             log.debug("Process file `{}`", file);
-                            processJavaFile(file, screenControllerParser);
+                            processJavaFileSafely(file, screenControllerParser);
                         }
                     }
                     return FileVisitResult.CONTINUE;
@@ -196,9 +219,14 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
         }
     }
 
-    protected void processJavaFile(Path filePath, ScreenControllerParser screenControllerParser) {
+    protected void processJavaFileSafely(Path filePath, ScreenControllerParser screenControllerParser) {
         log.debug("[Process Java file] File={}", filePath);
-        screenControllerParser.parseJavaFile(filePath);
+        try {
+            screenControllerParser.parseJavaFile(filePath);
+        } catch (Exception e) {
+            log.warn("Failed to parse Java file '{}': {}", filePath, e.getMessage());
+            unparsedFilesCollector.add(filePath, e);
+        }
     }
 
     protected Path getWebScreensXmlFilePath(Path basePackagePath, Path webSrcPath) {
