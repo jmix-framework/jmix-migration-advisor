@@ -140,7 +140,8 @@ public class HtmlReportGenerator {
                                 allUiComponents.get(issue.getComponent()),
                                 issue.getNotes(),
                                 issue.getType() == null ? null : issue.getType().name(),
-                                issue.getExtraComplexityScore()
+                                issue.getExtraComplexityScore(),
+                                issue.getRequires()
                         )
                 );
             }
