@@ -109,33 +109,8 @@ public class HtmlReportGenerator {
     }
 
     protected ComplexityGroupsSection buildComplexitySection(CubaProjectEstimationResult result) {
-        Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerComplexity = result.getScreensPerComplexity();
-        List<ComplexityGroupsSection.Group> groups = new ArrayList<>();
-        screensPerComplexity.forEach(((thresholdItem, screens) -> {
-            BigDecimal cost = thresholdItem.getOutputValue();
-            int amount = screens.size();
-            BigDecimal total = cost.multiply(BigDecimal.valueOf(amount));
-
-            // Screen names come from a HashMap-backed pipeline: sort for a stable report
-            List<String> sortedScreens = screens.stream().sorted().toList();
-            groups.add(new ComplexityGroupsSection.Group(thresholdItem.getName(), amount, cost, total, sortedScreens));
-        }));
-
-        List<ThresholdItem<Integer, BigDecimal>> orderedThresholds = new ArrayList<>(screensPerComplexity.keySet());
-        orderedThresholds.sort(Comparator.comparingInt(ThresholdItem::getOrder));
-        List<ComplexityGroupsSection.Group> orderedGroups = new ArrayList<>();
-        for (ThresholdItem<Integer, BigDecimal> threshold : orderedThresholds) {
-            groups.stream().filter(group -> group.getName().equals(threshold.getName())).findFirst()
-                    .ifPresent(orderedGroups::add);
-        }
-
-        BigDecimal maxGroupTotal = orderedGroups.stream()
-                .map(ComplexityGroupsSection.Group::getTotal)
-                .max(Comparator.naturalOrder())
-                .orElse(BigDecimal.ZERO);
-
-        return new ComplexityGroupsSection(orderedGroups, result.getScreensTotalAmount(),
-                result.getScreensTotalCost(), maxGroupTotal, result.getScreensRequireDecision());
+        return ComplexityGroupsSection.fromScreensPerComplexity(
+                result.getScreensPerComplexity(), result.getScreensRequireDecision());
     }
 
     protected UiComponentsSection buildUiComponentsSection(CubaProjectEstimationResult result) {

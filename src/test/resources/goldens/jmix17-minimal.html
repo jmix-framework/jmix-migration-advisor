@@ -168,6 +168,8 @@
   <nav class="toc">
     <div class="toc-title">Sections</div>
     <a href="#overview">Overview</a>
+<a href="#estimations">Estimations</a>
+<a href="#screens">Screens complexity</a>
 <a href="#ui">UI components</a>
 <a href="#add-ons">Add-ons</a>
 <a href="#red-flags">Red flags</a>
@@ -180,6 +182,11 @@
       <h2>Overview</h2>
       <div class="cards">
         <div class="card accent">
+          <div class="label">Total effort</div>
+          <div class="num">26</div>
+          <div class="sub">man-hours (lower bound)</div>
+        </div>
+        <div class="card">
           <div class="label">Jmix version</div>
           <div class="num">1.7.2</div>
           <div class="sub">plugin 1.7.2</div>
@@ -192,7 +199,7 @@
         <div class="card">
           <div class="label">Screens</div>
           <div class="num">0</div>
-          <div class="sub">0 fragments</div>
+          <div class="sub">0 fragments · 0 man-hours</div>
         </div>
         <div class="card">
           <div class="label">Add-ons</div>
@@ -221,7 +228,73 @@
         </div>
       </div>
       <div class="callout" style="margin-top:18px">
-        This is an inventory of the migration scope, not a complete estimation: hour estimates for screens and categories are coming in the next phase. Some aspects cannot be evaluated automatically and need manual analysis.
+        Estimates are expert-set and NOT calibrated against completed migrations yet; treat the numbers as a rough lower-range estimate. Red flags are not included in the hours. Some aspects cannot be evaluated automatically and need manual analysis. Kotlin sources are not analyzed.
+      </div>
+    </section>
+    <section id="estimations">
+      <h2>Estimations <span class="count">26 man-hours total</span></h2>
+      <div class="stack" role="img" aria-label="Effort distribution by category">
+          <span class="seg-1" style="flex-grow:24" title="Initial migration: 24 h"></span>
+          <span class="seg-2" style="flex-grow:0" title="Jakarta namespace sweep: 0 h"></span>
+          <span class="seg-3" style="flex-grow:0" title="Screens: 0 h"></span>
+          <span class="seg-4" style="flex-grow:0" title="Add-ons: 0 h"></span>
+          <span class="seg-1" style="flex-grow:0" title="Security roles: 0 h"></span>
+          <span class="seg-2" style="flex-grow:2" title="Configuration: 2 h"></span>
+          <span class="seg-3" style="flex-grow:0" title="Custom themes: 0 h"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Category</th><th class="num">Man-hours</th><th class="num">Share</th></tr></thead>
+          <tbody>
+              <tr>
+                <td><span class="swatch seg-1"></span>Initial migration</td>
+                <td class="num">24</td>
+                <td class="num">92%</td>
+              </tr>
+              <tr>
+                <td><span class="swatch seg-2"></span>Jakarta namespace sweep</td>
+                <td class="num">0</td>
+                <td class="num">0%</td>
+              </tr>
+              <tr>
+                <td><span class="swatch seg-3"></span>Screens</td>
+                <td class="num">0</td>
+                <td class="num">0%</td>
+              </tr>
+              <tr>
+                <td><span class="swatch seg-4"></span>Add-ons</td>
+                <td class="num">0</td>
+                <td class="num">0%</td>
+              </tr>
+              <tr>
+                <td><span class="swatch seg-1"></span>Security roles</td>
+                <td class="num">0</td>
+                <td class="num">0%</td>
+              </tr>
+              <tr>
+                <td><span class="swatch seg-2"></span>Configuration</td>
+                <td class="num">2</td>
+                <td class="num">8%</td>
+              </tr>
+              <tr>
+                <td><span class="swatch seg-3"></span>Custom themes</td>
+                <td class="num">0</td>
+                <td class="num">0%</td>
+              </tr>
+          </tbody>
+          <tfoot><tr><th>Total</th><td class="num">26</td><td class="num">100%</td></tr></tfoot>
+        </table>
+      </div>
+    </section>
+    <section id="screens">
+      <h2>Screens complexity <span class="count">0 screens · 0 man-hours</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Group</th><th class="num">Screens</th><th class="num">Cost, h</th><th class="num">Total, h</th><th>Weight</th></tr></thead>
+          <tbody>
+          </tbody>
+          <tfoot><tr><th>Total</th><td class="num">0</td><td></td><td class="num">0</td><td></td></tr></tfoot>
+        </table>
       </div>
     </section>
     <section id="ui">

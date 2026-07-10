@@ -126,6 +126,29 @@ public class JmixProjectExpectationsTest {
 
         // The intentionally broken Java file is reported, analysis is not aborted
         assertEquals(1, result.getUnparsedFiles().size());
+
+        // Estimation, derived by hand from the jmix profile weights:
+        // CustomerBrowse: components groupTable 3 + buttonsPanel 1 + popupView 5 + sourceCodeEditor 2 = 11,
+        //   6 controller calls (L2: 8), total 19 -> Simple (1.5 h);
+        // AddressFragment: textField only, score 0 -> Trivial (0.5 h);
+        // initial 24 + jakarta sweep (2 files -> 4) + screens 2 + add-ons 0 + roles 1 x 1
+        //   + config 2 + custom theme 1 x 8 = 41
+        var estimation = result.getEstimation();
+        assertEquals(0, new java.math.BigDecimal("2.0").compareTo(estimation.getScreensCost()),
+                "Screens cost: " + estimation.getScreensCost());
+        assertEquals(0, new java.math.BigDecimal("24").compareTo(estimation.getInitialMigrationCost()));
+        assertEquals(0, new java.math.BigDecimal("4").compareTo(estimation.getJakartaSweepCost()));
+        assertEquals(0, new java.math.BigDecimal("0").compareTo(estimation.getAddonsCost()));
+        assertEquals(0, new java.math.BigDecimal("1").compareTo(estimation.getSecurityRolesCost()));
+        assertEquals(0, new java.math.BigDecimal("2").compareTo(estimation.getConfigCost()));
+        assertEquals(0, new java.math.BigDecimal("8").compareTo(estimation.getCustomThemesCost()));
+        assertEquals(0, new java.math.BigDecimal("41").compareTo(estimation.getTotalCost()),
+                "Total cost: " + estimation.getTotalCost());
+
+        Map<String, List<String>> screensByGroup = estimation.getScreensPerComplexity().entrySet().stream()
+                .collect(Collectors.toMap(entry -> entry.getKey().getName(), Map.Entry::getValue));
+        assertEquals(List.of("feat2_AddressFragment"), screensByGroup.get("Trivial"));
+        assertEquals(List.of("feat2_Customer.browse"), screensByGroup.get("Simple"));
     }
 
     @Test

@@ -21,6 +21,7 @@ public class JmixProjectAnalysisResult {
     private final int fragmentsCount;
     private final Map<String, Integer> uiComponents;
     private final List<UnparsedFileEntry> unparsedFiles;
+    private final JmixEstimationResult estimation;
 
     public JmixProjectAnalysisResult(JmixProjectDescriptor projectDescriptor,
                                      @Nullable String basePackage,
@@ -31,7 +32,8 @@ public class JmixProjectAnalysisResult {
                                      int screensCount,
                                      int fragmentsCount,
                                      Map<String, Integer> uiComponents,
-                                     List<UnparsedFileEntry> unparsedFiles) {
+                                     List<UnparsedFileEntry> unparsedFiles,
+                                     JmixEstimationResult estimation) {
         this.projectDescriptor = projectDescriptor;
         this.basePackage = basePackage;
         this.addons = List.copyOf(addons);
@@ -42,6 +44,11 @@ public class JmixProjectAnalysisResult {
         this.fragmentsCount = fragmentsCount;
         this.uiComponents = Map.copyOf(uiComponents);
         this.unparsedFiles = List.copyOf(unparsedFiles);
+        this.estimation = estimation;
+    }
+
+    public JmixEstimationResult getEstimation() {
+        return estimation;
     }
 
     public JmixProjectDescriptor getProjectDescriptor() {

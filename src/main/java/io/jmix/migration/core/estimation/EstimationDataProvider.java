@@ -41,16 +41,10 @@ public class EstimationDataProvider {
 
     protected final SAXReader saxReader;
 
-    private int changedUiComponentsComplexityBaseValue;
-    private int screenDescriptorExtendsScreenComplexityScore;
-    private int screenDescriptorHasNestedDataItemComplexityScore;
-    private int screenDescriptorUiComponentCreateCallComplexityScore;
-    private int initialMigrationCost;
-    private int baseEntitiesMigrationCost;
-    private int legacyEntityListenerCost;
-
-    private List<? extends ThresholdItem<Integer, Integer>> screenControllerMethodsCallsComplexityThresholds;
-    private List<? extends ThresholdItem<Integer, BigDecimal>> screenComplexityTimeEstimationThresholds;
+    // Units are read lazily by name: each profile bundles only the units its estimator uses,
+    // and a missing unit fails on access with the unit name in the message
+    private Element defaultRootElement;
+    private Element externalRootElement;
 
     public EstimationDataProvider() {
         this(null);
@@ -70,40 +64,63 @@ public class EstimationDataProvider {
         initData(PROFILE_RESOURCE_TEMPLATE.formatted(profile), externalFileName);
     }
 
+    /**
+     * Plain cost value of the estimation unit.
+     */
+    public int getCost(String unitName) {
+        return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression(unitName));
+    }
+
+    /**
+     * Threshold list of the estimation unit with integer output values.
+     */
+    public List<? extends ThresholdItem<Integer, Integer>> getIntThresholds(String unitName) {
+        return extractThresholds(defaultRootElement, externalRootElement,
+                createThresholdXPathExpression(unitName), this::stringToInt, IntegerThresholdItem::new);
+    }
+
+    /**
+     * Threshold list of the estimation unit with decimal (hours) output values.
+     */
+    public List<? extends ThresholdItem<Integer, BigDecimal>> getDecimalThresholds(String unitName) {
+        return extractThresholds(defaultRootElement, externalRootElement,
+                createThresholdXPathExpression(unitName), BigDecimal::new, BigDecimalThresholdItem::new);
+    }
+
     public int getScreenChangedUiComponentsComplexityBaseValue() {
-        return changedUiComponentsComplexityBaseValue;
+        return getCost("screen-changed-ui-components-complexity-base-value");
     }
 
     public int getScreenDescriptorExtendsScreenComplexityScore() {
-        return screenDescriptorExtendsScreenComplexityScore;
+        return getCost("screen-descriptor-extends-screen-complexity-score");
     }
 
     public int getScreenDescriptorHasNestedDataItemComplexityScore() {
-        return screenDescriptorHasNestedDataItemComplexityScore;
+        return getCost("screen-descriptor-has-nested-data-item-complexity-score");
     }
 
     public int getScreenDescriptorUiComponentCreateCallComplexityScore() {
-        return screenDescriptorUiComponentCreateCallComplexityScore;
+        return getCost("screen-descriptor-ui-component-create-call-complexity-score");
     }
 
     public int getInitialMigrationCost() {
-        return initialMigrationCost;
+        return getCost("initial-migration-cost");
     }
 
     public int getBaseEntitiesMigrationCost() {
-        return baseEntitiesMigrationCost;
+        return getCost("base-entities-migration-cost");
     }
 
     public int getLegacyEntityListenerCost() {
-        return legacyEntityListenerCost;
+        return getCost("legacy-entity-listener-cost");
     }
 
     public List<? extends ThresholdItem<Integer, Integer>> getScreenControllerMethodsCallsComplexityThresholds() {
-        return screenControllerMethodsCallsComplexityThresholds;
+        return getIntThresholds("screen-controller-method-calls");
     }
 
     public List<? extends ThresholdItem<Integer, BigDecimal>> getScreenComplexityTimeEstimationThresholds() {
-        return screenComplexityTimeEstimationThresholds;
+        return getDecimalThresholds("screen-complexity-time-estimation");
     }
 
     protected void initData(String profileResource, String externalFileName) {
@@ -112,59 +129,18 @@ public class EstimationDataProvider {
             throw new RuntimeException("Estimation data profile resource is not found: " + profileResource);
         }
 
-        Element externalFileElement = null;
         if (StringUtils.isNotEmpty(externalFileName)) {
             // The file is explicitly requested by the user: failing to load it must abort the run
             // instead of silently producing a report based on default weights
             File externalFile = new File(externalFileName);
-            externalFileElement = loadDataFile(externalFile, true);
+            this.externalRootElement = loadDataFile(externalFile, true);
         }
 
-        Element defaultFileElement = loadDataFile(defaultFileResourceStream, true);
-        if (defaultFileElement == null) {
+        this.defaultRootElement = loadDataFile(defaultFileResourceStream, true);
+        if (defaultRootElement == null) {
             throw new RuntimeException("Estimation data profile '" + profileResource + "' was not loaded");
         }
-
-        this.changedUiComponentsComplexityBaseValue = loadChangedUiComponentsComplexityBaseValue(defaultFileElement, externalFileElement);
-        this.screenDescriptorExtendsScreenComplexityScore = loadScreenDescriptorExtendsScreenComplexityScore(defaultFileElement, externalFileElement);
-        this.screenDescriptorHasNestedDataItemComplexityScore = loadScreenDescriptorHasNestedDataItemComplexityScore(defaultFileElement, externalFileElement);
-        this.screenDescriptorUiComponentCreateCallComplexityScore = loadScreenDescriptorUiComponentCreateCallComplexityScore(defaultFileElement, externalFileElement);
-        this.initialMigrationCost = loadInitialMigrationCost(defaultFileElement, externalFileElement);
-        this.baseEntitiesMigrationCost = loadBaseEntitiesMigrationCost(defaultFileElement, externalFileElement);
-        this.legacyEntityListenerCost = loadLegacyEntityListenerCost(defaultFileElement, externalFileElement);
-
-        this.screenControllerMethodsCallsComplexityThresholds = extractScreenControllerMethodsCallsComplexityThresholds(defaultFileElement, externalFileElement);
-        this.screenComplexityTimeEstimationThresholds = extractScreenComplexityTimeEstimationThresholds(defaultFileElement, externalFileElement);
     }
-
-    protected int loadChangedUiComponentsComplexityBaseValue(Element defaultRootElement, Element externalRootElement) {
-        return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("screen-changed-ui-components-complexity-base-value"));
-    }
-
-    protected int loadScreenDescriptorExtendsScreenComplexityScore(Element defaultRootElement, Element externalRootElement) {
-        return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("screen-descriptor-extends-screen-complexity-score"));
-    }
-
-    protected int loadScreenDescriptorHasNestedDataItemComplexityScore(Element defaultRootElement, Element externalRootElement) {
-        return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("screen-descriptor-has-nested-data-item-complexity-score"));
-    }
-
-    protected int loadScreenDescriptorUiComponentCreateCallComplexityScore(Element defaultRootElement, Element externalRootElement) {
-        return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("screen-descriptor-ui-component-create-call-complexity-score"));
-    }
-
-    protected int loadInitialMigrationCost(Element defaultRootElement, Element externalRootElement) {
-        return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("initial-migration-cost"));
-    }
-
-    protected int loadBaseEntitiesMigrationCost(Element defaultRootElement, Element externalRootElement) {
-        return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("base-entities-migration-cost"));
-    }
-
-    protected int loadLegacyEntityListenerCost(Element defaultRootElement, Element externalRootElement) {
-        return extractSingleIntValue(defaultRootElement, externalRootElement, createSimpleCostXPathExpression("legacy-entity-listener-cost"));
-    }
-
 
     protected int extractSingleIntValue(Element defaultRootElement, Element externalRootElement, String xpath) {
         String stringValue = null;
@@ -181,24 +157,6 @@ public class EstimationDataProvider {
             throw new RuntimeException("No data found by xpath: " + xpath);
         }
         return stringToInt(stringValue);
-    }
-
-    protected List<? extends ThresholdItem<Integer, Integer>> extractScreenControllerMethodsCallsComplexityThresholds(Element defaultRootElement, Element externalRootElement) {
-        return extractThresholds(
-                defaultRootElement,
-                externalRootElement,
-                createThresholdXPathExpression("screen-controller-method-calls"),
-                this::stringToInt,
-                IntegerThresholdItem::new);
-    }
-
-    protected List<? extends ThresholdItem<Integer, BigDecimal>> extractScreenComplexityTimeEstimationThresholds(Element defaultRootElement, Element externalRootElement) {
-        return extractThresholds(
-                defaultRootElement,
-                externalRootElement,
-                createThresholdXPathExpression("screen-complexity-time-estimation"),
-                BigDecimal::new,
-                BigDecimalThresholdItem::new);
     }
 
     @Nullable

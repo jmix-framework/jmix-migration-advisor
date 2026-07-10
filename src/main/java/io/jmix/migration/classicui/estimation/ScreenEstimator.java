@@ -1,9 +1,9 @@
-package io.jmix.migration.cuba.estimation;
+package io.jmix.migration.classicui.estimation;
 import io.jmix.migration.classicui.model.*;
 import io.jmix.migration.core.estimation.*;
 
 import io.jmix.migration.classicui.Metrics;
-import io.jmix.migration.cuba.estimation.rules.*;
+import io.jmix.migration.classicui.estimation.rules.*;
 import io.jmix.migration.core.incident.UiComponentIssue;
 import io.jmix.migration.core.incident.UiComponentIssueType;
 import io.jmix.migration.core.incident.UiComponentIssuesRegistry;

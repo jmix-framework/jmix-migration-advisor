@@ -1,4 +1,4 @@
-package io.jmix.migration.cuba.estimation.rules;
+package io.jmix.migration.classicui.estimation.rules;
 import io.jmix.migration.core.estimation.NumericMetricRule;
 
 import static io.jmix.migration.classicui.Metrics.UI_COMPONENT_CREATE_CALLS_AMOUNT_METRIC_CODE;

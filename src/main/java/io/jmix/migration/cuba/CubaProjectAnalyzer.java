@@ -12,7 +12,7 @@ import io.jmix.migration.cuba.appcomponent.AppComponentType;
 import io.jmix.migration.cuba.appcomponent.CubaAppComponentInfo;
 import io.jmix.migration.cuba.appcomponent.CubaAppComponentsInfoRegistry;
 import io.jmix.migration.core.estimation.EstimationDataProvider;
-import io.jmix.migration.cuba.estimation.ScreenEstimator;
+import io.jmix.migration.classicui.estimation.ScreenEstimator;
 import io.jmix.migration.core.estimation.ScreenTimeEstimator;
 import io.jmix.migration.cuba.estimation.rules.LegacyEntityListenersRule;
 import io.jmix.migration.core.estimation.NumericMetricRule;

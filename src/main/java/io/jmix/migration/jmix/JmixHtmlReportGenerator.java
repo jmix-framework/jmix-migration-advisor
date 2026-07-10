@@ -4,6 +4,8 @@ import io.jmix.migration.core.incident.UiComponentIssuesRegistry;
 import io.jmix.migration.core.project.JmixModule;
 import io.jmix.migration.core.project.JmixProjectDescriptor;
 import io.jmix.migration.core.report.AddonsSection;
+import io.jmix.migration.core.report.ComplexityGroupsSection;
+import io.jmix.migration.core.report.EstimationSummarySection;
 import io.jmix.migration.core.report.HtmlReportWriter;
 import io.jmix.migration.core.report.NotesSection;
 import io.jmix.migration.core.report.OverviewSection;
@@ -16,6 +18,7 @@ import io.jmix.migration.core.report.UnparsedFilesSection;
 import io.jmix.migration.jmix.addon.JmixAddonInfo;
 import io.jmix.migration.jmix.model.JmixConfigInfo;
 import io.jmix.migration.jmix.model.JmixDataModelInfo;
+import io.jmix.migration.jmix.model.JmixEstimationResult;
 import io.jmix.migration.jmix.model.JmixProjectAnalysisResult;
 import io.jmix.migration.jmix.model.JmixSourcesScanResult;
 
@@ -31,16 +34,21 @@ public class JmixHtmlReportGenerator {
 
     protected static final String REPORT_TITLE = "Jmix 1.x → Jmix migration report";
     protected static final String NOT_DETECTED = "not detected";
-    protected static final String DISCLAIMER = "This is an inventory of the migration scope, not a complete"
-            + " estimation: hour estimates for screens and categories are coming in the next phase."
-            + " Some aspects cannot be evaluated automatically and need manual analysis.";
+    protected static final String DISCLAIMER = "Estimates are expert-set and NOT calibrated against completed"
+            + " migrations yet; treat the numbers as a rough lower-range estimate. Red flags are not included"
+            + " in the hours. Some aspects cannot be evaluated automatically and need manual analysis."
+            + " Kotlin sources are not analyzed.";
 
     private final UiComponentIssuesRegistry uiComponentIssuesRegistry;
     private final HtmlReportWriter reportWriter;
 
-    public JmixHtmlReportGenerator() {
-        this.uiComponentIssuesRegistry = UiComponentIssuesRegistry.create();
+    public JmixHtmlReportGenerator(UiComponentIssuesRegistry uiComponentIssuesRegistry) {
+        this.uiComponentIssuesRegistry = uiComponentIssuesRegistry;
         this.reportWriter = new HtmlReportWriter();
+    }
+
+    public JmixHtmlReportGenerator() {
+        this(UiComponentIssuesRegistry.create());
     }
 
     protected void generateHtmlReport(String project, JmixProjectAnalysisResult result) {
@@ -60,6 +68,10 @@ public class JmixHtmlReportGenerator {
 
         List<ReportSection> sections = new ArrayList<>();
         sections.add(buildOverviewSection(result, addonsSection));
+        sections.add(buildEstimationsSection(result.getEstimation()));
+        sections.add(ComplexityGroupsSection.fromScreensPerComplexity(
+                result.getEstimation().getScreensPerComplexity(),
+                result.getEstimation().getScreensRequireDecision()));
         sections.add(UiComponentsSection.fromComponentCounters(result.getUiComponents(), uiComponentIssuesRegistry));
         sections.add(addonsSection);
         sections.add(buildRedFlagsSection(result));
@@ -69,6 +81,19 @@ public class JmixHtmlReportGenerator {
             sections.add(new UnparsedFilesSection(result.getUnparsedFiles()));
         }
         return new ReportModel(project, REPORT_TITLE, sections);
+    }
+
+    protected EstimationSummarySection buildEstimationsSection(JmixEstimationResult estimation) {
+        List<EstimationSummarySection.Row> rows = List.of(
+                new EstimationSummarySection.Row("Initial migration", estimation.getInitialMigrationCost()),
+                new EstimationSummarySection.Row("Jakarta namespace sweep", estimation.getJakartaSweepCost()),
+                new EstimationSummarySection.Row("Screens", estimation.getScreensCost()),
+                new EstimationSummarySection.Row("Add-ons", estimation.getAddonsCost()),
+                new EstimationSummarySection.Row("Security roles", estimation.getSecurityRolesCost()),
+                new EstimationSummarySection.Row("Configuration", estimation.getConfigCost()),
+                new EstimationSummarySection.Row("Custom themes", estimation.getCustomThemesCost())
+        );
+        return new EstimationSummarySection(rows, estimation.getTotalCost());
     }
 
     protected OverviewSection buildOverviewSection(JmixProjectAnalysisResult result, AddonsSection addonsSection) {
@@ -95,11 +120,14 @@ public class JmixHtmlReportGenerator {
         int rolesCount = sourcesScan.getResourceRoles().size() + sourcesScan.getRowLevelRoles().size();
 
         List<OverviewSection.Kpi> kpis = List.of(
+                new OverviewSection.Kpi("Total effort", result.getEstimation().getTotalCost(),
+                        "man-hours (lower bound)", true),
                 new OverviewSection.Kpi("Jmix version",
-                        effectiveVersion == null ? NOT_DETECTED : effectiveVersion, versionSub, true),
+                        effectiveVersion == null ? NOT_DETECTED : effectiveVersion, versionSub, false),
                 new OverviewSection.Kpi("Entities", dataModel.getJpaEntities().size(), entitiesSub, false),
                 new OverviewSection.Kpi("Screens", result.getScreensCount(),
-                        result.getFragmentsCount() + " fragments", false),
+                        result.getFragmentsCount() + " fragments · "
+                                + formatHours(result.getEstimation().getScreensCost()) + " man-hours", false),
                 new OverviewSection.Kpi("Add-ons", addonsSection.getRows().size(),
                         unknownAddons > 0 ? unknownAddons + " without Jmix data" : "all recognized", false),
                 new OverviewSection.Kpi("Roles", rolesCount,
@@ -113,6 +141,13 @@ public class JmixHtmlReportGenerator {
                         "modules: " + modulesSub, false)
         );
         return new OverviewSection(kpis, DISCLAIMER);
+    }
+
+    /**
+     * Matches the FreeMarker number format "0.##": no trailing zeros, plain decimal notation.
+     */
+    protected String formatHours(java.math.BigDecimal value) {
+        return value.stripTrailingZeros().toPlainString();
     }
 
     protected AddonsSection buildAddonsSection(JmixProjectAnalysisResult result) {

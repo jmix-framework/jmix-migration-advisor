@@ -1,6 +1,10 @@
 package io.jmix.migration.core.report;
 
+import io.jmix.migration.core.estimation.ThresholdItem;
+
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +27,39 @@ public class ComplexityGroupsSection implements ReportSection {
         this.totalHours = totalHours;
         this.maxGroupTotal = maxGroupTotal;
         this.requiresDecision = requiresDecision;
+    }
+
+    /**
+     * Builds the section from the estimation output: screens grouped by complexity threshold.
+     * Groups follow the threshold order; screen names inside a group are sorted for a stable report.
+     */
+    public static ComplexityGroupsSection fromScreensPerComplexity(
+            Map<ThresholdItem<Integer, BigDecimal>, List<String>> screensPerComplexity,
+            Map<String, List<String>> requiresDecision) {
+
+        List<ThresholdItem<Integer, BigDecimal>> orderedThresholds = new ArrayList<>(screensPerComplexity.keySet());
+        orderedThresholds.sort(Comparator.comparingInt(ThresholdItem::getOrder));
+
+        List<Group> groups = new ArrayList<>();
+        long totalAmount = 0;
+        BigDecimal totalHours = BigDecimal.ZERO;
+        BigDecimal maxGroupTotal = BigDecimal.ZERO;
+        for (ThresholdItem<Integer, BigDecimal> threshold : orderedThresholds) {
+            List<String> screens = screensPerComplexity.get(threshold);
+            BigDecimal cost = threshold.getOutputValue();
+            int amount = screens.size();
+            BigDecimal total = cost.multiply(BigDecimal.valueOf(amount));
+
+            List<String> sortedScreens = screens.stream().sorted().toList();
+            groups.add(new Group(threshold.getName(), amount, cost, total, sortedScreens));
+
+            totalAmount += amount;
+            totalHours = totalHours.add(total);
+            if (total.compareTo(maxGroupTotal) > 0) {
+                maxGroupTotal = total;
+            }
+        }
+        return new ComplexityGroupsSection(groups, totalAmount, totalHours, maxGroupTotal, requiresDecision);
     }
 
     @Override

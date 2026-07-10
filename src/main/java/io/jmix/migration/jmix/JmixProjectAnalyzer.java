@@ -5,6 +5,7 @@ import io.jmix.migration.core.project.GradleBuildParser;
 import io.jmix.migration.core.project.JmixProjectDescriptor;
 import io.jmix.migration.core.project.ProjectType;
 import io.jmix.migration.core.project.ProjectTypeDetector;
+import io.jmix.migration.core.incident.UiComponentIssuesRegistry;
 import io.jmix.migration.core.scan.UnparsedFilesCollector;
 import io.jmix.migration.jmix.addon.JmixAddonsRegistry;
 import io.jmix.migration.jmix.analyzer.JmixConfigAnalyzer;
@@ -13,6 +14,7 @@ import io.jmix.migration.jmix.analyzer.JmixScreenAnalyzer;
 import io.jmix.migration.jmix.analyzer.JmixSourcesScanner;
 import io.jmix.migration.jmix.model.JmixConfigInfo;
 import io.jmix.migration.jmix.model.JmixDataModelInfo;
+import io.jmix.migration.jmix.model.JmixEstimationResult;
 import io.jmix.migration.jmix.model.JmixProjectAnalysisResult;
 import io.jmix.migration.jmix.model.JmixSourcesScanResult;
 import io.jmix.migration.jmix.project.BasePackageResolver;
@@ -39,14 +41,21 @@ public class JmixProjectAnalyzer {
     private final ProjectTypeDetector projectTypeDetector;
     private final BasePackageResolver basePackageResolver;
     private final JmixAddonsRegistry addonsRegistry;
+    private final JmixEstimator estimator;
     private final JmixHtmlReportGenerator reportGenerator;
 
     public JmixProjectAnalyzer() {
+        this(null);
+    }
+
+    public JmixProjectAnalyzer(@Nullable String estimationDataFile) {
+        UiComponentIssuesRegistry uiComponentIssuesRegistry = UiComponentIssuesRegistry.create();
         this.gradleBuildParser = new GradleBuildParser();
         this.projectTypeDetector = new ProjectTypeDetector();
         this.basePackageResolver = new BasePackageResolver();
         this.addonsRegistry = JmixAddonsRegistry.create();
-        this.reportGenerator = new JmixHtmlReportGenerator();
+        this.estimator = new JmixEstimator(uiComponentIssuesRegistry, estimationDataFile);
+        this.reportGenerator = new JmixHtmlReportGenerator(uiComponentIssuesRegistry);
     }
 
     public void analyzeProject(String projectPathString, @Nullable String basePackage,
@@ -102,11 +111,17 @@ public class JmixProjectAnalyzer {
         JmixSourcesScanResult sourcesScan = new JmixSourcesScanner().scan(descriptor.getModules());
         JmixConfigInfo configInfo = new JmixConfigAnalyzer().analyzeConfig(descriptor.getModules());
 
+        int rolesCount = sourcesScan.getResourceRoles().size() + sourcesScan.getRowLevelRoles().size();
+        JmixEstimationResult estimation = estimator.estimate(screensCollector,
+                new JmixEstimator.JmixDataFacts(dataModel.getJavaxImportFilesCount(), rolesCount),
+                addons, sourcesScan, configInfo);
+
         return new JmixProjectAnalysisResult(descriptor, effectiveBasePackage, addons,
                 dataModel, sourcesScan, configInfo,
                 screensCount, fragmentsCount,
                 screenAnalyzer.countTotalUiComponents(screensCollector),
-                unparsedFilesCollector.getEntries());
+                unparsedFilesCollector.getEntries(),
+                estimation);
     }
 
     protected void validateProjectType(JmixProjectDescriptor descriptor, Path projectPath) {

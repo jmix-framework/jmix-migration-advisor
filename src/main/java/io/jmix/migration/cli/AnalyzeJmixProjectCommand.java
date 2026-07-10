@@ -16,6 +16,9 @@ public class AnalyzeJmixProjectCommand implements BaseCommand {
             + " Resolved from the @SpringBootApplication class when omitted", required = false, order = 1)
     private String basePackage;
 
+    @Parameter(names = {"--estimation-data-file"}, description = "External file with estimation data", required = false, order = 3)
+    private String estimationDataFile;
+
     @Parameter(names = {"--jmix-version"}, description = "Jmix version override for builds where"
             + " the version cannot be read from build.gradle (e.g. placeholder variables)", required = false, order = 2)
     private String jmixVersion;
@@ -24,7 +27,7 @@ public class AnalyzeJmixProjectCommand implements BaseCommand {
     public void run() {
         log.info("Start 'AnalyzeJmixProjectCommand'");
 
-        JmixProjectAnalyzer jmixProjectAnalyzer = new JmixProjectAnalyzer();
+        JmixProjectAnalyzer jmixProjectAnalyzer = new JmixProjectAnalyzer(estimationDataFile);
         jmixProjectAnalyzer.analyzeProject(projectDirectory, basePackage, jmixVersion);
     }
 }

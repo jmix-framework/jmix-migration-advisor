@@ -1,4 +1,4 @@
-package io.jmix.migration.cuba.estimation.rules;
+package io.jmix.migration.classicui.estimation.rules;
 import io.jmix.migration.core.estimation.NumericMetricRule;
 
 import io.jmix.migration.core.estimation.ThresholdItem;
