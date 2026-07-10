@@ -10,6 +10,7 @@ import io.jmix.migration.core.project.ProjectTypeDetector;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -81,6 +82,50 @@ public class JmixProjectExpectationsTest {
                 .findFirst()
                 .orElseThrow();
         assertNull(unknown.getAddonInfo());
+    }
+
+    @Test
+    public void featuresFixtureFactsMatchHandComputedExpectations() {
+        JmixProjectAnalysisResult result = new JmixProjectAnalyzer()
+                .analyzeProjectToResult(fixturePath("jmix17-features").toString(), null, null);
+
+        assertEquals("com.company.feat2", result.getBasePackage());
+
+        // Data model: 1 JPA entity, 1 DTO, 1 embeddable, 1 enum, 1 listener;
+        // Customer.java and Address.java import javax.persistence
+        assertEquals(List.of("com.company.feat2.entity.Customer"), result.getDataModel().getJpaEntities());
+        assertEquals(List.of("com.company.feat2.entity.CustomerData"), result.getDataModel().getDtoEntities());
+        assertEquals(List.of("com.company.feat2.entity.Address"), result.getDataModel().getEmbeddables());
+        assertEquals(List.of("com.company.feat2.entity.CustomerStatus"), result.getDataModel().getEnums());
+        assertEquals(List.of("com.company.feat2.listener.CustomerChangedListener"),
+                result.getDataModel().getEntityEventListeners());
+        assertEquals(2, result.getDataModel().getJavaxImportFilesCount());
+
+        // Screens: 1 screen + 1 fragment linked via annotations and the jmix namespace
+        assertEquals(1, result.getScreensCount());
+        assertEquals(1, result.getFragmentsCount());
+        assertTrue(result.getUiComponents().keySet().containsAll(
+                        List.of("groupTable", "buttonsPanel", "button", "popupView", "sourceCodeEditor", "textField")),
+                "UI components: " + result.getUiComponents().keySet());
+
+        // Security and red flags
+        assertEquals(List.of("com.company.feat2.security.FullAccessRole"),
+                result.getSourcesScan().getResourceRoles());
+        assertEquals(2, result.getSourcesScan().getScreenPolicyCount());
+        assertEquals(1, result.getSourcesScan().getMenuPolicyCount());
+        assertEquals(List.of("com.company.feat2.security.AppSecurityConfiguration"),
+                result.getSourcesScan().getSecurityConfigs());
+        assertEquals(2, result.getSourcesScan().getRedFlags().size(),
+                "Red flags: " + result.getSourcesScan().getRedFlags().size());
+        assertEquals(1, result.getSourcesScan().getKotlinFilesCount());
+
+        // Configuration: 3 renamed/changed properties, 2 menu items, uidata changelog include
+        assertEquals(3, result.getConfigInfo().getPropertyRenames().size());
+        assertEquals(2, result.getConfigInfo().getMenuScreenItemsCount());
+        assertTrue(result.getConfigInfo().isUiDataChangelogIncluded());
+
+        // The intentionally broken Java file is reported, analysis is not aborted
+        assertEquals(1, result.getUnparsedFiles().size());
     }
 
     @Test

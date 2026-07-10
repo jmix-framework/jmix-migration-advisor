@@ -1,7 +1,7 @@
 package io.jmix.migration.cuba.model;
 import io.jmix.migration.core.estimation.NumericMetric;
 
-import io.jmix.migration.cuba.Metrics;
+import io.jmix.migration.classicui.Metrics;
 
 import java.util.List;
 import java.util.Map;

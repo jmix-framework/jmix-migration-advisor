@@ -6,7 +6,7 @@ import org.apache.commons.lang3.Range;
 
 import java.util.List;
 
-import static io.jmix.migration.cuba.Metrics.METHOD_CALLS_AMOUNT_METRIC_CODE;
+import static io.jmix.migration.classicui.Metrics.METHOD_CALLS_AMOUNT_METRIC_CODE;
 
 
 public class ScreenControllerMethodsCallsRule implements NumericMetricRule {

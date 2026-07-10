@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Registry of application.properties keys of Jmix 1.x that are renamed or change meaning
+    in the current Jmix version. Entries with a 'new-property' are mechanical renames;
+    entries without it keep the key but the referenced content changes (see notes).
+-->
+<jmix-config-renames>
+    <property key="jmix.ui.login-screen-id" new-key="jmix.ui.login-view-id">
+        <notes>Screens become views; the login view is regenerated for Flow UI</notes>
+    </property>
+    <property key="jmix.ui.main-screen-id" new-key="jmix.ui.main-view-id">
+        <notes>Screens become views; the main view is regenerated for Flow UI</notes>
+    </property>
+    <property key="jmix.ui.default-screen-id" new-key="jmix.ui.default-view-id">
+        <notes>Screens become views</notes>
+    </property>
+    <property key="jmix.ui.menu-config">
+        <notes>The key stays, but menu items switch from screen= to view= and the namespace changes to http://jmix.io/schema/flowui/menu</notes>
+    </property>
+    <property key="jmix.ui.theme">
+        <notes>Classic SCSS themes (helium/halo/hover) do not exist in Flow UI; theming is CSS on top of Lumo</notes>
+    </property>
+</jmix-config-renames>

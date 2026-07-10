@@ -168,7 +168,11 @@
   <nav class="toc">
     <div class="toc-title">Sections</div>
     <a href="#overview">Overview</a>
+<a href="#ui">UI components</a>
 <a href="#add-ons">Add-ons</a>
+<a href="#red-flags">Red flags</a>
+<a href="#renames">Mechanical renames</a>
+<a href="#misc">Misc notes</a>
   </nav>
 
   <main>
@@ -181,14 +185,14 @@
           <div class="sub">plugin 1.7.2</div>
         </div>
         <div class="card">
-          <div class="label">Java</div>
-          <div class="num">11</div>
-          
+          <div class="label">Entities</div>
+          <div class="num">0</div>
+          <div class="sub">0 DTO, 0 embeddable, 0 enums</div>
         </div>
         <div class="card">
-          <div class="label">Modules</div>
-          <div class="num">1</div>
-          <div class="sub">jmix17-minimal</div>
+          <div class="label">Screens</div>
+          <div class="num">0</div>
+          <div class="sub">0 fragments</div>
         </div>
         <div class="card">
           <div class="label">Add-ons</div>
@@ -196,13 +200,47 @@
           <div class="sub">1 without Jmix data</div>
         </div>
         <div class="card">
+          <div class="label">Roles</div>
+          <div class="num">0</div>
+          <div class="sub">0 screen policies</div>
+        </div>
+        <div class="card">
+          <div class="label">Red flags</div>
+          <div class="num">0</div>
+          <div class="sub">manual estimation required</div>
+        </div>
+        <div class="card">
+          <div class="label">Java</div>
+          <div class="num">11</div>
+          
+        </div>
+        <div class="card">
           <div class="label">Base package</div>
           <div class="num">com.company.jmixapp</div>
-          
+          <div class="sub">modules: jmix17-minimal</div>
         </div>
       </div>
       <div class="callout" style="margin-top:18px">
-        Preliminary report: it covers the build structure and add-ons only. Screens, entities, security and configuration analysis is not implemented yet; treat this as an inventory, not an estimation.
+        This is an inventory of the migration scope, not a complete estimation: hour estimates for screens and categories are coming in the next phase. Some aspects cannot be evaluated automatically and need manual analysis.
+      </div>
+    </section>
+    <section id="ui">
+      <h2>UI components <span class="count">0 noted</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Component</th><th class="num">Used</th><th>Status</th><th>Notes</th></tr></thead>
+          <tbody>
+              <tr><td colspan="4" class="empty">No noteworthy UI components found.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="legend">
+        <span><span class="badge ok">Changed</span> direct analog with renames or minor differences; mechanical XML/code edit</span>
+        <span><span class="badge info">Has alternative</span> a different ready-made component achieves the same or similar result</span>
+        <span><span class="badge warn">Has workaround</span> achievable partially or with custom glue code following a known recipe</span>
+        <span><span class="badge bad">Absent</span> no recipe: drop the functionality, redesign, or build from scratch (not included in complexity scores)</span>
+        <span><span class="chip">+N</span> extra complexity score added to each screen using the component</span>
+        <span class="note">Components not listed here have a direct Jmix equivalent. Dependency badges (Add-on, Commercial add-on, 3rd-party) refer to the primary replacement recipe; simpler fallbacks, if any, are described in the notes.</span>
       </div>
     </section>
     <section id="add-ons">
@@ -316,6 +354,55 @@
         <span><span class="badge warn">Replaced</span> a different add-on covers the functionality; rework per notes</span>
         <span><span class="badge bad">Absent</span> no equivalent in the current Jmix</span>
         <span><span class="badge bad">Unknown</span> no data in the registry; check the marketplace manually</span>
+      </div>
+    </section>
+    <section id="red-flags">
+      <h2>Red flags <span class="count">0 found</span></h2>
+      <div class="callout" style="margin-bottom:14px">
+        These findings cannot be migrated automatically: custom client-side components, direct
+        Vaadin 8 API usage and SCSS themes have no Flow UI equivalents. Estimate them manually;
+        they are NOT included in the numbers above.
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Category</th><th>Subject</th><th>Notes</th></tr></thead>
+          <tbody>
+              <tr><td colspan="3" class="empty">No red flags detected.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section id="renames">
+      <h2>Mechanical renames <span class="count">2 items</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Subject</th><th>Current</th><th>Replacement</th><th>Notes</th></tr></thead>
+          <tbody>
+                <tr>
+                  <td>application.properties</td>
+                  <td><span class="mono">jmix.ui.login-screen-id</span></td>
+                  <td><span class="mono">jmix.ui.login-view-id</span></td>
+                  <td>Screens become views; the login view is regenerated for Flow UI</td>
+                </tr>
+                <tr>
+                  <td>application.properties</td>
+                  <td><span class="mono">jmix.ui.main-screen-id</span></td>
+                  <td><span class="mono">jmix.ui.main-view-id</span></td>
+                  <td>Screens become views; the main view is regenerated for Flow UI</td>
+                </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section id="misc">
+      <h2>Misc notes <span class="count">0</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Item</th><th>Notes</th></tr></thead>
+          <tbody>
+              <tr><td colspan="2" class="empty">Nothing to report.</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
   </main>

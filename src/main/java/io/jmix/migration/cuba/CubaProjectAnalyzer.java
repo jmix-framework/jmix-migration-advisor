@@ -1,4 +1,5 @@
 package io.jmix.migration.cuba;
+import io.jmix.migration.classicui.model.*;
 import io.jmix.migration.core.estimation.*;
 import io.jmix.migration.core.model.UnparsedFileEntry;
 import io.jmix.migration.core.project.GradleBuildParser;
@@ -19,7 +20,7 @@ import io.jmix.migration.core.incident.MiscNote;
 import io.jmix.migration.cuba.MiscNotes;
 import io.jmix.migration.core.incident.UiComponentIssuesRegistry;
 import io.jmix.migration.cuba.model.*;
-import io.jmix.migration.cuba.parser.screen.ScreensCollector;
+import io.jmix.migration.classicui.parser.ScreensCollector;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import static io.jmix.migration.cuba.Metrics.LEGACY_ENTITY_LISTENERS_METRIC_CODE;
+import static io.jmix.migration.classicui.Metrics.LEGACY_ENTITY_LISTENERS_METRIC_CODE;
 
 public class CubaProjectAnalyzer {
 

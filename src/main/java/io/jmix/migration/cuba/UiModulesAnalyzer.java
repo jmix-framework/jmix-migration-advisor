@@ -3,10 +3,11 @@ import io.jmix.migration.core.scan.BaseAnalyzer;
 import io.jmix.migration.core.scan.UnparsedFilesCollector;
 
 import io.jmix.migration.cuba.model.UiModulesAnalysisResult;
-import io.jmix.migration.cuba.parser.general.PropertiesParser;
-import io.jmix.migration.cuba.parser.screen.ScreenControllerParser;
-import io.jmix.migration.cuba.parser.screen.ScreenDescriptorParser;
-import io.jmix.migration.cuba.parser.screen.ScreensCollector;
+import io.jmix.migration.core.scan.PropertiesParser;
+import io.jmix.migration.classicui.parser.ScreenClassProfile;
+import io.jmix.migration.classicui.parser.ScreenControllerParser;
+import io.jmix.migration.classicui.parser.ScreenDescriptorParser;
+import io.jmix.migration.classicui.parser.ScreensCollector;
 import io.jmix.migration.cuba.parser.screen.WebScreensXmlParser;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -96,7 +97,7 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
     }
 
     protected void processUiModuleScreenDescriptors(Path moduleSrcPath, ScreensCollector screensCollector) {
-        ScreenDescriptorParser screenDescriptorParser = new ScreenDescriptorParser(moduleSrcPath, screensCollector);
+        ScreenDescriptorParser screenDescriptorParser = new ScreenDescriptorParser(moduleSrcPath, screensCollector, null);
 
         try {
             Files.walkFileTree(moduleSrcPath, new SimpleFileVisitor<>() {
@@ -120,7 +121,7 @@ public class UiModulesAnalyzer extends BaseAnalyzer {
     }
 
     protected void processUiModuleScreenControllers(Path moduleSrcPath, ScreensCollector screensCollector) {
-        ScreenControllerParser screenControllerParser = new ScreenControllerParser(moduleSrcPath, allSrcPaths, screensCollector);
+        ScreenControllerParser screenControllerParser = new ScreenControllerParser(moduleSrcPath, allSrcPaths, screensCollector, ScreenClassProfile.cuba());
 
         try {
             Files.walkFileTree(moduleSrcPath, new SimpleFileVisitor<>() {

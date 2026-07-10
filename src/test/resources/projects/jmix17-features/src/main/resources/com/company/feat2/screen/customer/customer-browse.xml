@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window xmlns="http://jmix.io/schema/ui/window"
+        caption="msg://customerBrowse.caption">
+    <data readOnly="true">
+        <collection id="customersDc" class="com.company.feat2.entity.Customer">
+            <fetchPlan extends="_base"/>
+            <loader id="customersDl">
+                <query>select e from feat2_Customer e</query>
+            </loader>
+        </collection>
+    </data>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+        <screenSettings id="settingsFacet" auto="true"/>
+    </facets>
+    <layout>
+        <groupTable id="customersTable" dataContainer="customersDc" width="100%">
+            <buttonsPanel id="buttonsPanel">
+                <button id="createBtn" action="customersTable.create"/>
+            </buttonsPanel>
+            <columns>
+                <column id="name"/>
+            </columns>
+        </groupTable>
+        <popupView id="quickView"/>
+        <sourceCodeEditor id="scriptEditor"/>
+    </layout>
+</window>

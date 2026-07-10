@@ -39,14 +39,23 @@ public class ReportSnapshotTest {
 
     @Test
     public void jmixMinimalReportMatchesGolden() throws IOException {
-        Path fixturePath = FIXTURES_ROOT.resolve("jmix17-minimal").toAbsolutePath().normalize();
+        checkJmixReportSnapshot("jmix17-minimal");
+    }
+
+    @Test
+    public void jmixFeaturesReportMatchesGolden() throws IOException {
+        checkJmixReportSnapshot("jmix17-features");
+    }
+
+    protected void checkJmixReportSnapshot(String fixtureName) throws IOException {
+        Path fixturePath = FIXTURES_ROOT.resolve(fixtureName).toAbsolutePath().normalize();
         assertTrue(Files.isDirectory(fixturePath), "Fixture project not found: " + fixturePath);
 
         JmixProjectAnalyzer analyzer = new JmixProjectAnalyzer();
         JmixProjectAnalysisResult result = analyzer.analyzeProjectToResult(fixturePath.toString(), null, null);
 
-        String html = new JmixHtmlReportGenerator().generateReportContent("jmix17-minimal", result);
-        compareWithGolden("jmix17-minimal", normalize(html, fixturePath));
+        String html = new JmixHtmlReportGenerator().generateReportContent(fixtureName, result);
+        compareWithGolden(fixtureName, normalize(html, fixturePath));
     }
 
     protected void checkReportSnapshot(String fixtureName, String basePackage) throws IOException {

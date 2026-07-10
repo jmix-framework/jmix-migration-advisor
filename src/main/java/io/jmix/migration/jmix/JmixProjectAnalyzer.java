@@ -1,12 +1,21 @@
 package io.jmix.migration.jmix;
 
-import io.jmix.migration.jmix.addon.JmixAddonsRegistry;
-import io.jmix.migration.jmix.model.JmixProjectAnalysisResult;
-import io.jmix.migration.jmix.project.BasePackageResolver;
+import io.jmix.migration.classicui.parser.ScreensCollector;
 import io.jmix.migration.core.project.GradleBuildParser;
 import io.jmix.migration.core.project.JmixProjectDescriptor;
 import io.jmix.migration.core.project.ProjectType;
 import io.jmix.migration.core.project.ProjectTypeDetector;
+import io.jmix.migration.core.scan.UnparsedFilesCollector;
+import io.jmix.migration.jmix.addon.JmixAddonsRegistry;
+import io.jmix.migration.jmix.analyzer.JmixConfigAnalyzer;
+import io.jmix.migration.jmix.analyzer.JmixEntityAnalyzer;
+import io.jmix.migration.jmix.analyzer.JmixScreenAnalyzer;
+import io.jmix.migration.jmix.analyzer.JmixSourcesScanner;
+import io.jmix.migration.jmix.model.JmixConfigInfo;
+import io.jmix.migration.jmix.model.JmixDataModelInfo;
+import io.jmix.migration.jmix.model.JmixProjectAnalysisResult;
+import io.jmix.migration.jmix.model.JmixSourcesScanResult;
+import io.jmix.migration.jmix.project.BasePackageResolver;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +83,30 @@ public class JmixProjectAnalyzer {
 
         List<JmixProjectAnalysisResult.ResolvedAddon> addons = resolveAddons(descriptor);
 
-        return new JmixProjectAnalysisResult(descriptor, effectiveBasePackage, addons);
+        UnparsedFilesCollector unparsedFilesCollector = new UnparsedFilesCollector();
+
+        JmixScreenAnalyzer screenAnalyzer = new JmixScreenAnalyzer(unparsedFilesCollector);
+        ScreensCollector screensCollector = screenAnalyzer.analyzeScreens(descriptor.getModules());
+        int screensCount = 0;
+        int fragmentsCount = 0;
+        for (var unitInfo : screensCollector.getAllScreens()) {
+            if (unitInfo.isFragment()) {
+                fragmentsCount++;
+            } else {
+                screensCount++;
+            }
+        }
+
+        JmixDataModelInfo dataModel = new JmixEntityAnalyzer()
+                .analyzeDataModel(descriptor.getModules(), unparsedFilesCollector);
+        JmixSourcesScanResult sourcesScan = new JmixSourcesScanner().scan(descriptor.getModules());
+        JmixConfigInfo configInfo = new JmixConfigAnalyzer().analyzeConfig(descriptor.getModules());
+
+        return new JmixProjectAnalysisResult(descriptor, effectiveBasePackage, addons,
+                dataModel, sourcesScan, configInfo,
+                screensCount, fragmentsCount,
+                screenAnalyzer.countTotalUiComponents(screensCollector),
+                unparsedFilesCollector.getEntries());
     }
 
     protected void validateProjectType(JmixProjectDescriptor descriptor, Path projectPath) {

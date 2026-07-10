@@ -1,6 +1,6 @@
 package io.jmix.migration.cuba.model;
 
-import io.jmix.migration.cuba.parser.screen.ScreensCollector;
+import io.jmix.migration.classicui.parser.ScreensCollector;
 
 import javax.annotation.Nullable;
 import java.util.Properties;

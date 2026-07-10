@@ -1,4 +1,5 @@
 package io.jmix.migration.cuba.parser.screen;
+import io.jmix.migration.classicui.parser.ScreensCollector;
 
 import io.jmix.migration.core.scan.XmlUtils;
 import org.apache.commons.lang3.StringUtils;

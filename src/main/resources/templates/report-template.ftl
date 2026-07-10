@@ -278,6 +278,60 @@
     </section>
 </#macro>
 
+<#macro redFlagsSection s>
+    <section id="${s.id}">
+      <h2>${s.title} <span class="count">${s.rows?size} found</span></h2>
+      <div class="callout" style="margin-bottom:14px">
+        These findings cannot be migrated automatically: custom client-side components, direct
+        Vaadin 8 API usage and SCSS themes have no Flow UI equivalents. Estimate them manually;
+        they are NOT included in the numbers above.
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Category</th><th>Subject</th><th>Notes</th></tr></thead>
+          <tbody>
+            <#if s.rows?has_content>
+              <#list s.rows as flag>
+                <tr>
+                  <td><span class="badge bad">${flag.category}</span></td>
+                  <td><span class="mono">${flag.subject}</span></td>
+                  <td>${flag.notes}</td>
+                </tr>
+              </#list>
+            <#else>
+              <tr><td colspan="3" class="empty">No red flags detected.</td></tr>
+            </#if>
+          </tbody>
+        </table>
+      </div>
+    </section>
+</#macro>
+
+<#macro renamesSection s>
+    <section id="${s.id}">
+      <h2>${s.title} <span class="count">${s.rows?size} items</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Subject</th><th>Current</th><th>Replacement</th><th>Notes</th></tr></thead>
+          <tbody>
+            <#if s.rows?has_content>
+              <#list s.rows as rename>
+                <tr>
+                  <td>${rename.subject}</td>
+                  <td><span class="mono">${rename.current}</span></td>
+                  <td><#if rename.replacement??><span class="mono">${rename.replacement}</span></#if></td>
+                  <td>${rename.notes}</td>
+                </tr>
+              </#list>
+            <#else>
+              <tr><td colspan="4" class="empty">Nothing to rename.</td></tr>
+            </#if>
+          </tbody>
+        </table>
+      </div>
+    </section>
+</#macro>
+
 <#macro notesSection s>
     <section id="${s.id}">
       <h2>${s.title} <span class="count">${s.rows?size}</span></h2>
@@ -505,6 +559,8 @@
         <#case "ui-components"><@uiComponentsSection s/><#break>
         <#case "app-components"><@appComponentsSection s/><#break>
         <#case "addons"><@addonsSection s/><#break>
+        <#case "red-flags"><@redFlagsSection s/><#break>
+        <#case "renames"><@renamesSection s/><#break>
         <#case "data-model"><@dataModelSection s/><#break>
         <#case "notes"><@notesSection s/><#break>
         <#case "unparsed"><@unparsedSection s/><#break>

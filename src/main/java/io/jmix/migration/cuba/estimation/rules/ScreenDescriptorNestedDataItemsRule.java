@@ -1,7 +1,7 @@
 package io.jmix.migration.cuba.estimation.rules;
 import io.jmix.migration.core.estimation.NumericMetricRule;
 
-import io.jmix.migration.cuba.Metrics;
+import io.jmix.migration.classicui.Metrics;
 
 public class ScreenDescriptorNestedDataItemsRule implements NumericMetricRule {
 

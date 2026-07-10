@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<menu-config xmlns="http://jmix.io/schema/ui/menu">
+    <menu id="application" caption="msg://menu.application">
+        <item screen="feat2_Customer.browse"/>
+        <item screen="userBrowseScreen"/>
+    </menu>
+</menu-config>

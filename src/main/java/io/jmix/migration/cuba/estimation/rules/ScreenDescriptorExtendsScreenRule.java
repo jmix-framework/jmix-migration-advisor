@@ -1,7 +1,7 @@
 package io.jmix.migration.cuba.estimation.rules;
 import io.jmix.migration.core.estimation.NumericMetricRule;
 
-import static io.jmix.migration.cuba.Metrics.SCREEN_DESCRIPTOR_EXTENDS_SCREEN_METRIC_CODE;
+import static io.jmix.migration.classicui.Metrics.SCREEN_DESCRIPTOR_EXTENDS_SCREEN_METRIC_CODE;
 
 // todo Create BooleanMetricRule?
 public class ScreenDescriptorExtendsScreenRule implements NumericMetricRule {

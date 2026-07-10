@@ -139,33 +139,7 @@ public class HtmlReportGenerator {
     }
 
     protected UiComponentsSection buildUiComponentsSection(CubaProjectEstimationResult result) {
-        Map<String, Integer> allUiComponents = result.getAllUiComponents();
-        List<String> components = new ArrayList<>(allUiComponents.keySet());
-        components.sort(String::compareTo);
-
-        List<UiComponentsSection.Row> rows = new ArrayList<>();
-        components.forEach(component -> {
-            UiComponentIssue issue = uiComponentIssuesRegistry.getIssue(component);
-            if (issue != null) {
-                // The actual component name is used, not issue.getComponent():
-                // for prefix entries (match="chart:*") they differ
-                rows.add(new UiComponentsSection.Row(
-                        component,
-                        allUiComponents.get(component),
-                        issue.getNotes(),
-                        issue.getType() == null ? null : issue.getType().name(),
-                        issue.getExtraComplexityScore(),
-                        toRequirementBadges(issue.getRequires())
-                ));
-            }
-        });
-        return new UiComponentsSection(rows);
-    }
-
-    protected List<UiComponentsSection.RequirementBadge> toRequirementBadges(List<Requires> requires) {
-        return requires.stream()
-                .map(item -> new UiComponentsSection.RequirementBadge(item.getKindName(), item.getSubject()))
-                .toList();
+        return UiComponentsSection.fromComponentCounters(result.getAllUiComponents(), uiComponentIssuesRegistry);
     }
 
     protected AppComponentsSection buildAppComponentsSection(CubaProjectEstimationResult result) {

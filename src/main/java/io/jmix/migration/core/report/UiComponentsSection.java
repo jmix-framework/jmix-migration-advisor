@@ -1,7 +1,13 @@
 package io.jmix.migration.core.report;
 
+import io.jmix.migration.core.incident.Requires;
+import io.jmix.migration.core.incident.UiComponentIssue;
+import io.jmix.migration.core.incident.UiComponentIssuesRegistry;
+
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class UiComponentsSection implements ReportSection {
 
@@ -11,6 +17,36 @@ public class UiComponentsSection implements ReportSection {
 
     public UiComponentsSection(List<Row> rows) {
         this.rows = List.copyOf(rows);
+    }
+
+    /**
+     * Builds the section from per-component usage counters, keeping only the components
+     * having a registry entry. The actual component name is used for the row, not
+     * {@code issue.getComponent()}: for prefix entries ({@code match="chart:*"}) they differ.
+     */
+    public static UiComponentsSection fromComponentCounters(Map<String, Integer> componentCounters,
+                                                            UiComponentIssuesRegistry issuesRegistry) {
+        List<String> components = new ArrayList<>(componentCounters.keySet());
+        components.sort(String::compareTo);
+
+        List<Row> rows = new ArrayList<>();
+        for (String component : components) {
+            UiComponentIssue issue = issuesRegistry.getIssue(component);
+            if (issue == null) {
+                continue;
+            }
+            List<RequirementBadge> requirementBadges = issue.getRequires().stream()
+                    .map(item -> new RequirementBadge(item.getKindName(), item.getSubject()))
+                    .toList();
+            rows.add(new Row(
+                    component,
+                    componentCounters.get(component),
+                    issue.getNotes(),
+                    issue.getType() == null ? null : issue.getType().name(),
+                    issue.getExtraComplexityScore(),
+                    requirementBadges));
+        }
+        return new UiComponentsSection(rows);
     }
 
     @Override

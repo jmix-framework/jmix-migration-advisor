@@ -1,14 +1,23 @@
 package io.jmix.migration.jmix;
 
-import io.jmix.migration.core.report.AddonsSection;
-import io.jmix.migration.core.report.HtmlReportWriter;
-import io.jmix.migration.core.report.OverviewSection;
-import io.jmix.migration.core.report.ReportModel;
-import io.jmix.migration.core.report.ReportSection;
-import io.jmix.migration.jmix.addon.JmixAddonInfo;
-import io.jmix.migration.jmix.model.JmixProjectAnalysisResult;
+import io.jmix.migration.core.incident.UiComponentIssuesRegistry;
 import io.jmix.migration.core.project.JmixModule;
 import io.jmix.migration.core.project.JmixProjectDescriptor;
+import io.jmix.migration.core.report.AddonsSection;
+import io.jmix.migration.core.report.HtmlReportWriter;
+import io.jmix.migration.core.report.NotesSection;
+import io.jmix.migration.core.report.OverviewSection;
+import io.jmix.migration.core.report.RedFlagsSection;
+import io.jmix.migration.core.report.RenamesSection;
+import io.jmix.migration.core.report.ReportModel;
+import io.jmix.migration.core.report.ReportSection;
+import io.jmix.migration.core.report.UiComponentsSection;
+import io.jmix.migration.core.report.UnparsedFilesSection;
+import io.jmix.migration.jmix.addon.JmixAddonInfo;
+import io.jmix.migration.jmix.model.JmixConfigInfo;
+import io.jmix.migration.jmix.model.JmixDataModelInfo;
+import io.jmix.migration.jmix.model.JmixProjectAnalysisResult;
+import io.jmix.migration.jmix.model.JmixSourcesScanResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +31,15 @@ public class JmixHtmlReportGenerator {
 
     protected static final String REPORT_TITLE = "Jmix 1.x → Jmix migration report";
     protected static final String NOT_DETECTED = "not detected";
-    protected static final String DISCLAIMER = "Preliminary report: it covers the build structure and add-ons only."
-            + " Screens, entities, security and configuration analysis is not implemented yet;"
-            + " treat this as an inventory, not an estimation.";
+    protected static final String DISCLAIMER = "This is an inventory of the migration scope, not a complete"
+            + " estimation: hour estimates for screens and categories are coming in the next phase."
+            + " Some aspects cannot be evaluated automatically and need manual analysis.";
 
+    private final UiComponentIssuesRegistry uiComponentIssuesRegistry;
     private final HtmlReportWriter reportWriter;
 
     public JmixHtmlReportGenerator() {
+        this.uiComponentIssuesRegistry = UiComponentIssuesRegistry.create();
         this.reportWriter = new HtmlReportWriter();
     }
 
@@ -49,12 +60,21 @@ public class JmixHtmlReportGenerator {
 
         List<ReportSection> sections = new ArrayList<>();
         sections.add(buildOverviewSection(result, addonsSection));
+        sections.add(UiComponentsSection.fromComponentCounters(result.getUiComponents(), uiComponentIssuesRegistry));
         sections.add(addonsSection);
+        sections.add(buildRedFlagsSection(result));
+        sections.add(buildRenamesSection(result));
+        sections.add(buildNotesSection(result));
+        if (!result.getUnparsedFiles().isEmpty()) {
+            sections.add(new UnparsedFilesSection(result.getUnparsedFiles()));
+        }
         return new ReportModel(project, REPORT_TITLE, sections);
     }
 
     protected OverviewSection buildOverviewSection(JmixProjectAnalysisResult result, AddonsSection addonsSection) {
         JmixProjectDescriptor descriptor = result.getProjectDescriptor();
+        JmixDataModelInfo dataModel = result.getDataModel();
+        JmixSourcesScanResult sourcesScan = result.getSourcesScan();
 
         String effectiveVersion = descriptor.getEffectiveJmixVersion();
         String versionSub = descriptor.getJmixPluginVersion() != null
@@ -62,22 +82,35 @@ public class JmixHtmlReportGenerator {
 
         String modulesSub = descriptor.getModules().size() <= 4
                 ? descriptor.getModules().stream().map(JmixModule::getName).collect(Collectors.joining(", "))
-                : null;
+                : String.valueOf(descriptor.getModules().size());
 
         long unknownAddons = addonsSection.getRows().stream()
                 .filter(row -> "UNKNOWN".equals(row.getStatusName()))
                 .count();
 
+        String entitiesSub = dataModel.getDtoEntities().size() + " DTO, "
+                + dataModel.getEmbeddables().size() + " embeddable, "
+                + dataModel.getEnums().size() + " enums";
+
+        int rolesCount = sourcesScan.getResourceRoles().size() + sourcesScan.getRowLevelRoles().size();
+
         List<OverviewSection.Kpi> kpis = List.of(
                 new OverviewSection.Kpi("Jmix version",
                         effectiveVersion == null ? NOT_DETECTED : effectiveVersion, versionSub, true),
-                new OverviewSection.Kpi("Java",
-                        descriptor.getJavaVersion() == null ? NOT_DETECTED : descriptor.getJavaVersion(), null, false),
-                new OverviewSection.Kpi("Modules", descriptor.getModules().size(), modulesSub, false),
+                new OverviewSection.Kpi("Entities", dataModel.getJpaEntities().size(), entitiesSub, false),
+                new OverviewSection.Kpi("Screens", result.getScreensCount(),
+                        result.getFragmentsCount() + " fragments", false),
                 new OverviewSection.Kpi("Add-ons", addonsSection.getRows().size(),
                         unknownAddons > 0 ? unknownAddons + " without Jmix data" : "all recognized", false),
+                new OverviewSection.Kpi("Roles", rolesCount,
+                        sourcesScan.getScreenPolicyCount() + " screen policies", false),
+                new OverviewSection.Kpi("Red flags", sourcesScan.getRedFlags().size(),
+                        "manual estimation required", false),
+                new OverviewSection.Kpi("Java",
+                        descriptor.getJavaVersion() == null ? NOT_DETECTED : descriptor.getJavaVersion(), null, false),
                 new OverviewSection.Kpi("Base package",
-                        result.getBasePackage() == null ? NOT_DETECTED : result.getBasePackage(), null, false)
+                        result.getBasePackage() == null ? NOT_DETECTED : result.getBasePackage(),
+                        "modules: " + modulesSub, false)
         );
         return new OverviewSection(kpis, DISCLAIMER);
     }
@@ -105,5 +138,91 @@ public class JmixHtmlReportGenerator {
             }
         }
         return new AddonsSection(rows);
+    }
+
+    protected RedFlagsSection buildRedFlagsSection(JmixProjectAnalysisResult result) {
+        List<RedFlagsSection.Row> rows = new ArrayList<>();
+        for (JmixSourcesScanResult.RedFlag redFlag : result.getSourcesScan().getRedFlags()) {
+            rows.add(new RedFlagsSection.Row(redFlag.getCategory(), redFlag.getSubject(), redFlag.getDetail()));
+        }
+        return new RedFlagsSection(rows);
+    }
+
+    protected RenamesSection buildRenamesSection(JmixProjectAnalysisResult result) {
+        List<RenamesSection.Row> rows = new ArrayList<>();
+
+        for (JmixConfigInfo.PropertyRename rename : result.getConfigInfo().getPropertyRenames()) {
+            rows.add(new RenamesSection.Row("application.properties",
+                    rename.getProperty(), rename.getNewProperty(), rename.getNotes()));
+        }
+
+        JmixSourcesScanResult sourcesScan = result.getSourcesScan();
+        if (sourcesScan.getScreenPolicyCount() > 0) {
+            rows.add(new RenamesSection.Row("Role annotations",
+                    "@ScreenPolicy (" + sourcesScan.getScreenPolicyCount() + " occurrences)",
+                    "@ViewPolicy",
+                    "Package changes from securityui to securityflowui; screenIds become viewIds"));
+        }
+        if (sourcesScan.getMenuPolicyCount() > 0) {
+            rows.add(new RenamesSection.Row("Role annotations",
+                    "@MenuPolicy (" + sourcesScan.getMenuPolicyCount() + " occurrences)",
+                    "@MenuPolicy",
+                    "Same annotation name, package changes from securityui to securityflowui"));
+        }
+
+        JmixConfigInfo configInfo = result.getConfigInfo();
+        if (configInfo.getMenuScreenItemsCount() > 0) {
+            rows.add(new RenamesSection.Row("Menu",
+                    "item screen= (" + configInfo.getMenuScreenItemsCount() + " items in "
+                            + configInfo.getMenuConfigLocation() + ")",
+                    "item view=",
+                    "Namespace changes to http://jmix.io/schema/flowui/menu"));
+        }
+        if (configInfo.isUiDataChangelogIncluded()) {
+            rows.add(new RenamesSection.Row("Liquibase master changelog",
+                    "/io/jmix/uidata/liquibase/changelog.xml",
+                    "/io/jmix/flowuidata/liquibase/changelog.xml",
+                    "Classic UI settings tables are replaced by Flow UI ones"));
+        }
+        return new RenamesSection(rows);
+    }
+
+    protected NotesSection buildNotesSection(JmixProjectAnalysisResult result) {
+        List<NotesSection.Row> rows = new ArrayList<>();
+
+        int kotlinFiles = result.getSourcesScan().getKotlinFilesCount();
+        if (kotlinFiles > 0) {
+            rows.add(new NotesSection.Row(
+                    "Kotlin sources are not analyzed",
+                    "kotlin-files",
+                    kotlinFiles + " Kotlin file(s) found. Kotlin analysis is not supported:"
+                            + " screens and entities defined in Kotlin are missing from this report,"
+                            + " the numbers are underestimated"));
+        }
+        if (!result.getSourcesScan().getSecurityConfigs().isEmpty()) {
+            rows.add(new NotesSection.Row(
+                    "Custom Spring Security configuration",
+                    "security-config",
+                    "Found: " + String.join(", ", result.getSourcesScan().getSecurityConfigs())
+                            + ". Spring Security 5 to 6 migration and the Flow UI security chain"
+                            + " need manual review"));
+        }
+        if (!result.getDataModel().getEntityEventListeners().isEmpty()) {
+            rows.add(new NotesSection.Row(
+                    "Entity event listeners",
+                    "entity-listeners",
+                    result.getDataModel().getEntityEventListeners().size()
+                            + " EntityChangedEvent listener(s) found. They are portable to the current Jmix"
+                            + " as is (only the javax to jakarta import sweep applies)"));
+        }
+        if (result.getDataModel().getJavaxImportFilesCount() > 0) {
+            rows.add(new NotesSection.Row(
+                    "Jakarta namespace sweep",
+                    "jakarta-sweep",
+                    result.getDataModel().getJavaxImportFilesCount()
+                            + " file(s) import javax.persistence/validation/annotation."
+                            + " The sweep is mechanical and mostly automated by the IDE or OpenRewrite"));
+        }
+        return new NotesSection(rows);
     }
 }

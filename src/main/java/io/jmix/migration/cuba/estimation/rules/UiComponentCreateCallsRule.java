@@ -1,7 +1,7 @@
 package io.jmix.migration.cuba.estimation.rules;
 import io.jmix.migration.core.estimation.NumericMetricRule;
 
-import static io.jmix.migration.cuba.Metrics.UI_COMPONENT_CREATE_CALLS_AMOUNT_METRIC_CODE;
+import static io.jmix.migration.classicui.Metrics.UI_COMPONENT_CREATE_CALLS_AMOUNT_METRIC_CODE;
 
 public class UiComponentCreateCallsRule implements NumericMetricRule {
 

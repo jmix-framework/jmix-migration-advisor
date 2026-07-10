@@ -1,13 +1,14 @@
 package io.jmix.migration.cuba.estimation;
+import io.jmix.migration.classicui.model.*;
 import io.jmix.migration.core.estimation.*;
 
-import io.jmix.migration.cuba.Metrics;
+import io.jmix.migration.classicui.Metrics;
 import io.jmix.migration.cuba.estimation.rules.*;
 import io.jmix.migration.core.incident.UiComponentIssue;
 import io.jmix.migration.core.incident.UiComponentIssueType;
 import io.jmix.migration.core.incident.UiComponentIssuesRegistry;
 import io.jmix.migration.cuba.model.*;
-import io.jmix.migration.cuba.parser.screen.ScreensCollector;
+import io.jmix.migration.classicui.parser.ScreensCollector;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.jmix.migration.cuba.Metrics.*;
+import static io.jmix.migration.classicui.Metrics.*;
 
 public class ScreenEstimator {
 
