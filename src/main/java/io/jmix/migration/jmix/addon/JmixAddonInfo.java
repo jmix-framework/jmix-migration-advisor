@@ -2,31 +2,24 @@ package io.jmix.migration.jmix.addon;
 
 import io.jmix.migration.core.model.License;
 import io.jmix.migration.core.model.Origin;
+import io.jmix.migration.core.model.TargetStatus;
 
 import javax.annotation.Nullable;
 
 public class JmixAddonInfo {
-
-    public enum FlowStatus {
-        AVAILABLE,
-        RENAMED,
-        REPLACED,
-        MERGED,
-        ABSENT
-    }
 
     private final String artifact;
     private final String name;
     private final String category;
     private final License license;
     private final Origin origin;
-    private final FlowStatus flowStatus;
+    private final TargetStatus flowStatus;
     private final String flowArtifact;
     private final String notes;
     private final Integer costHint;
 
     public JmixAddonInfo(String artifact, String name, String category, License license, Origin origin,
-                         FlowStatus flowStatus, @Nullable String flowArtifact, String notes, @Nullable Integer costHint) {
+                         TargetStatus flowStatus, @Nullable String flowArtifact, String notes, @Nullable Integer costHint) {
         this.artifact = artifact;
         this.name = name;
         this.category = category;
@@ -58,7 +51,7 @@ public class JmixAddonInfo {
         return origin;
     }
 
-    public FlowStatus getFlowStatus() {
+    public TargetStatus getFlowStatus() {
         return flowStatus;
     }
 

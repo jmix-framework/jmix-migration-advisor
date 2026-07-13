@@ -57,8 +57,8 @@ public class JmixEstimator {
             screensPerComplexity.computeIfAbsent(complexityThreshold, key -> new ArrayList<>()).add(name);
             screensCost = screensCost.add(complexityThreshold.getOutputValue());
 
-            if (!score.getAbsentComponents().isEmpty()) {
-                screensRequireDecision.put(name, new ArrayList<>(score.getAbsentComponents()));
+            if (!score.getComponentsRequiringDecision().isEmpty()) {
+                screensRequireDecision.put(name, new ArrayList<>(score.getComponentsRequiringDecision()));
             }
         }
 

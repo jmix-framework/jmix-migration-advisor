@@ -1,6 +1,7 @@
 package io.jmix.migration.jmix;
 
 import io.jmix.migration.core.incident.UiComponentIssuesRegistry;
+import io.jmix.migration.core.model.TargetStatus;
 import io.jmix.migration.core.project.JmixModule;
 import io.jmix.migration.core.project.JmixProjectDescriptor;
 import io.jmix.migration.core.report.AddonsSection;
@@ -112,6 +113,7 @@ public class JmixHtmlReportGenerator {
         long unknownAddons = addonsSection.getRows().stream()
                 .filter(row -> "UNKNOWN".equals(row.getStatusName()))
                 .count();
+        String addonsSub = buildAddonsKpiSub(addonsSection.getEscalations().size(), unknownAddons);
 
         String entitiesSub = dataModel.getDtoEntities().size() + " DTO, "
                 + dataModel.getEmbeddables().size() + " embeddable, "
@@ -128,8 +130,7 @@ public class JmixHtmlReportGenerator {
                 new OverviewSection.Kpi("Screens", result.getScreensCount(),
                         result.getFragmentsCount() + " fragments · "
                                 + formatHours(result.getEstimation().getScreensCost()) + " man-hours", false),
-                new OverviewSection.Kpi("Add-ons", addonsSection.getRows().size(),
-                        unknownAddons > 0 ? unknownAddons + " without Jmix data" : "all recognized", false),
+                new OverviewSection.Kpi("Add-ons", addonsSection.getRows().size(), addonsSub, false),
                 new OverviewSection.Kpi("Roles", rolesCount,
                         sourcesScan.getScreenPolicyCount() + " screen policies", false),
                 new OverviewSection.Kpi("Red flags", sourcesScan.getRedFlags().size(),
@@ -144,6 +145,20 @@ public class JmixHtmlReportGenerator {
     }
 
     /**
+     * KPI sub-line for the add-ons card: absent and unknown counts, or "all recognized".
+     */
+    protected String buildAddonsKpiSub(long absentCount, long unknownCount) {
+        List<String> parts = new ArrayList<>();
+        if (absentCount > 0) {
+            parts.add(absentCount + " absent");
+        }
+        if (unknownCount > 0) {
+            parts.add(unknownCount + " without Jmix data");
+        }
+        return parts.isEmpty() ? "all recognized" : String.join(" · ", parts);
+    }
+
+    /**
      * Matches the FreeMarker number format "0.##": no trailing zeros, plain decimal notation.
      */
     protected String formatHours(java.math.BigDecimal value) {
@@ -152,6 +167,7 @@ public class JmixHtmlReportGenerator {
 
     protected AddonsSection buildAddonsSection(JmixProjectAnalysisResult result) {
         List<AddonsSection.Row> rows = new ArrayList<>();
+        List<AddonsSection.Escalation> escalations = new ArrayList<>();
         for (JmixProjectAnalysisResult.ResolvedAddon addon : result.getAddons()) {
             JmixAddonInfo info = addon.getAddonInfo();
             if (info == null) {
@@ -172,9 +188,12 @@ public class JmixHtmlReportGenerator {
                         info.getFlowArtifact(),
                         info.getNotes(),
                         info.getCostHint()));
+                if (info.getFlowStatus() == TargetStatus.ABSENT) {
+                    escalations.add(new AddonsSection.Escalation(info.getName(), info.getNotes()));
+                }
             }
         }
-        return new AddonsSection(rows);
+        return new AddonsSection(rows, escalations);
     }
 
     protected RedFlagsSection buildRedFlagsSection(JmixProjectAnalysisResult result) {

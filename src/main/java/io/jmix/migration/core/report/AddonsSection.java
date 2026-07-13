@@ -11,9 +11,11 @@ public class AddonsSection implements ReportSection {
     public static final String TYPE = "addons";
 
     private final List<Row> rows;
+    private final List<Escalation> escalations;
 
-    public AddonsSection(List<Row> rows) {
+    public AddonsSection(List<Row> rows, List<Escalation> escalations) {
         this.rows = List.copyOf(rows);
+        this.escalations = List.copyOf(escalations);
     }
 
     @Override
@@ -33,6 +35,31 @@ public class AddonsSection implements ReportSection {
 
     public List<Row> getRows() {
         return rows;
+    }
+
+    /**
+     * Add-ons with no equivalent in the target version: not priced, surfaced for a manual decision.
+     */
+    public List<Escalation> getEscalations() {
+        return escalations;
+    }
+
+    public static class Escalation {
+        private final String name;
+        private final String notes;
+
+        public Escalation(String name, String notes) {
+            this.name = name;
+            this.notes = notes;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getNotes() {
+            return notes;
+        }
     }
 
     public static class Row {

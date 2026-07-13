@@ -94,7 +94,7 @@ public class ScreenEstimator {
         // Layout
         Layout layout = screenInfo.getLayout();
 
-        List<String> absentComponents = new ArrayList<>();
+        List<String> componentsRequiringDecision = new ArrayList<>();
         if (layout != null) {
             List<LayoutItem> allItems = layout.getAllItems();
             AtomicInteger combinedExtraComplexityScore = new AtomicInteger();
@@ -105,10 +105,15 @@ public class ScreenEstimator {
                     if (issue.getType().equals(UiComponentIssueType.ABSENT)) {
                         // Cost of an absent component is indeterminate: it is not scored
                         // but escalated as a screen requiring a manual decision
-                        absentComponents.add(layoutItem.getName());
+                        componentsRequiringDecision.add(layoutItem.getName());
                     } else {
                         combinedExtraComplexityScore.addAndGet(issue.getExtraComplexityScore());
                     }
+                } else if (isCustomNamespaceComponent(layoutItem.getName())) {
+                    // A namespaced component not covered by the registry is a project custom
+                    // component (or an add-on without registry data): no automatic analog is
+                    // known, the cost is indeterminate - escalated like an absent component
+                    componentsRequiringDecision.add(layoutItem.getName());
                 }
             });
             numericMetrics.add(Metrics.createScreenDescriptorChangedUiComponentsScoreMetric(combinedExtraComplexityScore.get()));
@@ -154,9 +159,17 @@ public class ScreenEstimator {
                 score.addRawValue(scoreForMetric);
             }
         });
-        absentComponents.forEach(score::addAbsentComponent);
+        componentsRequiringDecision.forEach(score::addComponentRequiringDecision);
 
         return score;
+    }
+
+    /**
+     * The registry covers known add-on component families with prefix entries, so a prefixed
+     * component without a registry match comes from a non-standard namespace.
+     */
+    protected boolean isCustomNamespaceComponent(String componentName) {
+        return componentName.indexOf(':') > 0;
     }
 
     protected int getScoreForMetric(NumericMetric metric) {

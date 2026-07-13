@@ -149,8 +149,8 @@ public class CubaProjectAnalyzer {
             screensPerComplexity.computeIfAbsent(complexityThreshold, key -> new ArrayList<>()).add(name);
             screenSumHours = screenSumHours.add(complexityThreshold.getOutputValue());
 
-            if (!score.getAbsentComponents().isEmpty()) {
-                screensRequireDecision.put(name, new ArrayList<>(score.getAbsentComponents()));
+            if (!score.getComponentsRequiringDecision().isEmpty()) {
+                screensRequireDecision.put(name, new ArrayList<>(score.getComponentsRequiringDecision()));
             }
         }
 

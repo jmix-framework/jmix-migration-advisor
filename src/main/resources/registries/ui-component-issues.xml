@@ -222,6 +222,14 @@
         <notes>Pivot table moves to the separate Pivot Table add-on for the current Jmix (still PivotTable.js based); recreate the component configuration (https://docs.jmix.io/jmix/pivot-table/index.html)</notes>
         <requires kind="addon" subject="Pivot Table (io.jmix.pivottable)"/>
     </issue>
+    <issue match="gjs:*" type="has-workaround" score="4">
+        <notes>The standalone GrapesJS add-on does not exist for the current Jmix; a GrapesJS editor is bundled inside the Message Templates add-on. Re-wire standalone editor usages to it or build a custom Flow wrapper</notes>
+        <requires kind="addon" subject="Message Templates (io.jmix.messagetemplates)"/>
+    </issue>
+    <issue match="search:*" type="changed" score="1">
+        <notes>The Search add-on provides the search field for Flow UI as well; update the dependency to the flowui variant and adjust the component attributes (https://docs.jmix.io/jmix/search/search-ui.html)</notes>
+        <requires kind="addon" subject="Search (io.jmix.search)"/>
+    </issue>
     <issue match="maps:*" type="has-alternative" score="4">
         <notes>CUBA Maps components are replaced by the Jmix Maps add-on. Layers and configuration API differ; recreate map configuration (https://docs.jmix.io/jmix/maps/index.html)</notes>
         <requires kind="addon" subject="Maps (jmix-maps)"/>

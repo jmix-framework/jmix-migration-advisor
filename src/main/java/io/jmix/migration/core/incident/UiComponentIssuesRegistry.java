@@ -42,6 +42,15 @@ public class UiComponentIssuesRegistry {
         }
     }
 
+    /**
+     * All registry entries: exact ones plus prefix ones (their {@code getComponent()} is the pattern).
+     */
+    public List<UiComponentIssue> getAllIssues() {
+        List<UiComponentIssue> all = new ArrayList<>(issuesByComponent.values());
+        issuesByPrefix.forEach(prefixIssue -> all.add(prefixIssue.issue()));
+        return all;
+    }
+
     @Nullable
     public UiComponentIssue getIssue(String component) {
         UiComponentIssue issue = issuesByComponent.get(component);

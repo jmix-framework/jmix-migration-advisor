@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ScreenComplexityScore {
     private final AtomicInteger rawValue;
-    private final Set<String> absentComponents = new LinkedHashSet<>();
+    private final Set<String> componentsRequiringDecision = new LinkedHashSet<>();
     //todo decimal modifiers?
 
     public ScreenComplexityScore() {
@@ -27,15 +27,16 @@ public class ScreenComplexityScore {
     }
 
     /**
-     * UI components of the screen that have no equivalent in Jmix. Their migration cost is
-     * indeterminate and is NOT included in the score value; the screen needs a manual decision.
+     * UI components of the screen whose migration cost is indeterminate: components with no
+     * equivalent in Jmix (registry status ABSENT) and project-custom components from
+     * non-standard namespaces. NOT included in the score value; the screen needs a manual decision.
      */
-    public void addAbsentComponent(String componentName) {
-        absentComponents.add(componentName);
+    public void addComponentRequiringDecision(String componentName) {
+        componentsRequiringDecision.add(componentName);
     }
 
-    public Set<String> getAbsentComponents() {
-        return Collections.unmodifiableSet(absentComponents);
+    public Set<String> getComponentsRequiringDecision() {
+        return Collections.unmodifiableSet(componentsRequiringDecision);
     }
 
     @Override
@@ -45,8 +46,8 @@ public class ScreenComplexityScore {
 
     public static ScreenComplexityScore merge(ScreenComplexityScore a, ScreenComplexityScore b) {
         ScreenComplexityScore result = new ScreenComplexityScore(a.getValue() + b.getValue());
-        result.absentComponents.addAll(a.absentComponents);
-        result.absentComponents.addAll(b.absentComponents);
+        result.componentsRequiringDecision.addAll(a.componentsRequiringDecision);
+        result.componentsRequiringDecision.addAll(b.componentsRequiringDecision);
         return result;
     }
 }

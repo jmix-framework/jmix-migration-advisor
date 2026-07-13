@@ -20,8 +20,18 @@ public class UiComponentsSection implements ReportSection {
     }
 
     /**
-     * Builds the section from per-component usage counters, keeping only the components
-     * having a registry entry. The actual component name is used for the row, not
+     * Synthetic status of components from non-standard namespaces; not a registry entry type.
+     */
+    public static final String CUSTOM_STATUS = "CUSTOM";
+
+    protected static final String CUSTOM_COMPONENT_NOTES = "Component from a non-standard namespace:"
+            + " a project custom component or an add-on without registry data. No automatic analog"
+            + " is known; the cost is not estimated - requires decision";
+
+    /**
+     * Builds the section from per-component usage counters, keeping the components having
+     * a registry entry plus custom-namespace components (escalated with the synthetic
+     * {@link #CUSTOM_STATUS} status). The actual component name is used for the row, not
      * {@code issue.getComponent()}: for prefix entries ({@code match="chart:*"}) they differ.
      */
     public static UiComponentsSection fromComponentCounters(Map<String, Integer> componentCounters,
@@ -33,6 +43,10 @@ public class UiComponentsSection implements ReportSection {
         for (String component : components) {
             UiComponentIssue issue = issuesRegistry.getIssue(component);
             if (issue == null) {
+                if (component.indexOf(':') > 0) {
+                    rows.add(new Row(component, componentCounters.get(component),
+                            CUSTOM_COMPONENT_NOTES, CUSTOM_STATUS, 0, List.of()));
+                }
                 continue;
             }
             List<RequirementBadge> requirementBadges = issue.getRequires().stream()

@@ -5,6 +5,7 @@ import io.jmix.migration.core.incident.MiscNote;
 import io.jmix.migration.core.incident.Requires;
 import io.jmix.migration.core.incident.UiComponentIssue;
 import io.jmix.migration.core.incident.UiComponentIssuesRegistry;
+import io.jmix.migration.core.model.TargetStatus;
 import io.jmix.migration.core.report.AppComponentsSection;
 import io.jmix.migration.core.report.ComplexityGroupsSection;
 import io.jmix.migration.core.report.DataModelSection;
@@ -85,17 +86,31 @@ public class HtmlReportGenerator {
         long missingAmount = appComponentsSection.getRows().stream()
                 .filter(row -> AppComponentType.MISSING.name().equals(row.getTypeName()))
                 .count();
+        String appComponentsSub = buildAppComponentsKpiSub(appComponentsSection.getEscalations().size(), missingAmount);
 
         List<OverviewSection.Kpi> kpis = List.of(
                 new OverviewSection.Kpi("Total effort", result.getTotalEstimation(), "man-hours (lower bound)", true),
                 new OverviewSection.Kpi("Entities", result.getEntitiesAmount(), null, false),
                 new OverviewSection.Kpi("Screens", result.getScreensTotalAmount(),
                         formatHours(result.getScreensTotalCost()) + " man-hours", false),
-                new OverviewSection.Kpi("App components", appComponentsSection.getRows().size(),
-                        missingAmount > 0 ? missingAmount + " without Jmix data" : "all recognized", false),
+                new OverviewSection.Kpi("App components", appComponentsSection.getRows().size(), appComponentsSub, false),
                 new OverviewSection.Kpi("Legacy listeners", legacyListeners.size(), null, false)
         );
         return new OverviewSection(kpis, DISCLAIMER);
+    }
+
+    /**
+     * KPI sub-line for the app components card: absent and unknown counts, or "all recognized".
+     */
+    protected String buildAppComponentsKpiSub(long absentCount, long missingCount) {
+        List<String> parts = new ArrayList<>();
+        if (absentCount > 0) {
+            parts.add(absentCount + " absent");
+        }
+        if (missingCount > 0) {
+            parts.add(missingCount + " without Jmix data");
+        }
+        return parts.isEmpty() ? "all recognized" : String.join(" · ", parts);
     }
 
     protected EstimationSummarySection buildEstimationsSection(CubaProjectEstimationResult result) {
@@ -119,17 +134,22 @@ public class HtmlReportGenerator {
 
     protected AppComponentsSection buildAppComponentsSection(CubaProjectEstimationResult result) {
         List<AppComponentsSection.Row> rows = new ArrayList<>();
+        List<AppComponentsSection.Escalation> escalations = new ArrayList<>();
         for (CubaAppComponentInfo appComponent : result.getAppComponents()) {
             rows.add(new AppComponentsSection.Row(
                     appComponent.getName(),
                     appComponent.getAppComponentPackage(),
                     appComponent.getAppComponentTypeName(),
+                    appComponent.getStatusName(),
                     appComponent.getLicenseName(),
                     appComponent.getOriginName(),
                     appComponent.getNotes()
             ));
+            if (appComponent.getStatus() == TargetStatus.ABSENT) {
+                escalations.add(new AppComponentsSection.Escalation(appComponent.getName(), appComponent.getNotes()));
+            }
         }
-        return new AppComponentsSection(rows);
+        return new AppComponentsSection(rows, escalations);
     }
 
     protected DataModelSection buildDataModelSection(CubaProjectEstimationResult result, List<String> legacyListeners) {

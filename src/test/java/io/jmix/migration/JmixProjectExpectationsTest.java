@@ -1,7 +1,7 @@
 package io.jmix.migration;
 
 import io.jmix.migration.jmix.JmixProjectAnalyzer;
-import io.jmix.migration.jmix.addon.JmixAddonInfo;
+import io.jmix.migration.core.model.TargetStatus;
 import io.jmix.migration.jmix.model.JmixProjectAnalysisResult;
 import io.jmix.migration.core.project.GradleBuildParser;
 import io.jmix.migration.core.project.JmixProjectDescriptor;
@@ -64,17 +64,17 @@ public class JmixProjectExpectationsTest {
         // 12 io.jmix dependencies become add-on rows; hsqldb is not an add-on
         assertEquals(12, result.getAddons().size());
 
-        Map<String, JmixAddonInfo.FlowStatus> statuses = result.getAddons().stream()
+        Map<String, TargetStatus> statuses = result.getAddons().stream()
                 .filter(addon -> addon.getAddonInfo() != null)
                 .collect(Collectors.toMap(
                         addon -> addon.getDependency().getGroupArtifact(),
                         addon -> addon.getAddonInfo().getFlowStatus()));
 
-        assertEquals(JmixAddonInfo.FlowStatus.AVAILABLE, statuses.get("io.jmix.core:jmix-core-starter"));
-        assertEquals(JmixAddonInfo.FlowStatus.REPLACED, statuses.get("io.jmix.ui:jmix-ui-starter"));
-        assertEquals(JmixAddonInfo.FlowStatus.REPLACED, statuses.get("io.jmix.ui:jmix-ui-themes-compiled"));
-        assertEquals(JmixAddonInfo.FlowStatus.RENAMED, statuses.get("io.jmix.security:jmix-security-ui-starter"));
-        assertEquals(JmixAddonInfo.FlowStatus.RENAMED, statuses.get("io.jmix.datatools:jmix-datatools-ui-starter"));
+        assertEquals(TargetStatus.AVAILABLE, statuses.get("io.jmix.core:jmix-core-starter"));
+        assertEquals(TargetStatus.REPLACED, statuses.get("io.jmix.ui:jmix-ui-starter"));
+        assertEquals(TargetStatus.REPLACED, statuses.get("io.jmix.ui:jmix-ui-themes-compiled"));
+        assertEquals(TargetStatus.RENAMED, statuses.get("io.jmix.security:jmix-security-ui-starter"));
+        assertEquals(TargetStatus.RENAMED, statuses.get("io.jmix.datatools:jmix-datatools-ui-starter"));
 
         // The unknown add-on is present as a row without registry data
         JmixProjectAnalysisResult.ResolvedAddon unknown = result.getAddons().stream()
@@ -149,6 +149,19 @@ public class JmixProjectExpectationsTest {
                 .collect(Collectors.toMap(entry -> entry.getKey().getName(), Map.Entry::getValue));
         assertEquals(List.of("feat2_AddressFragment"), screensByGroup.get("Trivial"));
         assertEquals(List.of("feat2_Customer.browse"), screensByGroup.get("Simple"));
+
+        // The custom-namespace component is escalated without affecting the score/hours
+        assertEquals(Map.of("feat2_Customer.browse", List.of("app:ratingField")),
+                estimation.getScreensRequireDecision());
+
+        // Absent add-on (Dashboards) is present as a row; its cost stays out of the estimation
+        Map<String, TargetStatus> featureStatuses = result.getAddons().stream()
+                .filter(addon -> addon.getAddonInfo() != null)
+                .collect(Collectors.toMap(
+                        addon -> addon.getDependency().getGroupArtifact(),
+                        addon -> addon.getAddonInfo().getFlowStatus()));
+        assertEquals(TargetStatus.ABSENT, featureStatuses.get("io.jmix.dashboards:jmix-dashboards-starter"));
+        assertEquals(TargetStatus.AVAILABLE, featureStatuses.get("io.jmix.webdav:jmix-webdav-starter"));
     }
 
     @Test

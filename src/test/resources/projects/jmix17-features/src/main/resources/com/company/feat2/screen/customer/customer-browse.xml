@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window xmlns="http://jmix.io/schema/ui/window"
+        xmlns:app="http://com.company.feat2/customcomponents.xsd"
         caption="msg://customerBrowse.caption">
     <data readOnly="true">
         <collection id="customersDc" class="com.company.feat2.entity.Customer">
@@ -24,5 +25,6 @@
         </groupTable>
         <popupView id="quickView"/>
         <sourceCodeEditor id="scriptEditor"/>
+        <app:ratingField id="customerRating"/>
     </layout>
 </window>

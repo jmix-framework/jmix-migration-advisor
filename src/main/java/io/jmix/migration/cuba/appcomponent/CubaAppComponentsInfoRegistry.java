@@ -2,6 +2,7 @@ package io.jmix.migration.cuba.appcomponent;
 
 import io.jmix.migration.core.model.License;
 import io.jmix.migration.core.model.Origin;
+import io.jmix.migration.core.model.TargetStatus;
 import io.jmix.migration.core.scan.XmlUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -9,6 +10,7 @@ import org.dom4j.Element;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +44,10 @@ public class CubaAppComponentsInfoRegistry {
         return registry.get(appComponentPackage);
     }
 
+    public Collection<CubaAppComponentInfo> getAll() {
+        return registry.values();
+    }
+
     protected static CubaAppComponentsInfoRegistry load(InputStream stream) {
         Document document = XmlUtils.readDocument(stream, XmlUtils.getSaxReader());
         Element rootElement = document.getRootElement();
@@ -56,10 +62,11 @@ public class CubaAppComponentsInfoRegistry {
             AppComponentType category = parseCategory(componentPackage, requiredAttribute(componentElement, "category"));
             License license = parseLicense(componentPackage, requiredAttribute(componentElement, "license"));
             Origin origin = parseOrigin(componentPackage, requiredAttribute(componentElement, "origin"));
+            TargetStatus status = parseStatus(componentPackage, requiredAttribute(componentElement, "status"));
             Element notesElement = componentElement.element("notes");
             String notes = notesElement == null ? "" : notesElement.getTextTrim();
 
-            if (registry.put(componentPackage, CubaAppComponentInfo.create(componentPackage, name, category, license, origin, notes)) != null) {
+            if (registry.put(componentPackage, CubaAppComponentInfo.create(componentPackage, name, category, license, origin, status, notes)) != null) {
                 throw new RuntimeException("Duplicated app component registry entry: '" + componentPackage + "'");
             }
         }
@@ -100,6 +107,17 @@ public class CubaAppComponentsInfoRegistry {
             case "community" -> Origin.COMMUNITY;
             default -> throw new RuntimeException("App component registry entry '" + componentPackage
                     + "': unknown origin \"" + value + "\"");
+        };
+    }
+
+    protected static TargetStatus parseStatus(String componentPackage, String value) {
+        return switch (value) {
+            case "available" -> TargetStatus.AVAILABLE;
+            case "replaced" -> TargetStatus.REPLACED;
+            case "merged" -> TargetStatus.MERGED;
+            case "absent" -> TargetStatus.ABSENT;
+            default -> throw new RuntimeException("App component registry entry '" + componentPackage
+                    + "': unknown status \"" + value + "\"");
         };
     }
 }

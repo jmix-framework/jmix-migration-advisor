@@ -204,8 +204,8 @@
         </div>
         <div class="card">
           <div class="label">Add-ons</div>
-          <div class="num">9</div>
-          <div class="sub">all recognized</div>
+          <div class="num">11</div>
+          <div class="sub">1 absent</div>
         </div>
         <div class="card">
           <div class="label">Roles</div>
@@ -327,13 +327,34 @@
           <tfoot><tr><th>Total</th><td class="num">2</td><td></td><td class="num">2</td><td></td></tr></tfoot>
         </table>
       </div>
+      <div class="callout" style="margin-top:14px">
+        <strong>Requires decision:</strong> 1 screen
+        contains components with no Jmix equivalent ("Absent" or
+        custom-namespace components). The replacement cost of such components is not included in the estimations
+        above: decide per screen whether to drop the functionality, redesign it, or build a custom component.
+        <details>
+          <summary>Show screens</summary>
+          <div class="drill">
+              <span class="mono">feat2_Customer.browse: app:ratingField</span>
+          </div>
+        </details>
+      </div>
     </section>
     <section id="ui">
-      <h2>UI components <span class="count">4 noted</span></h2>
+      <h2>UI components <span class="count">5 noted</span></h2>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Component</th><th class="num">Used</th><th>Status</th><th>Notes</th></tr></thead>
           <tbody>
+                <tr>
+                  <td><code>app:ratingField</code></td>
+                  <td class="num">1</td>
+                  <td>
+  <span class="badge bad">Custom</span>
+                    
+                  </td>
+                  <td>Component from a non-standard namespace: a project custom component or an add-on without registry data. No automatic analog is known; the cost is not estimated - requires decision</td>
+                </tr>
                 <tr>
                   <td><code>buttonsPanel</code> <span class="chip" title="extra complexity score">+1</span></td>
                   <td class="num">1</td>
@@ -379,12 +400,13 @@
         <span><span class="badge info">Has alternative</span> a different ready-made component achieves the same or similar result</span>
         <span><span class="badge warn">Has workaround</span> achievable partially or with custom glue code following a known recipe</span>
         <span><span class="badge bad">Absent</span> no recipe: drop the functionality, redesign, or build from scratch (not included in complexity scores)</span>
+        <span><span class="badge bad">Custom</span> non-standard namespace: a project custom component; no automatic analog, requires decision (not included in complexity scores)</span>
         <span><span class="chip">+N</span> extra complexity score added to each screen using the component</span>
         <span class="note">Components not listed here have a direct Jmix equivalent. Dependency badges (Add-on, Commercial add-on, 3rd-party) refer to the primary replacement recipe; simpler fallbacks, if any, are described in the notes.</span>
       </div>
     </section>
     <section id="add-ons">
-      <h2>Add-ons <span class="count">9 found</span></h2>
+      <h2>Add-ons <span class="count">11 found</span></h2>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Add-on</th><th>Status</th><th>Replacement</th><th class="num">Hint, h</th><th>Notes</th></tr></thead>
@@ -396,6 +418,14 @@
                   <td></td>
                   <td class="num"></td>
                   <td>No changes required</td>
+                </tr>
+                <tr>
+                  <td>Dashboards<br><span class="chip">io.jmix.dashboards:jmix-dashboards-starter</span></td>
+                  <td>  <span class="badge bad">Absent</span>
+</td>
+                  <td></td>
+                  <td class="num"></td>
+                  <td>Not available for the current Jmix. For analytical dashboards consider the Superset add-on; user-composed dashboards have no direct equivalent - check the marketplace</td>
                 </tr>
                 <tr>
                   <td>EclipseLink Data<br><span class="chip">io.jmix.data:jmix-eclipselink-starter</span></td>
@@ -461,6 +491,14 @@
                   <td class="num">0</td>
                   <td>Classic (Vaadin 8) UI is replaced by Flow UI. All screens are rewritten as views; this is the main migration effort and is estimated separately in the screens section</td>
                 </tr>
+                <tr>
+                  <td>WebDAV <span class="badge warn">Commercial</span><br><span class="chip">io.jmix.webdav:jmix-webdav-starter</span></td>
+                  <td>  <span class="badge ok">Available</span>
+</td>
+                  <td></td>
+                  <td class="num"></td>
+                  <td>Available for current Jmix (Enterprise subscription)</td>
+                </tr>
           </tbody>
         </table>
       </div>
@@ -471,6 +509,14 @@
         <span><span class="badge bad">Absent</span> no equivalent in the current Jmix</span>
         <span><span class="badge bad">Unknown</span> no data in the registry; check the marketplace manually</span>
         <span><span class="badge warn">Commercial</span> requires a commercial subscription</span>
+      </div>
+      <div class="callout" style="margin-top:14px">
+        <strong>Requires decision:</strong> 1 add-on
+        has no equivalent in the current Jmix. The replacement cost
+        is not included in the estimations: decide whether to drop the functionality, replace it, or re-implement.
+        <div class="drill" style="margin-top:8px">
+            <span><strong>Dashboards</strong>: Not available for the current Jmix. For analytical dashboards consider the Superset add-on; user-composed dashboards have no direct equivalent - check the marketplace</span>
+        </div>
       </div>
     </section>
     <section id="red-flags">

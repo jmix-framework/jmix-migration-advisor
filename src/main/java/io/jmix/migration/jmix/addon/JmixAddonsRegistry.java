@@ -2,6 +2,7 @@ package io.jmix.migration.jmix.addon;
 
 import io.jmix.migration.core.model.License;
 import io.jmix.migration.core.model.Origin;
+import io.jmix.migration.core.model.TargetStatus;
 import io.jmix.migration.core.scan.XmlUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -9,6 +10,7 @@ import org.dom4j.Element;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +47,10 @@ public class JmixAddonsRegistry {
         return registry.get(groupArtifact);
     }
 
+    public Collection<JmixAddonInfo> getAll() {
+        return registry.values();
+    }
+
     protected static JmixAddonsRegistry load(InputStream stream) {
         Document document = XmlUtils.readDocument(stream, XmlUtils.getSaxReader());
         Element rootElement = document.getRootElement();
@@ -59,7 +65,7 @@ public class JmixAddonsRegistry {
             String category = requiredAttribute(addonElement, "category");
             License license = parseLicense(artifact, requiredAttribute(addonElement, "license"));
             Origin origin = parseOrigin(artifact, requiredAttribute(addonElement, "origin"));
-            JmixAddonInfo.FlowStatus flowStatus = parseFlowStatus(artifact, requiredAttribute(addonElement, "flow-status"));
+            TargetStatus flowStatus = parseFlowStatus(artifact, requiredAttribute(addonElement, "flow-status"));
 
             Element flowArtifactElement = addonElement.element("flow-artifact");
             String flowArtifact = flowArtifactElement == null ? null : flowArtifactElement.getTextTrim();
@@ -84,13 +90,13 @@ public class JmixAddonsRegistry {
         return value;
     }
 
-    protected static JmixAddonInfo.FlowStatus parseFlowStatus(String artifact, String value) {
+    protected static TargetStatus parseFlowStatus(String artifact, String value) {
         return switch (value) {
-            case "available" -> JmixAddonInfo.FlowStatus.AVAILABLE;
-            case "renamed" -> JmixAddonInfo.FlowStatus.RENAMED;
-            case "replaced" -> JmixAddonInfo.FlowStatus.REPLACED;
-            case "merged" -> JmixAddonInfo.FlowStatus.MERGED;
-            case "absent" -> JmixAddonInfo.FlowStatus.ABSENT;
+            case "available" -> TargetStatus.AVAILABLE;
+            case "renamed" -> TargetStatus.RENAMED;
+            case "replaced" -> TargetStatus.REPLACED;
+            case "merged" -> TargetStatus.MERGED;
+            case "absent" -> TargetStatus.ABSENT;
             default -> throw new RuntimeException("Jmix addon registry entry '" + artifact
                     + "': unknown flow-status \"" + value + "\"");
         };

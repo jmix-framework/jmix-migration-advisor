@@ -22,7 +22,7 @@
         <#case "CHANGED"><#local cls = "ok"><#break>
         <#case "HAS_ALTERNATIVE"><#local cls = "info"><#break>
         <#case "HAS_WORKAROUND"><#local cls = "warn"><#break>
-        <#case "ABSENT"><#local cls = "bad"><#break>
+        <#case "ABSENT"><#case "CUSTOM"><#local cls = "bad"><#break>
         <#default><#local cls = "neutral">
       </#switch>
       <#break>
@@ -134,9 +134,9 @@
       <#if s.requiresDecision?has_content>
       <div class="callout" style="margin-top:14px">
         <strong>Requires decision:</strong> ${s.requiresDecision?size} screen<#if s.requiresDecision?size != 1>s</#if>
-        contain<#if s.requiresDecision?size == 1>s</#if> components with no Jmix equivalent (marked "Absent").
-        The replacement cost of such components is not included in the estimations above: decide per screen whether
-        to drop the functionality, redesign it, or build a custom component.
+        contain<#if s.requiresDecision?size == 1>s</#if> components with no Jmix equivalent ("Absent" or
+        custom-namespace components). The replacement cost of such components is not included in the estimations
+        above: decide per screen whether to drop the functionality, redesign it, or build a custom component.
         <details>
           <summary>Show screens</summary>
           <div class="drill">
@@ -180,6 +180,7 @@
         <span><span class="badge info">Has alternative</span> a different ready-made component achieves the same or similar result</span>
         <span><span class="badge warn">Has workaround</span> achievable partially or with custom glue code following a known recipe</span>
         <span><span class="badge bad">Absent</span> no recipe: drop the functionality, redesign, or build from scratch (not included in complexity scores)</span>
+        <span><span class="badge bad">Custom</span> non-standard namespace: a project custom component; no automatic analog, requires decision (not included in complexity scores)</span>
         <span><span class="chip">+N</span> extra complexity score added to each screen using the component</span>
         <span class="note">Components not listed here have a direct Jmix equivalent. Dependency badges (Add-on, Commercial add-on, 3rd-party) refer to the primary replacement recipe; simpler fallbacks, if any, are described in the notes.</span>
       </div>
@@ -191,23 +192,25 @@
       <h2>${s.title} <span class="count">${s.rows?size} found</span></h2>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Name</th><th>Type</th><th>Origin</th><th>Notes</th></tr></thead>
+          <thead><tr><th>Name</th><th>Type</th><th>Status</th><th>Origin</th><th>Notes</th></tr></thead>
           <tbody>
             <#if s.rows?has_content>
               <#list s.rows as appComponent>
                 <tr>
                   <td>${appComponent.name}<@licenseBadge appComponent.licenseName!""/><#if appComponent.packageName?? && appComponent.packageName != appComponent.name><br><span class="chip">${appComponent.packageName}</span></#if></td>
                   <td><@badge appComponent.typeName "compType"/></td>
+                  <td><#if appComponent.statusName??><@badge appComponent.statusName "addonStatus"/></#if></td>
                   <td><@badge appComponent.originName "origin"/></td>
                   <td>${appComponent.notes}</td>
                 </tr>
               </#list>
             <#else>
-              <tr><td colspan="4" class="empty">No application components detected.</td></tr>
+              <tr><td colspan="5" class="empty">No application components detected.</td></tr>
             </#if>
           </tbody>
         </table>
       </div>
+      <@escalationsCallout s.escalations "app component"/>
     </section>
 </#macro>
 
@@ -242,7 +245,24 @@
         <span><span class="badge bad">Unknown</span> no data in the registry; check the marketplace manually</span>
         <span><span class="badge warn">Commercial</span> requires a commercial subscription</span>
       </div>
+      <@escalationsCallout s.escalations "add-on"/>
     </section>
+</#macro>
+
+<#-- Absent add-ons / app components: not priced, surfaced for a manual decision -->
+<#macro escalationsCallout escalations subjectKind>
+  <#if escalations?has_content>
+      <div class="callout" style="margin-top:14px">
+        <strong>Requires decision:</strong> ${escalations?size} ${subjectKind}<#if escalations?size != 1>s</#if>
+        <#if escalations?size == 1>has<#else>have</#if> no equivalent in the current Jmix. The replacement cost
+        is not included in the estimations: decide whether to drop the functionality, replace it, or re-implement.
+        <div class="drill" style="margin-top:8px">
+          <#list escalations as escalation>
+            <span><strong>${escalation.name}</strong>: ${escalation.notes}</span>
+          </#list>
+        </div>
+      </div>
+  </#if>
 </#macro>
 
 <#macro dataModelSection s>

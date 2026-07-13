@@ -22,6 +22,8 @@ dependencies {
     implementation 'io.jmix.security:jmix-security-data-starter'
     implementation 'io.jmix.datatools:jmix-datatools-starter'
     implementation 'io.jmix.localfs:jmix-localfs-starter'
+    implementation 'io.jmix.webdav:jmix-webdav-starter'
+    implementation 'io.jmix.dashboards:jmix-dashboards-starter'
 
     runtimeOnly 'org.hsqldb:hsqldb'
 }

@@ -2,6 +2,6 @@
 <web-app>
     <context-param>
         <param-name>appComponents</param-name>
-        <param-value>com.haulmont.cuba com.haulmont.reports com.haulmont.addon.maps com.example.unknownaddon</param-value>
+        <param-value>com.haulmont.cuba com.haulmont.reports com.haulmont.addon.maps gr.netmechanics.cuba.afs com.example.unknownaddon</param-value>
     </context-param>
 </web-app>

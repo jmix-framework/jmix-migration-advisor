@@ -275,9 +275,9 @@
       </div>
       <div class="callout" style="margin-top:14px">
         <strong>Requires decision:</strong> 1 screen
-        contains components with no Jmix equivalent (marked "Absent").
-        The replacement cost of such components is not included in the estimations above: decide per screen whether
-        to drop the functionality, redesign it, or build a custom component.
+        contains components with no Jmix equivalent ("Absent" or
+        custom-namespace components). The replacement cost of such components is not included in the estimations
+        above: decide per screen whether to drop the functionality, redesign it, or build a custom component.
         <details>
           <summary>Show screens</summary>
           <div class="drill">
@@ -356,6 +356,7 @@
         <span><span class="badge info">Has alternative</span> a different ready-made component achieves the same or similar result</span>
         <span><span class="badge warn">Has workaround</span> achievable partially or with custom glue code following a known recipe</span>
         <span><span class="badge bad">Absent</span> no recipe: drop the functionality, redesign, or build from scratch (not included in complexity scores)</span>
+        <span><span class="badge bad">Custom</span> non-standard namespace: a project custom component; no automatic analog, requires decision (not included in complexity scores)</span>
         <span><span class="chip">+N</span> extra complexity score added to each screen using the component</span>
         <span class="note">Components not listed here have a direct Jmix equivalent. Dependency badges (Add-on, Commercial add-on, 3rd-party) refer to the primary replacement recipe; simpler fallbacks, if any, are described in the notes.</span>
       </div>
@@ -364,11 +365,13 @@
       <h2>App components <span class="count">1 found</span></h2>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Name</th><th>Type</th><th>Origin</th><th>Notes</th></tr></thead>
+          <thead><tr><th>Name</th><th>Type</th><th>Status</th><th>Origin</th><th>Notes</th></tr></thead>
           <tbody>
                 <tr>
                   <td>com.unknown.addon</td>
                   <td>  <span class="badge bad">Missing</span>
+</td>
+                  <td>  <span class="badge bad">Unknown</span>
 </td>
                   <td>  <span class="badge neutral">Unknown</span>
 </td>
