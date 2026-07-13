@@ -1,5 +1,7 @@
 package io.jmix.migration.cuba.appcomponent;
 
+import io.jmix.migration.core.model.License;
+import io.jmix.migration.core.model.Origin;
 import io.jmix.migration.core.scan.XmlUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -51,12 +53,13 @@ public class CubaAppComponentsInfoRegistry {
         for (Element componentElement : rootElement.elements("component")) {
             String componentPackage = requiredAttribute(componentElement, "package");
             String name = requiredAttribute(componentElement, "name");
-            AppComponentType type = parseType(componentPackage, requiredAttribute(componentElement, "type"));
-            AppComponentOrigin origin = parseOrigin(componentPackage, requiredAttribute(componentElement, "origin"));
+            AppComponentType category = parseCategory(componentPackage, requiredAttribute(componentElement, "category"));
+            License license = parseLicense(componentPackage, requiredAttribute(componentElement, "license"));
+            Origin origin = parseOrigin(componentPackage, requiredAttribute(componentElement, "origin"));
             Element notesElement = componentElement.element("notes");
             String notes = notesElement == null ? "" : notesElement.getTextTrim();
 
-            if (registry.put(componentPackage, CubaAppComponentInfo.create(componentPackage, name, type, origin, notes)) != null) {
+            if (registry.put(componentPackage, CubaAppComponentInfo.create(componentPackage, name, category, license, origin, notes)) != null) {
                 throw new RuntimeException("Duplicated app component registry entry: '" + componentPackage + "'");
             }
         }
@@ -71,21 +74,30 @@ public class CubaAppComponentsInfoRegistry {
         return value;
     }
 
-    protected static AppComponentType parseType(String componentPackage, String value) {
+    protected static AppComponentType parseCategory(String componentPackage, String value) {
         return switch (value) {
             case "base-app" -> AppComponentType.BASE_APP;
             case "addon" -> AppComponentType.ADDON;
-            case "translation-addon" -> AppComponentType.TRANSLATION_ADDON;
+            case "translation" -> AppComponentType.TRANSLATION;
             case "theme" -> AppComponentType.THEME;
             default -> throw new RuntimeException("App component registry entry '" + componentPackage
-                    + "': unknown type \"" + value + "\"");
+                    + "': unknown category \"" + value + "\"");
         };
     }
 
-    protected static AppComponentOrigin parseOrigin(String componentPackage, String value) {
+    protected static License parseLicense(String componentPackage, String value) {
         return switch (value) {
-            case "framework" -> AppComponentOrigin.FRAMEWORK;
-            case "external" -> AppComponentOrigin.EXTERNAL;
+            case "open-source" -> License.OPEN_SOURCE;
+            case "commercial" -> License.COMMERCIAL;
+            default -> throw new RuntimeException("App component registry entry '" + componentPackage
+                    + "': unknown license \"" + value + "\"");
+        };
+    }
+
+    protected static Origin parseOrigin(String componentPackage, String value) {
+        return switch (value) {
+            case "framework" -> Origin.FRAMEWORK;
+            case "community" -> Origin.COMMUNITY;
             default -> throw new RuntimeException("App component registry entry '" + componentPackage
                     + "': unknown origin \"" + value + "\"");
         };

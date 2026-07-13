@@ -4,6 +4,6 @@ public enum AppComponentType {
     BASE_APP,
     THEME,
     ADDON,
-    TRANSLATION_ADDON,
+    TRANSLATION,
     MISSING
 }

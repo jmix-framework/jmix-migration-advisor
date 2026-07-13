@@ -1,5 +1,7 @@
 package io.jmix.migration.jmix.addon;
 
+import io.jmix.migration.core.model.License;
+import io.jmix.migration.core.model.Origin;
 import io.jmix.migration.core.scan.XmlUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -55,6 +57,8 @@ public class JmixAddonsRegistry {
             String artifact = requiredAttribute(addonElement, "artifact");
             String name = requiredAttribute(addonElement, "name");
             String category = requiredAttribute(addonElement, "category");
+            License license = parseLicense(artifact, requiredAttribute(addonElement, "license"));
+            Origin origin = parseOrigin(artifact, requiredAttribute(addonElement, "origin"));
             JmixAddonInfo.FlowStatus flowStatus = parseFlowStatus(artifact, requiredAttribute(addonElement, "flow-status"));
 
             Element flowArtifactElement = addonElement.element("flow-artifact");
@@ -64,7 +68,7 @@ public class JmixAddonsRegistry {
             Element costHintElement = addonElement.element("cost-hint");
             Integer costHint = costHintElement == null ? null : Integer.valueOf(costHintElement.getTextTrim());
 
-            JmixAddonInfo addonInfo = new JmixAddonInfo(artifact, name, category, flowStatus, flowArtifact, notes, costHint);
+            JmixAddonInfo addonInfo = new JmixAddonInfo(artifact, name, category, license, origin, flowStatus, flowArtifact, notes, costHint);
             if (registry.put(artifact, addonInfo) != null) {
                 throw new RuntimeException("Duplicated Jmix addon registry entry: '" + artifact + "'");
             }
@@ -87,9 +91,26 @@ public class JmixAddonsRegistry {
             case "replaced" -> JmixAddonInfo.FlowStatus.REPLACED;
             case "merged" -> JmixAddonInfo.FlowStatus.MERGED;
             case "absent" -> JmixAddonInfo.FlowStatus.ABSENT;
-            case "commercial" -> JmixAddonInfo.FlowStatus.COMMERCIAL;
             default -> throw new RuntimeException("Jmix addon registry entry '" + artifact
                     + "': unknown flow-status \"" + value + "\"");
+        };
+    }
+
+    protected static License parseLicense(String artifact, String value) {
+        return switch (value) {
+            case "open-source" -> License.OPEN_SOURCE;
+            case "commercial" -> License.COMMERCIAL;
+            default -> throw new RuntimeException("Jmix addon registry entry '" + artifact
+                    + "': unknown license \"" + value + "\"");
+        };
+    }
+
+    protected static Origin parseOrigin(String artifact, String value) {
+        return switch (value) {
+            case "framework" -> Origin.FRAMEWORK;
+            case "community" -> Origin.COMMUNITY;
+            default -> throw new RuntimeException("Jmix addon registry entry '" + artifact
+                    + "': unknown origin \"" + value + "\"");
         };
     }
 }

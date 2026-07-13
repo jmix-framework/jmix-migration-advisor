@@ -36,14 +36,16 @@ public class AppComponentsSection implements ReportSection {
         private final String name;
         private final String packageName;
         private final String typeName;
+        private final String licenseName;
         private final String originName;
         private final String notes;
 
         public Row(String name, @Nullable String packageName, @Nullable String typeName,
-                   @Nullable String originName, String notes) {
+                   @Nullable String licenseName, @Nullable String originName, String notes) {
             this.name = name;
             this.packageName = packageName;
             this.typeName = typeName;
+            this.licenseName = licenseName;
             this.originName = originName;
             this.notes = notes;
         }
@@ -60,6 +62,11 @@ public class AppComponentsSection implements ReportSection {
         @Nullable
         public String getTypeName() {
             return typeName;
+        }
+
+        @Nullable
+        public String getLicenseName() {
+            return licenseName;
         }
 
         @Nullable

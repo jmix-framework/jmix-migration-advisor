@@ -1,4 +1,4 @@
-<#-- Status pill badge. kind: compType | origin | uiType -->
+<#-- Status pill badge. kind: compType | origin | uiType | addonStatus -->
 <#macro badge value kind>
   <#if !value?? || value?length == 0><#return></#if>
   <#local cls = "neutral">
@@ -6,13 +6,13 @@
     <#case "compType">
       <#switch value>
         <#case "MISSING"><#local cls = "bad"><#break>
-        <#case "ADDON"><#case "TRANSLATION_ADDON"><#local cls = "info"><#break>
+        <#case "ADDON"><#case "TRANSLATION"><#local cls = "info"><#break>
         <#default><#local cls = "neutral">
       </#switch>
       <#break>
     <#case "origin">
       <#switch value>
-        <#case "EXTERNAL"><#local cls = "warn"><#break>
+        <#case "COMMUNITY"><#local cls = "warn"><#break>
         <#case "FRAMEWORK"><#local cls = "info"><#break>
         <#default><#local cls = "neutral">
       </#switch>
@@ -30,7 +30,7 @@
       <#switch value>
         <#case "AVAILABLE"><#local cls = "ok"><#break>
         <#case "RENAMED"><#case "MERGED"><#local cls = "info"><#break>
-        <#case "REPLACED"><#case "COMMERCIAL"><#local cls = "warn"><#break>
+        <#case "REPLACED"><#local cls = "warn"><#break>
         <#case "ABSENT"><#case "UNKNOWN"><#local cls = "bad"><#break>
         <#default><#local cls = "neutral">
       </#switch>
@@ -38,6 +38,9 @@
   </#switch>
   <span class="badge ${cls}">${value?lower_case?replace("_", " ")?cap_first}</span>
 </#macro>
+
+<#-- Commercial marker: rendered next to the name only for commercial license -->
+<#macro licenseBadge licenseName><#if licenseName?? && licenseName == "COMMERCIAL"> <span class="badge warn">Commercial</span></#if></#macro>
 
 <#-- Dependency of the primary replacement recipe (UiComponentIssue.requires) -->
 <#macro requiresBadge req>
@@ -193,7 +196,7 @@
             <#if s.rows?has_content>
               <#list s.rows as appComponent>
                 <tr>
-                  <td>${appComponent.name}<#if appComponent.packageName?? && appComponent.packageName != appComponent.name><br><span class="chip">${appComponent.packageName}</span></#if></td>
+                  <td>${appComponent.name}<@licenseBadge appComponent.licenseName!""/><#if appComponent.packageName?? && appComponent.packageName != appComponent.name><br><span class="chip">${appComponent.packageName}</span></#if></td>
                   <td><@badge appComponent.typeName "compType"/></td>
                   <td><@badge appComponent.originName "origin"/></td>
                   <td>${appComponent.notes}</td>
@@ -218,7 +221,7 @@
             <#if s.rows?has_content>
               <#list s.rows as addon>
                 <tr>
-                  <td>${addon.name}<br><span class="chip">${addon.artifact}</span></td>
+                  <td>${addon.name}<@licenseBadge addon.licenseName!""/><br><span class="chip">${addon.artifact}</span></td>
                   <td><@badge addon.statusName "addonStatus"/></td>
                   <td><#if addon.flowArtifact??><span class="mono">${addon.flowArtifact}</span></#if></td>
                   <td class="num"><#if addon.costHint??>${addon.costHint}</#if></td>
@@ -237,6 +240,7 @@
         <span><span class="badge warn">Replaced</span> a different add-on covers the functionality; rework per notes</span>
         <span><span class="badge bad">Absent</span> no equivalent in the current Jmix</span>
         <span><span class="badge bad">Unknown</span> no data in the registry; check the marketplace manually</span>
+        <span><span class="badge warn">Commercial</span> requires a commercial subscription</span>
       </div>
     </section>
 </#macro>

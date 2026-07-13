@@ -124,6 +124,7 @@ public class HtmlReportGenerator {
                     appComponent.getName(),
                     appComponent.getAppComponentPackage(),
                     appComponent.getAppComponentTypeName(),
+                    appComponent.getLicenseName(),
                     appComponent.getOriginName(),
                     appComponent.getNotes()
             ));

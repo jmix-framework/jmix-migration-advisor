@@ -331,7 +331,7 @@
       </div>
     </section>
     <section id="ui">
-      <h2>UI components <span class="count">19 noted</span></h2>
+      <h2>UI components <span class="count">20 noted</span></h2>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Component</th><th class="num">Used</th><th>Status</th><th>Notes</th></tr></thead>
@@ -399,6 +399,15 @@
                     
                   </td>
                   <td>Use &#39;formLayout&#39;</td>
+                </tr>
+                <tr>
+                  <td><code>filter</code> <span class="chip" title="extra complexity score">+2</span></td>
+                  <td class="num">1</td>
+                  <td>
+  <span class="badge ok">Changed</span>
+                    
+                  </td>
+                  <td>Use &#39;genericFilter&#39; (https://docs.jmix.io/jmix/flow-ui/vc/components/genericFilter.html). Declarative use is close to 1:1, but saved filter configurations, custom conditions and folders differ; JPQL conditions are recreated as jpqlFilter elements</td>
                 </tr>
                 <tr>
                   <td><code>grid</code> <span class="chip" title="extra complexity score">+2</span></td>
@@ -537,7 +546,7 @@
                   <td>Available for Jmix</td>
                 </tr>
                 <tr>
-                  <td>Maps<br><span class="chip">com.haulmont.addon.maps</span></td>
+                  <td>Maps <span class="badge warn">Commercial</span><br><span class="chip">com.haulmont.addon.maps</span></td>
                   <td>  <span class="badge info">Addon</span>
 </td>
                   <td>  <span class="badge info">Framework</span>

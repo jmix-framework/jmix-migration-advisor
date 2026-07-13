@@ -1,70 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     Known CUBA app components (add-ons) with notes about their availability in Jmix.
+    The format mirrors registries/jmix-addons.xml where the platforms allow.
+
     Attributes:
-      package - app component base package as listed in web.xml 'appComponents'
-      type    - base-app | addon | translation-addon | theme
-      origin  - framework | external
+      package  - app component base package as listed in web.xml 'appComponents'
+      name     - display name
+      category - base-app | addon | translation | theme
+      license  - open-source | commercial (requires a commercial subscription)
+      origin   - framework (developed by the CUBA/Haulmont team) | community (third-party vendor)
 -->
 <cuba-app-components>
-    <component package="com.haulmont.cuba" name="Application" type="base-app" origin="framework">
+    <component package="com.haulmont.cuba" name="Application" category="base-app" license="open-source" origin="framework">
         <notes>CUBA base application</notes>
     </component>
-    <component package="com.haulmont.reports" name="Reporting" type="addon" origin="framework">
+    <component package="com.haulmont.reports" name="Reporting" category="addon" license="open-source" origin="framework">
         <notes>Available for Jmix</notes>
     </component>
-    <component package="com.haulmont.fts" name="Full Text Search" type="addon" origin="framework">
+    <component package="com.haulmont.fts" name="Full Text Search" category="addon" license="open-source" origin="framework">
         <notes>Search add-on has been reworked in Jmix</notes>
     </component>
-    <component package="com.haulmont.addon.maps" name="Maps" type="addon" origin="framework">
+    <component package="com.haulmont.addon.maps" name="Maps" category="addon" license="commercial" origin="framework">
         <notes>Available for Jmix</notes>
     </component>
-    <component package="com.haulmont.webdav" name="WebDAV" type="addon" origin="framework">
+    <component package="com.haulmont.webdav" name="WebDAV" category="addon" license="commercial" origin="framework">
         <notes>Available for Jmix</notes>
     </component>
-    <component package="com.haulmont.addon.grapesjs" name="GrapesJS HTML Editor" type="addon" origin="framework">
+    <component package="com.haulmont.addon.grapesjs" name="GrapesJS HTML Editor" category="addon" license="open-source" origin="framework">
         <notes>Unavailable as a standalone add-on. A GrapesJS editor is bundled inside the Message Templates add-on</notes>
     </component>
-    <component package="com.haulmont.addon.bproc" name="BProc" type="addon" origin="framework">
+    <component package="com.haulmont.addon.bproc" name="BProc" category="addon" license="commercial" origin="framework">
+        <notes>Available for Jmix under the name BPM (io.jmix.bpm) - same Flowable engine, process models are compatible. Despite the name, Jmix BPM is unrelated to the legacy CUBA BPM add-on</notes>
+    </component>
+    <component package="com.haulmont.bpm" name="BPM" category="addon" license="open-source" origin="framework">
+        <notes>Legacy Activiti-based add-on with no direct successor: Jmix BPM is the analog of CUBA BProc (Flowable engine), not of this add-on. Process models and listeners are re-implemented on Flowable</notes>
+    </component>
+    <component package="com.haulmont.addon.restapi" name="REST API" category="addon" license="open-source" origin="framework">
         <notes>Available for Jmix</notes>
     </component>
-    <component package="com.haulmont.bpm" name="BPM" type="addon" origin="framework">
-        <notes>Legacy business process management add-on. Jmix BPM is similar to CUBA BProc</notes>
-    </component>
-    <component package="com.haulmont.addon.restapi" name="REST API" type="addon" origin="framework">
+    <component package="com.haulmont.charts" name="Charts" category="addon" license="open-source" origin="framework">
         <notes>Available for Jmix</notes>
     </component>
-    <component package="com.haulmont.charts" name="Charts" type="addon" origin="framework">
-        <notes>Available for Jmix</notes>
-    </component>
-    <component package="com.haulmont.addon.helium" name="Helium Theme" type="theme" origin="framework">
+    <component package="com.haulmont.addon.helium" name="Helium Theme" category="theme" license="open-source" origin="framework">
         <notes></notes>
     </component>
-    <component package="com.haulmont.addon.ldap" name="LDAP" type="addon" origin="framework">
+    <component package="com.haulmont.addon.ldap" name="LDAP" category="addon" license="open-source" origin="framework">
         <notes>Available for Jmix</notes>
     </component>
-    <component package="com.haulmont.addon.globalevents" name="Global Events" type="addon" origin="framework">
+    <component package="com.haulmont.addon.globalevents" name="Global Events" category="addon" license="open-source" origin="framework">
         <notes>Jmix allows to send events from backend to UI sessions</notes>
     </component>
-    <component package="gr.netmechanics.cuba.afs" name="Azure File Storage" type="addon" origin="external">
+    <component package="com.haulmont.addon.dashboard" name="Dashboards" category="addon" license="open-source" origin="framework">
+        <notes>Not available for the current Jmix; consider the Superset add-on for analytical dashboards</notes>
+    </component>
+    <component package="com.haulmont.addon.emailtemplates" name="Email Templates" category="addon" license="open-source" origin="framework">
+        <notes>Replaced by the Message Templates add-on; templates are migrated manually</notes>
+    </component>
+    <component package="com.haulmont.addon.imap" name="IMAP" category="addon" license="open-source" origin="framework">
+        <notes>Not listed among current Jmix add-ons; check the marketplace</notes>
+    </component>
+    <component package="com.haulmont.addon.admintools" name="Admin Tools" category="addon" license="open-source" origin="framework">
+        <notes>Not available for the current Jmix; parts of the functionality are covered by the JMX Console and Audit add-ons</notes>
+    </component>
+    <component package="com.haulmont.addon.idp" name="IDP SSO" category="addon" license="open-source" origin="framework">
+        <notes>Not available for the current Jmix; use the OpenID Connect, SAML or Authorization Server add-ons</notes>
+    </component>
+    <component package="gr.netmechanics.cuba.afs" name="Azure File Storage" category="addon" license="open-source" origin="community">
         <notes>Unavailable for Jmix</notes>
     </component>
-    <component package="ro.infoexpert.cuba.translationro" name="Romanian Translation" type="translation-addon" origin="external">
+    <component package="ro.infoexpert.cuba.translationro" name="Romanian Translation" category="translation" license="open-source" origin="community">
         <notes></notes>
     </component>
-    <component package="gr.netmechanics.cuba.translationel" name="Greek Translation" type="translation-addon" origin="external">
+    <component package="gr.netmechanics.cuba.translationel" name="Greek Translation" category="translation" license="open-source" origin="community">
         <notes>Available for Jmix</notes>
     </component>
-    <component package="it.nexbit.cuba.translationit" name="Italian Translation" type="translation-addon" origin="external">
+    <component package="it.nexbit.cuba.translationit" name="Italian Translation" category="translation" license="open-source" origin="community">
         <notes>Available for Jmix</notes>
     </component>
-    <component package="de.balvi.cuba.translationde" name="German Translation" type="translation-addon" origin="external">
+    <component package="de.balvi.cuba.translationde" name="German Translation" category="translation" license="open-source" origin="community">
         <notes>Available for Jmix</notes>
     </component>
-    <component package="br.com.petersonbr.translations" name="CUBA Translations" type="translation-addon" origin="external">
+    <component package="br.com.petersonbr.translations" name="CUBA Translations" category="translation" license="open-source" origin="community">
         <notes>Check Jmix add-ons marketplace to see available translations</notes>
     </component>
-    <component package="cn.cuba.trans" name="Simplified Chinese Translation" type="translation-addon" origin="framework">
+    <component package="cn.cuba.trans" name="Simplified Chinese Translation" category="translation" license="open-source" origin="framework">
         <notes>Available for Jmix</notes>
     </component>
 </cuba-app-components>

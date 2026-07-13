@@ -160,6 +160,7 @@ public class JmixHtmlReportGenerator {
                         addon.getDependency().getGroupArtifact(),
                         "UNKNOWN",
                         null,
+                        null,
                         "No data about this add-on. Check the Jmix marketplace manually",
                         null));
             } else {
@@ -167,6 +168,7 @@ public class JmixHtmlReportGenerator {
                         info.getName(),
                         info.getArtifact(),
                         info.getFlowStatus().name(),
+                        info.getLicense().name(),
                         info.getFlowArtifact(),
                         info.getNotes(),
                         info.getCostHint()));

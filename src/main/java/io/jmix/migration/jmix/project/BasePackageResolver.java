@@ -21,7 +21,7 @@ public class BasePackageResolver {
 
     private static final Logger log = LoggerFactory.getLogger(BasePackageResolver.class);
 
-    protected static final Pattern PACKAGE_PATTERN = Pattern.compile("^\\s*package\\s+([\\w.]+)\\s*;");
+    protected static final Pattern PACKAGE_PATTERN = Pattern.compile("^\\s*package\\s+([\\w.]+)\\s*;", Pattern.MULTILINE);
 
     @Nullable
     public String resolveBasePackage(List<JmixModule> modules) {

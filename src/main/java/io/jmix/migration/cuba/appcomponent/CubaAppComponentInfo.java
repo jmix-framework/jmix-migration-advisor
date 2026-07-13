@@ -1,26 +1,36 @@
 package io.jmix.migration.cuba.appcomponent;
 
+import io.jmix.migration.core.model.License;
+import io.jmix.migration.core.model.Origin;
+
+import javax.annotation.Nullable;
+
 public class CubaAppComponentInfo {
     private final String appComponentPackage;
     private final String name;
     private final AppComponentType appComponentType;
-    private final AppComponentOrigin origin;
+    private final License license;
+    private final Origin origin;
     private final String notes;
 
-    protected CubaAppComponentInfo(String appComponentPackage, String name, AppComponentType appComponentType, AppComponentOrigin origin, String notes) {
+    protected CubaAppComponentInfo(String appComponentPackage, String name, AppComponentType appComponentType,
+                                   @Nullable License license, Origin origin, String notes) {
         this.appComponentPackage = appComponentPackage;
         this.name = name;
         this.appComponentType = appComponentType;
+        this.license = license;
         this.origin = origin;
         this.notes = notes;
     }
 
-    public static CubaAppComponentInfo create(String appComponentPackage, String cubaName, AppComponentType appComponentType, AppComponentOrigin origin, String notes) {
-        return new CubaAppComponentInfo(appComponentPackage, cubaName, appComponentType, origin, notes);
+    public static CubaAppComponentInfo create(String appComponentPackage, String cubaName, AppComponentType appComponentType,
+                                              License license, Origin origin, String notes) {
+        return new CubaAppComponentInfo(appComponentPackage, cubaName, appComponentType, license, origin, notes);
     }
 
     public static CubaAppComponentInfo createMissing(String appComponentPackage) {
-        return new CubaAppComponentInfo(appComponentPackage, appComponentPackage, AppComponentType.MISSING, AppComponentOrigin.UNKNOWN, "No data");
+        return new CubaAppComponentInfo(appComponentPackage, appComponentPackage, AppComponentType.MISSING,
+                null, Origin.UNKNOWN, "No data");
     }
 
     public String getAppComponentPackage() {
@@ -39,11 +49,23 @@ public class CubaAppComponentInfo {
         return appComponentType == null ? "" : appComponentType.name();
     }
 
+    /**
+     * @return licensing, or {@code null} for components missing from the registry
+     */
+    @Nullable
+    public License getLicense() {
+        return license;
+    }
+
+    public String getLicenseName() {
+        return license == null ? "" : license.name();
+    }
+
     public String getNotes() {
         return notes;
     }
 
-    public AppComponentOrigin getOrigin() {
+    public Origin getOrigin() {
         return origin;
     }
 

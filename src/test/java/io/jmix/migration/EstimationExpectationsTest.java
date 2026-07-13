@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * <p>Derivation per screen (weights: groupTable 3, calendar 3, fieldGroup 2, suggestionField 2,
  * link 1, buttonsPanel 1, maskedField 2, tokenList 2, grid 2, cssLayout 0, linkButton 1,
- * currencyField 1, htmlBox 3, slider 2, optionsGroup 1, embedded 2, popupView 5;
+ * currencyField 1, htmlBox 3, slider 2, optionsGroup 1, embedded 2, popupView 5, filter 2;
  * nested data item = n x 15, uiComponents.create = n x 10, descriptor extends = 5,
  * method calls: 0..5 -> 0, 6..30 -> 10, 31..80 -> 40, 81..150 -> 80, 151+ -> 180;
  * hours per group: Trivial(0..10) 0.5, Simple(11..35) 2, Medium(36..85) 8,
@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <li>feat_Customer.editExt: extends 5 + linkButton 1 = 6, Trivial</li>
  * <li>feat_SharedView: 3+2 = 5, Trivial</li>
  * <li>feat_ОтчётПродаж: optionsGroup 1 + embedded 2 + lookupField 1 = 4, Trivial</li>
- * <li>feat_Customer.lookup: buttonsPanel 1 + nested ds 15 + 5 calls (L1: 0) = 16, Simple;
+ * <li>feat_Customer.lookup: buttonsPanel 1 + filter 2 + nested ds 15 + 5 calls (L1: 0) = 18, Simple;
  *     contains capsLockIndicator (ABSENT), goes to requires-decision</li>
  * <li>feat_Order.browse: 3+1+3+2+2+2 = 13 + 6 calls (L2: 10) = 23, Simple</li>
  * <li>feat_Customer.edit: 2+2+5 = 9 + nested 15 + create 10 + 8 calls (L2: 10) = 44, Medium</li>

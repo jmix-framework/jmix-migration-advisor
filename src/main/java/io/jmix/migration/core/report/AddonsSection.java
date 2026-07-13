@@ -39,15 +39,17 @@ public class AddonsSection implements ReportSection {
         private final String name;
         private final String artifact;
         private final String statusName;
+        private final String licenseName;
         private final String flowArtifact;
         private final String notes;
         private final Integer costHint;
 
-        public Row(String name, String artifact, @Nullable String statusName,
+        public Row(String name, String artifact, @Nullable String statusName, @Nullable String licenseName,
                    @Nullable String flowArtifact, String notes, @Nullable Integer costHint) {
             this.name = name;
             this.artifact = artifact;
             this.statusName = statusName;
+            this.licenseName = licenseName;
             this.flowArtifact = flowArtifact;
             this.notes = notes;
             this.costHint = costHint;
@@ -64,6 +66,11 @@ public class AddonsSection implements ReportSection {
         @Nullable
         public String getStatusName() {
             return statusName;
+        }
+
+        @Nullable
+        public String getLicenseName() {
+            return licenseName;
         }
 
         @Nullable
