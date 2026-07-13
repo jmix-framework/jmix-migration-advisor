@@ -19,6 +19,7 @@
     --warn:#b45309; --warn-bg:#fbf0dd;
     --bad:#b91c1c;  --bad-bg:#fbe6e6;
     --info:#0369a1; --info-bg:#e3f1fb;
+    --dep:#7c3aed;  --dep-bg:#f1eafd;
     --neutral: var(--ink-soft); --neutral-bg: var(--surface-2);
   }
   @media (prefers-color-scheme: dark) {
@@ -30,6 +31,7 @@
       --warn:#fbbf24; --warn-bg:#3a2c0c;
       --bad:#f87171;  --bad-bg:#3a1414;
       --info:#38bdf8; --info-bg:#0c2a3a;
+      --dep:#c4b5fd;  --dep-bg:#2b2151;
     }
   }
   * { box-sizing: border-box; }
@@ -66,6 +68,11 @@
   .callout + .callout { margin-top: 10px; }
 
   /* kpi cards */
+  .meta { display: flex; flex-wrap: wrap; gap: 10px 32px; background: var(--surface); border: 1px solid var(--border);
+          border-radius: var(--radius); padding: 12px 18px; margin-bottom: 16px; }
+  .meta-label { color: var(--ink-soft); font-size: .74rem; text-transform: uppercase; letter-spacing: .04em;
+                display: block; }
+  .meta-value { font-weight: 600; font-size: .95rem; word-break: break-all; }
   .cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(168px,1fr)); }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
           padding: 16px 18px; box-shadow: var(--shadow); }
@@ -94,13 +101,23 @@
   .badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
   .badge.ok{color:var(--ok);background:var(--ok-bg)}   .badge.warn{color:var(--warn);background:var(--warn-bg)}
   .badge.bad{color:var(--bad);background:var(--bad-bg)} .badge.info{color:var(--info);background:var(--info-bg)}
+  .badge.dep{color:var(--dep);background:var(--dep-bg)}
   .badge.neutral{color:var(--neutral);background:var(--neutral-bg)}
   .chip { display: inline-block; padding: 1px 8px; border-radius: 6px; background: var(--surface-2);
           border: 1px solid var(--border); font-family: var(--font-mono); font-size: .76rem; color: var(--ink-soft); }
-  .legend { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px 18px;
+  .legend { margin-top: 10px; display: flex; flex-direction: column; gap: 8px;
             font-size: .82rem; color: var(--ink-soft); }
-  .legend > span { display: inline-flex; align-items: center; gap: 6px; }
-  .legend > .note { flex-basis: 100%; display: block; }
+  .legend > span { display: flex; align-items: baseline; gap: 6px; }
+  .legend > span > .badge, .legend > span > .chip { flex-shrink: 0; }
+  .legend > .note { display: block; }
+
+  /* collapsible sections: the whole header acts as a toggle */
+  details.fold > summary { list-style: none; cursor: pointer; }
+  details.fold > summary::-webkit-details-marker { display: none; }
+  details.fold > summary h2::after { content: "/2304"; font-size: .9em; color: var(--ink-soft);
+                                     line-height: 1; transition: transform .15s ease; }
+  details.fold:not([open]) > summary h2 { margin-bottom: 0; }
+  details.fold:not([open]) > summary h2::after { transform: rotate(-90deg) translateX(4px); }
 
   /* stacked effort bar */
   .stack { display: flex; height: 30px; border-radius: 8px; overflow: hidden;
@@ -180,6 +197,24 @@
   <main>
     <section id="overview">
       <h2>Overview</h2>
+      <div class="meta">
+        <div class="meta-item">
+          <span class="meta-label">Jmix version</span>
+          <span class="meta-value">1.7.2</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Base package</span>
+          <span class="meta-value">com.company.jmixapp</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Modules</span>
+          <span class="meta-value">jmix17-minimal</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Java</span>
+          <span class="meta-value">11</span>
+        </div>
+      </div>
       <div class="cards">
         <div class="card accent">
           <div class="label">Total effort</div>
@@ -187,14 +222,9 @@
           <div class="sub">man-hours (lower bound)</div>
         </div>
         <div class="card">
-          <div class="label">Jmix version</div>
-          <div class="num">1.7.2</div>
-          <div class="sub">plugin 1.7.2</div>
-        </div>
-        <div class="card">
-          <div class="label">Entities</div>
+          <div class="label">JPA entities</div>
           <div class="num">0</div>
-          <div class="sub">0 DTO, 0 embeddable, 0 enums</div>
+          <div class="sub">+ 0 DTO, 0 embeddable, 0 enums</div>
         </div>
         <div class="card">
           <div class="label">Screens</div>
@@ -215,16 +245,6 @@
           <div class="label">Red flags</div>
           <div class="num">0</div>
           <div class="sub">manual estimation required</div>
-        </div>
-        <div class="card">
-          <div class="label">Java</div>
-          <div class="num">11</div>
-          
-        </div>
-        <div class="card">
-          <div class="label">Base package</div>
-          <div class="num">com.company.jmixapp</div>
-          <div class="sub">modules: jmix17-minimal</div>
         </div>
       </div>
       <div class="callout" style="margin-top:18px">
@@ -298,7 +318,8 @@
       </div>
     </section>
     <section id="ui">
-      <h2>UI components <span class="count">0 noted</span></h2>
+      <details class="fold" open>
+      <summary><h2>UI components <span class="count">0 noted</span></h2></summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Component</th><th class="num">Used</th><th>Status</th><th>Notes</th></tr></thead>
@@ -316,9 +337,11 @@
         <span><span class="chip">+N</span> extra complexity score added to each screen using the component</span>
         <span class="note">Components not listed here have a direct Jmix equivalent. Dependency badges (Add-on, Commercial add-on, 3rd-party) refer to the primary replacement recipe; simpler fallbacks, if any, are described in the notes.</span>
       </div>
+      </details>
     </section>
     <section id="add-ons">
-      <h2>Add-ons <span class="count">12 found</span></h2>
+      <details class="fold" open>
+      <summary><h2>Add-ons <span class="count">12 found</span></h2></summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Add-on</th><th>Status</th><th>Replacement</th><th class="num">Hint, h</th><th>Notes</th></tr></thead>
@@ -430,9 +453,11 @@
         <span><span class="badge bad">Unknown</span> no data in the registry; check the marketplace manually</span>
         <span><span class="badge warn">Commercial</span> requires a commercial subscription</span>
       </div>
+      </details>
     </section>
     <section id="red-flags">
-      <h2>Red flags <span class="count">0 found</span></h2>
+      <details class="fold" open>
+      <summary><h2>Red flags <span class="count">0 found</span></h2></summary>
       <div class="callout" style="margin-bottom:14px">
         These findings cannot be migrated automatically: custom client-side components, direct
         Vaadin 8 API usage and SCSS themes have no Flow UI equivalents. Estimate them manually;
@@ -446,9 +471,11 @@
           </tbody>
         </table>
       </div>
+      </details>
     </section>
     <section id="renames">
-      <h2>Mechanical renames <span class="count">2 items</span></h2>
+      <details class="fold" open>
+      <summary><h2>Mechanical renames <span class="count">2 items</span></h2></summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Subject</th><th>Current</th><th>Replacement</th><th>Notes</th></tr></thead>
@@ -468,9 +495,11 @@
           </tbody>
         </table>
       </div>
+      </details>
     </section>
     <section id="misc">
-      <h2>Misc notes <span class="count">0</span></h2>
+      <details class="fold" open>
+      <summary><h2>Misc notes <span class="count">0</span></h2></summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Item</th><th>Notes</th></tr></thead>
@@ -479,6 +508,7 @@
           </tbody>
         </table>
       </div>
+      </details>
     </section>
   </main>
 </div>

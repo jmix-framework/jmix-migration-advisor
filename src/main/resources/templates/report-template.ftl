@@ -42,15 +42,16 @@
 <#-- Commercial marker: rendered next to the name only for commercial license -->
 <#macro licenseBadge licenseName><#if licenseName?? && licenseName == "COMMERCIAL"> <span class="badge warn">Commercial</span></#if></#macro>
 
-<#-- Dependency of the primary replacement recipe (UiComponentIssue.requires) -->
+<#-- Dependency of the primary replacement recipe (UiComponentIssue.requires).
+     All requirement kinds share one dedicated color to stay visually distinct
+     from the severity statuses; the kind is conveyed by the label -->
 <#macro requiresBadge req>
-  <#local cls = "info">
   <#local label = "Add-on">
   <#switch req.kindName>
-    <#case "COMMERCIAL_ADDON"><#local cls = "warn"><#local label = "Commercial add-on"><#break>
-    <#case "THIRD_PARTY"><#local cls = "warn"><#local label = "3rd-party"><#break>
+    <#case "COMMERCIAL_ADDON"><#local label = "Commercial add-on"><#break>
+    <#case "THIRD_PARTY"><#local label = "3rd-party"><#break>
   </#switch>
-  <span class="badge ${cls}" title="${req.subject}">${label}</span>
+  <span class="badge dep" title="${req.subject}">${label}</span>
 </#macro>
 
 <#-- ============ Section macros: one per ReportSection type ============ -->
@@ -58,6 +59,16 @@
 <#macro overviewSection s>
     <section id="${s.id}">
       <h2>${s.title}</h2>
+      <#if s.facts?has_content>
+      <div class="meta">
+        <#list s.facts as fact>
+        <div class="meta-item">
+          <span class="meta-label">${fact.label}</span>
+          <span class="meta-value">${fact.value}</span>
+        </div>
+        </#list>
+      </div>
+      </#if>
       <div class="cards">
         <#list s.kpis as kpi>
         <div class="card<#if kpi.accent> accent</#if>">
@@ -152,7 +163,8 @@
 
 <#macro uiComponentsSection s>
     <section id="${s.id}">
-      <h2>${s.title} <span class="count">${s.rows?size} noted</span></h2>
+      <details class="fold" open>
+      <summary><h2>${s.title} <span class="count">${s.rows?size} noted</span></h2></summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Component</th><th class="num">Used</th><th>Status</th><th>Notes</th></tr></thead>
@@ -184,12 +196,14 @@
         <span><span class="chip">+N</span> extra complexity score added to each screen using the component</span>
         <span class="note">Components not listed here have a direct Jmix equivalent. Dependency badges (Add-on, Commercial add-on, 3rd-party) refer to the primary replacement recipe; simpler fallbacks, if any, are described in the notes.</span>
       </div>
+      </details>
     </section>
 </#macro>
 
 <#macro appComponentsSection s>
     <section id="${s.id}">
-      <h2>${s.title} <span class="count">${s.rows?size} found</span></h2>
+      <details class="fold" open>
+      <summary><h2>${s.title} <span class="count">${s.rows?size} found</span></h2></summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Name</th><th>Type</th><th>Status</th><th>Origin</th><th>Notes</th></tr></thead>
@@ -211,12 +225,14 @@
         </table>
       </div>
       <@escalationsCallout s.escalations "app component"/>
+      </details>
     </section>
 </#macro>
 
 <#macro addonsSection s>
     <section id="${s.id}">
-      <h2>${s.title} <span class="count">${s.rows?size} found</span></h2>
+      <details class="fold" open>
+      <summary><h2>${s.title} <span class="count">${s.rows?size} found</span></h2></summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Add-on</th><th>Status</th><th>Replacement</th><th class="num">Hint, h</th><th>Notes</th></tr></thead>
@@ -246,6 +262,7 @@
         <span><span class="badge warn">Commercial</span> requires a commercial subscription</span>
       </div>
       <@escalationsCallout s.escalations "add-on"/>
+      </details>
     </section>
 </#macro>
 
@@ -304,7 +321,8 @@
 
 <#macro redFlagsSection s>
     <section id="${s.id}">
-      <h2>${s.title} <span class="count">${s.rows?size} found</span></h2>
+      <details class="fold" open>
+      <summary><h2>${s.title} <span class="count">${s.rows?size} found</span></h2></summary>
       <div class="callout" style="margin-bottom:14px">
         These findings cannot be migrated automatically: custom client-side components, direct
         Vaadin 8 API usage and SCSS themes have no Flow UI equivalents. Estimate them manually;
@@ -328,12 +346,14 @@
           </tbody>
         </table>
       </div>
+      </details>
     </section>
 </#macro>
 
 <#macro renamesSection s>
     <section id="${s.id}">
-      <h2>${s.title} <span class="count">${s.rows?size} items</span></h2>
+      <details class="fold" open>
+      <summary><h2>${s.title} <span class="count">${s.rows?size} items</span></h2></summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Subject</th><th>Current</th><th>Replacement</th><th>Notes</th></tr></thead>
@@ -353,12 +373,14 @@
           </tbody>
         </table>
       </div>
+      </details>
     </section>
 </#macro>
 
 <#macro notesSection s>
     <section id="${s.id}">
-      <h2>${s.title} <span class="count">${s.rows?size}</span></h2>
+      <details class="fold" open>
+      <summary><h2>${s.title} <span class="count">${s.rows?size}</span></h2></summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Item</th><th>Notes</th></tr></thead>
@@ -376,6 +398,7 @@
           </tbody>
         </table>
       </div>
+      </details>
     </section>
 </#macro>
 
@@ -422,6 +445,7 @@
     --warn:#b45309; --warn-bg:#fbf0dd;
     --bad:#b91c1c;  --bad-bg:#fbe6e6;
     --info:#0369a1; --info-bg:#e3f1fb;
+    --dep:#7c3aed;  --dep-bg:#f1eafd;
     --neutral: var(--ink-soft); --neutral-bg: var(--surface-2);
   }
   @media (prefers-color-scheme: dark) {
@@ -433,6 +457,7 @@
       --warn:#fbbf24; --warn-bg:#3a2c0c;
       --bad:#f87171;  --bad-bg:#3a1414;
       --info:#38bdf8; --info-bg:#0c2a3a;
+      --dep:#c4b5fd;  --dep-bg:#2b2151;
     }
   }
   * { box-sizing: border-box; }
@@ -469,6 +494,11 @@
   .callout + .callout { margin-top: 10px; }
 
   /* kpi cards */
+  .meta { display: flex; flex-wrap: wrap; gap: 10px 32px; background: var(--surface); border: 1px solid var(--border);
+          border-radius: var(--radius); padding: 12px 18px; margin-bottom: 16px; }
+  .meta-label { color: var(--ink-soft); font-size: .74rem; text-transform: uppercase; letter-spacing: .04em;
+                display: block; }
+  .meta-value { font-weight: 600; font-size: .95rem; word-break: break-all; }
   .cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(168px,1fr)); }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
           padding: 16px 18px; box-shadow: var(--shadow); }
@@ -497,13 +527,23 @@
   .badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
   .badge.ok{color:var(--ok);background:var(--ok-bg)}   .badge.warn{color:var(--warn);background:var(--warn-bg)}
   .badge.bad{color:var(--bad);background:var(--bad-bg)} .badge.info{color:var(--info);background:var(--info-bg)}
+  .badge.dep{color:var(--dep);background:var(--dep-bg)}
   .badge.neutral{color:var(--neutral);background:var(--neutral-bg)}
   .chip { display: inline-block; padding: 1px 8px; border-radius: 6px; background: var(--surface-2);
           border: 1px solid var(--border); font-family: var(--font-mono); font-size: .76rem; color: var(--ink-soft); }
-  .legend { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px 18px;
+  .legend { margin-top: 10px; display: flex; flex-direction: column; gap: 8px;
             font-size: .82rem; color: var(--ink-soft); }
-  .legend > span { display: inline-flex; align-items: center; gap: 6px; }
-  .legend > .note { flex-basis: 100%; display: block; }
+  .legend > span { display: flex; align-items: baseline; gap: 6px; }
+  .legend > span > .badge, .legend > span > .chip { flex-shrink: 0; }
+  .legend > .note { display: block; }
+
+  /* collapsible sections: the whole header acts as a toggle */
+  details.fold > summary { list-style: none; cursor: pointer; }
+  details.fold > summary::-webkit-details-marker { display: none; }
+  details.fold > summary h2::after { content: "\2304"; font-size: .9em; color: var(--ink-soft);
+                                     line-height: 1; transition: transform .15s ease; }
+  details.fold:not([open]) > summary h2 { margin-bottom: 0; }
+  details.fold:not([open]) > summary h2::after { transform: rotate(-90deg) translateX(4px); }
 
   /* stacked effort bar */
   .stack { display: flex; height: 30px; border-radius: 8px; overflow: hidden;

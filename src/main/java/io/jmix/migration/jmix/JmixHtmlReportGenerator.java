@@ -103,19 +103,32 @@ public class JmixHtmlReportGenerator {
         JmixSourcesScanResult sourcesScan = result.getSourcesScan();
 
         String effectiveVersion = descriptor.getEffectiveJmixVersion();
-        String versionSub = descriptor.getJmixPluginVersion() != null
-                ? "plugin " + descriptor.getJmixPluginVersion() : null;
+        String jmixVersionFact = effectiveVersion == null ? NOT_DETECTED : effectiveVersion;
+        if (descriptor.getJmixPluginVersion() != null
+                && !descriptor.getJmixPluginVersion().equals(effectiveVersion)) {
+            jmixVersionFact += " (plugin " + descriptor.getJmixPluginVersion() + ")";
+        }
 
-        String modulesSub = descriptor.getModules().size() <= 4
+        String modulesFact = descriptor.getModules().size() <= 4
                 ? descriptor.getModules().stream().map(JmixModule::getName).collect(Collectors.joining(", "))
                 : String.valueOf(descriptor.getModules().size());
+
+        // General project facts go to the text strip; the KPI cards keep numeric metrics only
+        List<OverviewSection.Fact> facts = new ArrayList<>();
+        facts.add(new OverviewSection.Fact("Jmix version", jmixVersionFact));
+        facts.add(new OverviewSection.Fact("Base package",
+                result.getBasePackage() == null ? NOT_DETECTED : result.getBasePackage()));
+        facts.add(new OverviewSection.Fact("Modules", modulesFact));
+        if (descriptor.getJavaVersion() != null) {
+            facts.add(new OverviewSection.Fact("Java", descriptor.getJavaVersion()));
+        }
 
         long unknownAddons = addonsSection.getRows().stream()
                 .filter(row -> "UNKNOWN".equals(row.getStatusName()))
                 .count();
         String addonsSub = buildAddonsKpiSub(addonsSection.getEscalations().size(), unknownAddons);
 
-        String entitiesSub = dataModel.getDtoEntities().size() + " DTO, "
+        String entitiesSub = "+ " + dataModel.getDtoEntities().size() + " DTO, "
                 + dataModel.getEmbeddables().size() + " embeddable, "
                 + dataModel.getEnums().size() + " enums";
 
@@ -124,9 +137,7 @@ public class JmixHtmlReportGenerator {
         List<OverviewSection.Kpi> kpis = List.of(
                 new OverviewSection.Kpi("Total effort", result.getEstimation().getTotalCost(),
                         "man-hours (lower bound)", true),
-                new OverviewSection.Kpi("Jmix version",
-                        effectiveVersion == null ? NOT_DETECTED : effectiveVersion, versionSub, false),
-                new OverviewSection.Kpi("Entities", dataModel.getJpaEntities().size(), entitiesSub, false),
+                new OverviewSection.Kpi("JPA entities", dataModel.getJpaEntities().size(), entitiesSub, false),
                 new OverviewSection.Kpi("Screens", result.getScreensCount(),
                         result.getFragmentsCount() + " fragments · "
                                 + formatHours(result.getEstimation().getScreensCost()) + " man-hours", false),
@@ -134,14 +145,9 @@ public class JmixHtmlReportGenerator {
                 new OverviewSection.Kpi("Roles", rolesCount,
                         sourcesScan.getScreenPolicyCount() + " screen policies", false),
                 new OverviewSection.Kpi("Red flags", sourcesScan.getRedFlags().size(),
-                        "manual estimation required", false),
-                new OverviewSection.Kpi("Java",
-                        descriptor.getJavaVersion() == null ? NOT_DETECTED : descriptor.getJavaVersion(), null, false),
-                new OverviewSection.Kpi("Base package",
-                        result.getBasePackage() == null ? NOT_DETECTED : result.getBasePackage(),
-                        "modules: " + modulesSub, false)
+                        "manual estimation required", false)
         );
-        return new OverviewSection(kpis, DISCLAIMER);
+        return new OverviewSection(facts, kpis, DISCLAIMER);
     }
 
     /**
