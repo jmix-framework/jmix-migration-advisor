@@ -18,6 +18,6 @@
         <notes>The key stays, but menu items switch from screen= to view= and the namespace changes to http://jmix.io/schema/flowui/menu</notes>
     </property>
     <property key="jmix.ui.theme">
-        <notes>Classic SCSS themes (helium/halo/hover) do not exist in Flow UI; theming is CSS on top of Lumo</notes>
+        <notes>Classic SCSS themes (helium/halo/hover) do not exist in Flow UI; theming is CSS on top of Lumo or Aura</notes>
     </property>
 </jmix-config-renames>

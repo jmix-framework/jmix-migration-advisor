@@ -402,7 +402,7 @@
   <span class="badge warn">Has workaround</span>
                     
                   </td>
-                  <td>No direct equivalent. Open a &#39;dialog&#39; with custom layout (https://docs.jmix.io/jmix/flow-ui/dialogs.html); &#39;sideDialog&#39; and &#39;sidePanelLayout&#39; are additional alternatives</td>
+                  <td>No direct equivalent. Open a &#39;dialog&#39; with custom layout (https://docs.jmix.io/jmix/flow-ui/dialogs.html); &#39;sideDialog&#39; and &#39;sidePanelLayout&#39; are additional alternatives. As a possible custom solution - use Vaadin &quot;Popover&quot; native component</td>
                 </tr>
                 <tr>
                   <td><code>sourceCodeEditor</code> <span class="chip" title="extra complexity score">+2</span></td>
@@ -547,9 +547,9 @@
       <details class="fold" open>
       <summary><h2>Red flags <span class="count">2 found</span></h2></summary>
       <div class="callout" style="margin-bottom:14px">
-        These findings cannot be migrated automatically: custom client-side components, direct
-        Vaadin 8 API usage and SCSS themes have no Flow UI equivalents. Estimate them manually;
-        they are NOT included in the numbers above.
+        These findings cannot be migrated automatically and need a case-by-case manual review:
+        some of them have Vaadin Flow counterparts, the rest is re-implemented. Estimate them
+        manually; they are NOT included in the numbers above.
       </div>
       <div class="table-wrap">
         <table>
@@ -558,12 +558,12 @@
                 <tr>
                   <td><span class="badge bad">Custom theme</span></td>
                   <td><span class="mono">customtheme</span></td>
-                  <td>SCSS themes do not exist in Flow UI; recreate the customization with CSS on top of the Lumo theme</td>
+                  <td>SCSS themes do not exist in Flow UI; recreate the customization with CSS on top of the Lumo or Aura theme</td>
                 </tr>
                 <tr>
                   <td><span class="badge bad">Vaadin 8 API</span></td>
                   <td><span class="mono">com.company.feat2.component.LegacyWidget</span></td>
-                  <td>Uses &#39;com.vaadin.ui.Button&#39;. Direct Vaadin 8 API has no equivalent in Vaadin Flow; re-implement manually</td>
+                  <td>Uses &#39;com.vaadin.ui.Button&#39;. Direct Vaadin 8 API usage needs a case-by-case review: some APIs have Vaadin Flow counterparts, the rest is re-implemented manually</td>
                 </tr>
           </tbody>
         </table>

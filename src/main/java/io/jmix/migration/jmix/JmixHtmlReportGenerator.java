@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  */
 public class JmixHtmlReportGenerator {
 
-    protected static final String REPORT_TITLE = "Jmix 1.x → Jmix migration report";
+    protected static final String REPORT_TITLE = "Jmix 1.x → Jmix 3.x migration report";
     protected static final String NOT_DETECTED = "not detected";
     protected static final String DISCLAIMER = "Estimates are expert-set and NOT calibrated against completed"
             + " migrations yet; treat the numbers as a rough lower-range estimate. Red flags are not included"

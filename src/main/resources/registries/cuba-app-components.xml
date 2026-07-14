@@ -47,7 +47,7 @@
         <notes>Available for Jmix. The add-on is ECharts-based (CUBA charts use amCharts); recreating chart configurations is included in the per-screen weight of chart components</notes>
     </component>
     <component package="com.haulmont.addon.helium" name="Helium Theme" category="theme" license="open-source" origin="framework" status="absent">
-        <notes>SCSS themes do not exist in Flow UI; recreate the customization with CSS on top of the Lumo theme</notes>
+        <notes>SCSS themes do not exist in Flow UI; recreate the customization with CSS on top of the Lumo or Aura theme</notes>
     </component>
     <component package="com.haulmont.addon.ldap" name="LDAP" category="addon" license="open-source" origin="framework" status="available">
         <notes>Available for Jmix</notes>

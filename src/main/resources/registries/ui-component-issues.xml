@@ -44,7 +44,7 @@
         <notes>No dedicated component. Use html 'input' with type='color' for a native color picker (https://docs.jmix.io/jmix/flow-ui/vc/html.html). The plain tag is not value-source bindable; for data binding wrap it in a small custom component</notes>
     </issue>
     <issue component="currencyField" type="has-alternative" score="1">
-        <notes>Use 'textField' with prefix (https://docs.jmix.io/jmix/flow-ui/vc/components/textField.html). But there is no integration with '@CurrencyValue' annotation</notes>
+        <notes>Use 'textField' with prefix (https://docs.jmix.io/jmix/flow-ui/vc/components/textField.html)</notes>
     </issue>
     <issue component="dateField" type="changed" score="1">
         <notes>Use 'datePicker', or 'dateTimePicker' when the resolution includes a time part (https://docs.jmix.io/jmix/flow-ui/vc/components/dateTimePicker.html)</notes>
@@ -87,7 +87,7 @@
         <notes>Use html 'anchor' (https://docs.jmix.io/jmix/flow-ui/vc/html.html)</notes>
     </issue>
     <issue component="linkButton" type="changed" score="1">
-        <notes>Use 'button' with themeNames="tertiary-inline" for a borderless, link-style button (https://docs.jmix.io/jmix/flow-ui/vc/components/button.html#variants)</notes>
+        <notes>Use 'button' with classNames="link-button"</notes>
     </issue>
     <issue component="lookupField" type="changed" score="1">
         <notes>Use 'comboBox' for plain values or 'entityComboBox' for entity references (https://docs.jmix.io/jmix/flow-ui/vc/components/comboBox.html)</notes>
@@ -118,7 +118,7 @@
         <notes>Use 'dropdownButton' (https://docs.jmix.io/jmix/flow-ui/vc/components/dropdownButton.html)</notes>
     </issue>
     <issue component="popupView" type="has-workaround" score="5">
-        <notes>No direct equivalent. Open a 'dialog' with custom layout (https://docs.jmix.io/jmix/flow-ui/dialogs.html); 'sideDialog' and 'sidePanelLayout' are additional alternatives</notes>
+        <notes>No direct equivalent. Open a 'dialog' with custom layout (https://docs.jmix.io/jmix/flow-ui/dialogs.html); 'sideDialog' and 'sidePanelLayout' are additional alternatives. As a possible custom solution - use Vaadin "Popover" native component</notes>
     </issue>
     <issue component="relatedEntities" type="has-workaround" score="5">
         <notes>Use 'dropdownButton' with manual screen opening action</notes>
@@ -232,6 +232,6 @@
     </issue>
     <issue match="maps:*" type="has-alternative" score="4">
         <notes>CUBA Maps components are replaced by the Jmix Maps add-on. Layers and configuration API differ; recreate map configuration (https://docs.jmix.io/jmix/maps/index.html)</notes>
-        <requires kind="addon" subject="Maps (jmix-maps)"/>
+        <requires kind="commercial-addon" subject="Maps (jmix-maps)"/>
     </issue>
 </ui-component-issues>

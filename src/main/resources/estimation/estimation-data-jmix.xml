@@ -84,7 +84,7 @@
     <estimation-unit>
         <name>custom-theme-cost</name>
         <description>
-            Cost of recreating one custom SCSS theme as CSS customization on top of the Lumo theme.
+            Cost of recreating one custom SCSS theme as CSS customization on top of the Lumo or Aura theme.
             The value is a rough placeholder: deep theme customizations must be estimated manually.
             Units: hours per theme
         </description>

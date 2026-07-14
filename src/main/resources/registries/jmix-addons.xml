@@ -64,7 +64,7 @@
     </addon>
     <addon artifact="io.jmix.ui:jmix-ui-themes-compiled" name="Classic UI Themes" category="ui" license="open-source" origin="framework" flow-status="replaced">
         <flow-artifact>io.jmix.flowui:jmix-flowui-themes</flow-artifact>
-        <notes>Compiled SCSS themes (Helium/Halo) do not exist in Flow UI. A custom theme, if any, is recreated with CSS on top of Lumo</notes>
+        <notes>Compiled SCSS themes (Helium/Halo) do not exist in Flow UI. A custom theme, if any, is recreated with CSS on top of Lumo or Aura</notes>
         <cost-hint>0</cost-hint>
     </addon>
     <addon artifact="io.jmix.ui:jmix-ui-widgets-compiled" name="Classic UI Widgets" category="ui" license="open-source" origin="framework" flow-status="absent">

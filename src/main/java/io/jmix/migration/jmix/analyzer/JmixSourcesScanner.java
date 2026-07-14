@@ -87,8 +87,9 @@ public class JmixSourcesScanner {
                     Matcher vaadinImport = VAADIN_IMPORT_PATTERN.matcher(content);
                     if (vaadinImport.find()) {
                         redFlags.add(new RedFlag("Vaadin 8 API", classFqn,
-                                "Uses '" + vaadinImport.group(1) + "'. Direct Vaadin 8 API has no equivalent"
-                                        + " in Vaadin Flow; re-implement manually"));
+                                "Uses '" + vaadinImport.group(1) + "'. Direct Vaadin 8 API usage needs"
+                                        + " a case-by-case review: some APIs have Vaadin Flow counterparts,"
+                                        + " the rest is re-implemented manually"));
                     }
                     if (content.contains("AbstractJavaScriptComponent") || content.contains("@JavaScript")
                             || content.contains("@WebJarResource")) {
@@ -129,7 +130,7 @@ public class JmixSourcesScanner {
             themes.filter(Files::isDirectory).forEach(themeDir ->
                     redFlags.add(new RedFlag("Custom theme", themeDir.getFileName().toString(),
                             "SCSS themes do not exist in Flow UI; recreate the customization"
-                                    + " with CSS on top of the Lumo theme")));
+                                    + " with CSS on top of the Lumo or Aura theme")));
         } catch (IOException e) {
             log.warn("Unable to list themes in '{}': {}", themesDir, e.getMessage());
         }

@@ -35,7 +35,7 @@ import java.util.TreeMap;
  */
 public class HtmlReportGenerator {
 
-    protected static final String REPORT_TITLE = "CUBA → Jmix migration report";
+    protected static final String REPORT_TITLE = "CUBA → Jmix 3.x migration report";
     protected static final String DISCLAIMER = "This is not a comprehensive estimation."
             + " Some aspects cannot be evaluated automatically and need manual analysis —"
             + " treat the numbers as a rough lower-range estimate. Analysis of Kotlin classes is not supported.";

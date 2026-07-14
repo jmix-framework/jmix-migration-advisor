@@ -65,7 +65,7 @@ The report leads with numbers, but the numbers are only half of the story. Read 
 **Estimations** - man-hours per activity category with a distribution bar:
 
 * CUBA report: *Initial migration* (base migration steps from the [migration guide](https://docs.jmix.io/jmix/cuba/index.html)), *Base entities* (re-creation of built-in CUBA base entities), *Legacy listeners* (refactoring of legacy entity listeners), *Screens*.
-* Jmix report: *Initial migration* (Gradle/Spring Boot/main and login views), *Jakarta namespace sweep* (javax to jakarta, mostly automated by the IDE or OpenRewrite), *Screens*, *Add-ons* (dependency-level work), *Security roles* (annotation and policy updates), *Configuration*, *Custom themes* (SCSS to CSS/Lumo).
+* Jmix report: *Initial migration* (Gradle/Spring Boot/main and login views), *Jakarta namespace sweep* (javax to jakarta, mostly automated by the IDE or OpenRewrite), *Screens*, *Add-ons* (dependency-level work), *Security roles* (annotation and policy updates), *Configuration*, *Custom themes* (SCSS to CSS on top of Lumo or Aura).
 
 **Screens complexity** - the breakdown behind the *Screens* category. Each screen gets a complexity score (see [docs/design.md](docs/design.md) for the model) and falls into a group (Trivial, Simple, Medium, Complex, Hard) with fixed hours per group. The *Requires decision* callout below the table lists screens containing components with no equivalent; such screens are still priced for their ordinary part, but the absent components are on top of that.
 

@@ -440,7 +440,7 @@
 </td>
                   <td><span class="mono">io.jmix.flowui:jmix-flowui-themes</span></td>
                   <td class="num">0</td>
-                  <td>Compiled SCSS themes (Helium/Halo) do not exist in Flow UI. A custom theme, if any, is recreated with CSS on top of Lumo</td>
+                  <td>Compiled SCSS themes (Helium/Halo) do not exist in Flow UI. A custom theme, if any, is recreated with CSS on top of Lumo or Aura</td>
                 </tr>
           </tbody>
         </table>
@@ -459,9 +459,9 @@
       <details class="fold" open>
       <summary><h2>Red flags <span class="count">0 found</span></h2></summary>
       <div class="callout" style="margin-bottom:14px">
-        These findings cannot be migrated automatically: custom client-side components, direct
-        Vaadin 8 API usage and SCSS themes have no Flow UI equivalents. Estimate them manually;
-        they are NOT included in the numbers above.
+        These findings cannot be migrated automatically and need a case-by-case manual review:
+        some of them have Vaadin Flow counterparts, the rest is re-implemented. Estimate them
+        manually; they are NOT included in the numbers above.
       </div>
       <div class="table-wrap">
         <table>

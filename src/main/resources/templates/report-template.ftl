@@ -324,9 +324,9 @@
       <details class="fold" open>
       <summary><h2>${s.title} <span class="count">${s.rows?size} found</span></h2></summary>
       <div class="callout" style="margin-bottom:14px">
-        These findings cannot be migrated automatically: custom client-side components, direct
-        Vaadin 8 API usage and SCSS themes have no Flow UI equivalents. Estimate them manually;
-        they are NOT included in the numbers above.
+        These findings cannot be migrated automatically and need a case-by-case manual review:
+        some of them have Vaadin Flow counterparts, the rest is re-implemented. Estimate them
+        manually; they are NOT included in the numbers above.
       </div>
       <div class="table-wrap">
         <table>
