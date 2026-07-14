@@ -26,8 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * currencyField 1, htmlBox 3, slider 2, optionsGroup 1, embedded 2, popupView 5, filter 2;
  * nested data item = n x 15, uiComponents.create = n x 10, descriptor extends = 5,
  * method calls: 0..5 -> 0, 6..30 -> 10, 31..80 -> 40, 81..150 -> 80, 151+ -> 180;
- * hours per group: Trivial(0..10) 0.5, Simple(11..35) 2, Medium(36..85) 8,
- * Complex(86..200) 16, Hard(201+) 32):</p>
+ * hours per group: Trivial(0..10) 0.25, Simple(11..35) 1.5, Medium(36..85) 5,
+ * Complex(86..200) 10, Hard(201+) 26):</p>
  *
  * <ul>
  * <li>boundary-a.xml: 3+3+2+2 = 10, Trivial (upper bound)</li>
@@ -43,8 +43,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <li>BulkOperationsWindow: 151 calls (L5: 180) = 180, Complex</li>
  * </ul>
  *
- * <p>Totals: 10 screens; hours = 5 x 0.5 + 3 x 2 + 8 + 16 = 32.5;
- * overall = 100 (initial) + 16 (base entities) + 3 x 1 (listeners) + 32.5 = 151.5.</p>
+ * <p>Totals: 10 screens; hours = 5 x 0.25 + 3 x 1.5 + 5 + 10 = 20.75;
+ * overall = 40 (initial) + 16 (base entities) + 3 x 1 (listeners) + 20.75 = 79.75.</p>
  */
 public class EstimationExpectationsTest {
 
@@ -58,10 +58,10 @@ public class EstimationExpectationsTest {
         assertEquals(3, result.getLegacyListeners().size());
         assertEquals(0, result.getUnparsedFiles().size());
         assertEquals(10, result.getScreensTotalAmount());
-        assertEquals(0, new BigDecimal("32.5").compareTo(result.getScreensTotalCost()),
-                "Screens total hours: expected 32.5, actual " + result.getScreensTotalCost());
-        assertEquals(0, new BigDecimal("151.5").compareTo(result.getTotalEstimation()),
-                "Total estimation: expected 151.5, actual " + result.getTotalEstimation());
+        assertEquals(0, new BigDecimal("20.75").compareTo(result.getScreensTotalCost()),
+                "Screens total hours: expected 20.75, actual " + result.getScreensTotalCost());
+        assertEquals(0, new BigDecimal("79.75").compareTo(result.getTotalEstimation()),
+                "Total estimation: expected 79.75, actual " + result.getTotalEstimation());
 
         Map<String, Set<String>> screensByGroup = result.getScreensPerComplexity().entrySet().stream()
                 .collect(Collectors.toMap(entry -> entry.getKey().getName(), entry -> new HashSet<>(entry.getValue())));

@@ -173,7 +173,7 @@
                 <threshold>
                     <name>Trivial</name>
                     <threshold-value>10</threshold-value>
-                    <output-value>0.5</output-value>
+                    <output-value>0.25</output-value>
                 </threshold>
                 <threshold>
                     <name>Simple</name>
@@ -183,17 +183,17 @@
                 <threshold>
                     <name>Medium</name>
                     <threshold-value>85</threshold-value>
-                    <output-value>6</output-value>
+                    <output-value>5</output-value>
                 </threshold>
                 <threshold>
                     <name>Complex</name>
                     <threshold-value>200</threshold-value>
-                    <output-value>12</output-value>
+                    <output-value>10</output-value>
                 </threshold>
                 <threshold>
                     <name>Hard</name>
                     <threshold-value>MAX</threshold-value>
-                    <output-value>24</output-value>
+                    <output-value>26</output-value>
                 </threshold>
             </thresholds>
         </content>
