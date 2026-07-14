@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Registry of Jmix 1.x add-ons (starter dependencies) with their status in the current Jmix
+    version (Flow UI based).
+
+    Entry elements/attributes:
+      artifact      - dependency key "group:artifact" as declared in build.gradle
+      name          - display name
+      category      - structural role of the dependency:
+                      core        framework kernel (including security core parts)
+                      data        persistence
+                      ui          the classic UI platform and its parts (incl. UI parts
+                                  of core subsystems, e.g. Security UI)
+                      addon       optional add-on, including its UI part
+                      translation framework translation pack
+      license       - open-source | commercial (requires an Enterprise/BPM subscription)
+      origin        - framework (developed by the Jmix team) | community (third-party vendor)
+      flow-status   - available: the same starter works, nothing to do
+                      renamed:   replace the dependency with flow-artifact (mechanical)
+                      replaced:  a different add-on covers the functionality; configuration
+                                 or usage is reworked (see notes)
+                      merged:    functionality is part of another add-on or the core
+                      absent:    no equivalent in the current Jmix
+      flow-artifact - replacement dependency, when flow-status is renamed/replaced
+      cost-hint     - hours for the dependency-level work itself (0 = rename only);
+                      screen/code rework driven by the add-on is estimated elsewhere
+      notes         - migration note shown in the report
+-->
+<jmix-addons>
+
+    <!-- Framework core and data -->
+
+    <addon artifact="io.jmix.core:jmix-core-starter" name="Core" category="core" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.data:jmix-eclipselink-starter" name="EclipseLink Data" category="data" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.security:jmix-security-starter" name="Security" category="core" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.security:jmix-security-data-starter" name="Security Data" category="core" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.security:jmix-security-oauth2-starter" name="Security OAuth2" category="addon" license="open-source" origin="framework" flow-status="replaced">
+        <notes>Replaced by the Authorization Server add-on in current Jmix (https://docs.jmix.io/jmix/authserver/index.html)</notes>
+        <cost-hint>8</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.sessions:jmix-sessions-starter" name="Sessions" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+
+    <!-- Classic UI: replaced by Flow UI as a whole -->
+
+    <addon artifact="io.jmix.ui:jmix-ui-starter" name="Classic UI" category="ui" license="open-source" origin="framework" flow-status="replaced">
+        <flow-artifact>io.jmix.flowui:jmix-flowui-starter</flow-artifact>
+        <notes>Classic (Vaadin 8) UI is replaced by Flow UI. All screens are rewritten as views; this is the main migration effort and is estimated separately in the screens section</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.ui:jmix-ui-data-starter" name="Classic UI Data" category="ui" license="open-source" origin="framework" flow-status="replaced">
+        <flow-artifact>io.jmix.flowui:jmix-flowui-data-starter</flow-artifact>
+        <notes>Replaced together with the UI starter</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.ui:jmix-ui-themes-compiled" name="Classic UI Themes" category="ui" license="open-source" origin="framework" flow-status="replaced">
+        <flow-artifact>io.jmix.flowui:jmix-flowui-themes</flow-artifact>
+        <notes>Compiled SCSS themes (Helium/Halo) do not exist in Flow UI. A custom theme, if any, is recreated with CSS on top of Lumo</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.ui:jmix-ui-widgets-compiled" name="Classic UI Widgets" category="ui" license="open-source" origin="framework" flow-status="absent">
+        <notes>Compiled widgetset for custom Vaadin 8 client-side components. Custom widgets cannot be migrated automatically and must be re-implemented on Vaadin Flow; estimate manually</notes>
+    </addon>
+    <addon artifact="io.jmix.ui:jmix-ui-test-assist" name="Classic UI Test Assist" category="ui" license="open-source" origin="framework" flow-status="replaced">
+        <flow-artifact>io.jmix.flowui:jmix-flowui-test-assist</flow-artifact>
+        <notes>UI integration tests are rewritten against Flow UI views</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.security:jmix-security-ui-starter" name="Security UI" category="core" license="open-source" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.security:jmix-security-flowui-starter</flow-artifact>
+        <notes>Role annotations move from securityui to securityflowui package; @ScreenPolicy becomes @ViewPolicy</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+
+    <!-- Add-ons -->
+
+    <addon artifact="io.jmix.appsettings:jmix-appsettings-starter" name="Application Settings" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.appsettings:jmix-appsettings-ui-starter" name="Application Settings UI" category="addon" license="open-source" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.appsettings:jmix-appsettings-flowui-starter</flow-artifact>
+        <notes>Dependency rename only</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.audit:jmix-audit-starter" name="Audit" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.audit:jmix-audit-ui-starter" name="Audit UI" category="addon" license="open-source" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.audit:jmix-audit-flowui-starter</flow-artifact>
+        <notes>Dependency rename only</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.awsfs:jmix-awsfs-starter" name="Amazon S3 File Storage" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.bpm:jmix-bpm-starter" name="BPM" category="addon" license="commercial" origin="framework" flow-status="available">
+        <notes>Available for current Jmix (BPM subscription)</notes>
+    </addon>
+    <addon artifact="io.jmix.bpm:jmix-bpm-ui-starter" name="BPM UI" category="addon" license="commercial" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.bpm:jmix-bpm-flowui-starter</flow-artifact>
+        <notes>Dependency rename (BPM subscription). Process forms implemented as screens are migrated as ordinary screens and are counted in the screens section</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.ui:jmix-charts-starter" name="Charts" category="addon" license="open-source" origin="framework" flow-status="replaced">
+        <flow-artifact>io.jmix.charts:jmix-charts-flowui-starter</flow-artifact>
+        <notes>The classic add-on is based on amCharts, the current one on Apache ECharts. Chart types and configuration API differ; recreating each chart configuration is included in the per-screen weight of chart components (https://docs.jmix.io/jmix/charts/index.html)</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.dashboards:jmix-dashboards-starter" name="Dashboards" category="addon" license="open-source" origin="framework" flow-status="absent">
+        <notes>Not available for the current Jmix. For analytical dashboards consider the Superset add-on; user-composed dashboards have no direct equivalent - check the marketplace</notes>
+    </addon>
+    <addon artifact="io.jmix.dashboards:jmix-dashboards-ui-starter" name="Dashboards UI" category="addon" license="open-source" origin="framework" flow-status="absent">
+        <notes>Not available for the current Jmix (see the Dashboards entry)</notes>
+    </addon>
+    <addon artifact="io.jmix.datatools:jmix-datatools-starter" name="Datatools" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.datatools:jmix-datatools-ui-starter" name="Datatools UI" category="addon" license="open-source" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.datatools:jmix-datatools-flowui-starter</flow-artifact>
+        <notes>Dependency rename only</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.dynattr:jmix-dynattr-starter" name="Dynamic Attributes" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.dynattr:jmix-dynattr-ui-starter" name="Dynamic Attributes UI" category="addon" license="open-source" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.dynattr:jmix-dynattr-flowui-starter</flow-artifact>
+        <notes>Dependency rename only</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.email:jmix-email-starter" name="Email Sending" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.email:jmix-email-ui-starter" name="Email Sending UI" category="addon" license="open-source" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.email:jmix-email-flowui-starter</flow-artifact>
+        <notes>Dependency rename only</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.emailtemplates:jmix-emailtemplates-starter" name="Email Templates" category="addon" license="open-source" origin="framework" flow-status="replaced">
+        <flow-artifact>io.jmix.messagetemplates:jmix-messagetemplates-starter</flow-artifact>
+        <notes>Replaced by the Message Templates add-on. The template model and editor differ; existing templates are migrated manually</notes>
+        <cost-hint>8</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.emailtemplates:jmix-emailtemplates-ui-starter" name="Email Templates UI" category="addon" license="open-source" origin="framework" flow-status="replaced">
+        <flow-artifact>io.jmix.messagetemplates:jmix-messagetemplates-flowui-starter</flow-artifact>
+        <notes>Reworked together with the Message Templates migration (see the Email Templates entry)</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.grapesjs:jmix-grapesjs-starter" name="GrapesJS HTML Editor" category="addon" license="open-source" origin="framework" flow-status="merged">
+        <notes>Unavailable as a standalone add-on; a GrapesJS editor is bundled inside the Message Templates add-on. Standalone usages of the grapesJsHtmlEditor component are reworked</notes>
+        <cost-hint>4</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.gridexport:jmix-gridexport-ui-starter" name="Grid Export Actions" category="addon" license="open-source" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.gridexport:jmix-gridexport-flowui-starter</flow-artifact>
+        <notes>Dependency rename; export actions are attached to dataGrid/treeDataGrid in views (https://docs.jmix.io/jmix/grid-export/index.html)</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.imap:jmix-imap-starter" name="IMAP" category="addon" license="open-source" origin="framework" flow-status="absent">
+        <notes>Not available for the current Jmix</notes>
+    </addon>
+    <addon artifact="io.jmix.imap:jmix-imap-ui-starter" name="IMAP UI" category="addon" license="open-source" origin="framework" flow-status="absent">
+        <notes>Not available for the current Jmix</notes>
+    </addon>
+    <addon artifact="io.jmix.ldap:jmix-ldap-starter" name="LDAP" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.localfs:jmix-localfs-starter" name="Local File Storage" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.maps:jmix-maps-starter" name="Maps" category="addon" license="commercial" origin="framework" flow-status="available">
+        <notes>Available for current Jmix (Enterprise subscription)</notes>
+    </addon>
+    <addon artifact="io.jmix.maps:jmix-maps-ui-starter" name="Maps UI" category="addon" license="commercial" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.maps:jmix-maps-flowui-starter</flow-artifact>
+        <notes>Dependency rename (Enterprise subscription); map configuration rework is included in the per-screen weight of maps components</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.multitenancy:jmix-multitenancy-starter" name="Multitenancy" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.multitenancy:jmix-multitenancy-ui-starter" name="Multitenancy UI" category="addon" license="open-source" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.multitenancy:jmix-multitenancy-flowui-starter</flow-artifact>
+        <notes>Dependency rename only</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.notifications:jmix-notifications-starter" name="Notifications" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.notifications:jmix-notifications-ui-starter" name="Notifications UI" category="addon" license="open-source" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.notifications:jmix-notifications-flowui-starter</flow-artifact>
+        <notes>Dependency rename only</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.oidc:jmix-oidc-starter" name="OpenID Connect" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.ui:jmix-pivot-table-starter" name="Pivot Table" category="addon" license="open-source" origin="framework" flow-status="replaced">
+        <flow-artifact>io.jmix.pivottable:jmix-pivottable-flowui-starter</flow-artifact>
+        <notes>Separate add-on for the current Jmix, still based on PivotTable.js; recreate the component configuration in views (https://docs.jmix.io/jmix/pivot-table/index.html)</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.quartz:jmix-quartz-starter" name="Quartz" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>Available for current Jmix; administration screens are provided for Flow UI by the current add-on version</notes>
+    </addon>
+    <addon artifact="io.jmix.reports:jmix-reports-starter" name="Reports" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.reports:jmix-reports-ui-starter" name="Reports UI" category="addon" license="open-source" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.reports:jmix-reports-flowui-starter</flow-artifact>
+        <notes>Dependency rename; report definitions themselves are compatible</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.reports:jmix-reports-rest-starter" name="Reports REST" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required</notes>
+    </addon>
+    <addon artifact="io.jmix.rest:jmix-rest-starter" name="Generic REST" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>No changes required. Note that in the current Jmix, REST clients authenticate via the Authorization Server add-on instead of security-oauth2</notes>
+    </addon>
+    <addon artifact="io.jmix.search:jmix-search-starter" name="Search" category="addon" license="open-source" origin="framework" flow-status="available">
+        <notes>Available for current Jmix; check the supported Elasticsearch/OpenSearch versions - they differ from Jmix 1.x</notes>
+    </addon>
+    <addon artifact="io.jmix.search:jmix-search-ui-starter" name="Search UI" category="addon" license="open-source" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.search:jmix-search-flowui-starter</flow-artifact>
+        <notes>Dependency rename only</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.webdav:jmix-webdav-starter" name="WebDAV" category="addon" license="commercial" origin="framework" flow-status="available">
+        <notes>Available for current Jmix (Enterprise subscription)</notes>
+    </addon>
+    <addon artifact="io.jmix.webdav:jmix-webdav-ui-starter" name="WebDAV UI" category="addon" license="commercial" origin="framework" flow-status="renamed">
+        <flow-artifact>io.jmix.webdav:jmix-webdav-flowui-starter</flow-artifact>
+        <notes>Dependency rename only (Enterprise subscription)</notes>
+        <cost-hint>0</cost-hint>
+    </addon>
+    <addon artifact="io.jmix.webdav:jmix-webdav-rest-starter" name="WebDAV REST" category="addon" license="commercial" origin="framework" flow-status="available">
+        <notes>Available for current Jmix (Enterprise subscription)</notes>
+    </addon>
+
+    <!-- Translations: versioned with the framework, same artifacts -->
+
+    <addon artifact="io.jmix.translations:jmix-translations-ru" name="Russian Translation" category="translation" license="open-source" origin="framework" flow-status="available">
+        <notes>Translations are versioned with the framework; the same artifact is available for the current Jmix</notes>
+    </addon>
+    <addon artifact="io.jmix.translations:jmix-translations-de" name="German Translation" category="translation" license="open-source" origin="framework" flow-status="available">
+        <notes>Translations are versioned with the framework; the same artifact is available for the current Jmix</notes>
+    </addon>
+    <addon artifact="io.jmix.translations:jmix-translations-fr" name="French Translation" category="translation" license="open-source" origin="framework" flow-status="available">
+        <notes>Translations are versioned with the framework; the same artifact is available for the current Jmix</notes>
+    </addon>
+    <addon artifact="io.jmix.translations:jmix-translations-it" name="Italian Translation" category="translation" license="open-source" origin="framework" flow-status="available">
+        <notes>Translations are versioned with the framework; the same artifact is available for the current Jmix</notes>
+    </addon>
+    <addon artifact="io.jmix.translations:jmix-translations-zh-cn" name="Simplified Chinese Translation" category="translation" license="open-source" origin="framework" flow-status="available">
+        <notes>Translations are versioned with the framework; the same artifact is available for the current Jmix</notes>
+    </addon>
+</jmix-addons>

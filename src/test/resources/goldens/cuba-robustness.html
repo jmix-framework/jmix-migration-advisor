@@ -19,6 +19,7 @@
     --warn:#b45309; --warn-bg:#fbf0dd;
     --bad:#b91c1c;  --bad-bg:#fbe6e6;
     --info:#0369a1; --info-bg:#e3f1fb;
+    --dep:#7c3aed;  --dep-bg:#f1eafd;
     --neutral: var(--ink-soft); --neutral-bg: var(--surface-2);
   }
   @media (prefers-color-scheme: dark) {
@@ -30,6 +31,7 @@
       --warn:#fbbf24; --warn-bg:#3a2c0c;
       --bad:#f87171;  --bad-bg:#3a1414;
       --info:#38bdf8; --info-bg:#0c2a3a;
+      --dep:#c4b5fd;  --dep-bg:#2b2151;
     }
   }
   * { box-sizing: border-box; }
@@ -66,6 +68,11 @@
   .callout + .callout { margin-top: 10px; }
 
   /* kpi cards */
+  .meta { display: flex; flex-wrap: wrap; gap: 10px 32px; background: var(--surface); border: 1px solid var(--border);
+          border-radius: var(--radius); padding: 12px 18px; margin-bottom: 16px; }
+  .meta-label { color: var(--ink-soft); font-size: .74rem; text-transform: uppercase; letter-spacing: .04em;
+                display: block; }
+  .meta-value { font-weight: 600; font-size: .95rem; word-break: break-all; }
   .cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(168px,1fr)); }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
           padding: 16px 18px; box-shadow: var(--shadow); }
@@ -94,13 +101,23 @@
   .badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
   .badge.ok{color:var(--ok);background:var(--ok-bg)}   .badge.warn{color:var(--warn);background:var(--warn-bg)}
   .badge.bad{color:var(--bad);background:var(--bad-bg)} .badge.info{color:var(--info);background:var(--info-bg)}
+  .badge.dep{color:var(--dep);background:var(--dep-bg)}
   .badge.neutral{color:var(--neutral);background:var(--neutral-bg)}
   .chip { display: inline-block; padding: 1px 8px; border-radius: 6px; background: var(--surface-2);
           border: 1px solid var(--border); font-family: var(--font-mono); font-size: .76rem; color: var(--ink-soft); }
-  .legend { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px 18px;
+  .legend { margin-top: 10px; display: flex; flex-direction: column; gap: 8px;
             font-size: .82rem; color: var(--ink-soft); }
-  .legend > span { display: inline-flex; align-items: center; gap: 6px; }
-  .legend > .note { flex-basis: 100%; display: block; }
+  .legend > span { display: flex; align-items: baseline; gap: 6px; }
+  .legend > span > .badge, .legend > span > .chip { flex-shrink: 0; }
+  .legend > .note { display: block; }
+
+  /* collapsible sections: the whole header acts as a toggle */
+  details.fold > summary { list-style: none; cursor: pointer; }
+  details.fold > summary::-webkit-details-marker { display: none; }
+  details.fold > summary h2::after { content: "/2304"; font-size: .9em; color: var(--ink-soft);
+                                     line-height: 1; transition: transform .15s ease; }
+  details.fold:not([open]) > summary h2 { margin-bottom: 0; }
+  details.fold:not([open]) > summary h2::after { transform: rotate(-90deg) translateX(4px); }
 
   /* stacked effort bar */
   .stack { display: flex; height: 30px; border-radius: 8px; overflow: hidden;
@@ -168,13 +185,13 @@
   <nav class="toc">
     <div class="toc-title">Sections</div>
     <a href="#overview">Overview</a>
-    <a href="#estimations">Estimations</a>
-    <a href="#screens">Screens complexity</a>
-    <a href="#ui">UI components</a>
-    <a href="#app-components">App components</a>
-    <a href="#data-model">Data model</a>
-    <a href="#misc">Misc notes</a>
-    <a href="#unparsed">Not analyzed</a>
+<a href="#estimations">Estimations</a>
+<a href="#screens">Screens complexity</a>
+<a href="#ui">UI components</a>
+<a href="#app-components">App components</a>
+<a href="#data-model">Data model</a>
+<a href="#misc">Misc notes</a>
+<a href="#unparsed">Not analyzed</a>
   </nav>
 
   <main>
@@ -183,17 +200,18 @@
       <div class="cards">
         <div class="card accent">
           <div class="label">Total effort</div>
-          <div class="num">117</div>
+          <div class="num">56.5</div>
           <div class="sub">man-hours (lower bound)</div>
         </div>
         <div class="card">
           <div class="label">Entities</div>
           <div class="num">1</div>
+          
         </div>
         <div class="card">
           <div class="label">Screens</div>
           <div class="num">2</div>
-          <div class="sub">1 man-hours</div>
+          <div class="sub">0.5 man-hours</div>
         </div>
         <div class="card">
           <div class="label">App components</div>
@@ -203,20 +221,20 @@
         <div class="card">
           <div class="label">Legacy listeners</div>
           <div class="num">0</div>
+          
         </div>
       </div>
       <div class="callout" style="margin-top:18px">
         This is not a comprehensive estimation. Some aspects cannot be evaluated automatically and need manual analysis — treat the numbers as a rough lower-range estimate. Analysis of Kotlin classes is not supported.
       </div>
     </section>
-
     <section id="estimations">
-      <h2>Estimations <span class="count">117 man-hours total</span></h2>
+      <h2>Estimations <span class="count">56.5 man-hours total</span></h2>
       <div class="stack" role="img" aria-label="Effort distribution by category">
-          <span class="seg-1" style="flex-grow:100" title="Initial migration: 100 h"></span>
+          <span class="seg-1" style="flex-grow:40" title="Initial migration: 40 h"></span>
           <span class="seg-2" style="flex-grow:16" title="Base entities: 16 h"></span>
           <span class="seg-3" style="flex-grow:0" title="Legacy listeners: 0 h"></span>
-          <span class="seg-4" style="flex-grow:1" title="Screens: 1 h"></span>
+          <span class="seg-4" style="flex-grow:0.5" title="Screens: 0.5 h"></span>
       </div>
       <div class="table-wrap">
         <table>
@@ -224,13 +242,13 @@
           <tbody>
               <tr>
                 <td><span class="swatch seg-1"></span>Initial migration</td>
-                <td class="num">100</td>
-                <td class="num">85%</td>
+                <td class="num">40</td>
+                <td class="num">71%</td>
               </tr>
               <tr>
                 <td><span class="swatch seg-2"></span>Base entities</td>
                 <td class="num">16</td>
-                <td class="num">14%</td>
+                <td class="num">28%</td>
               </tr>
               <tr>
                 <td><span class="swatch seg-3"></span>Legacy listeners</td>
@@ -239,17 +257,16 @@
               </tr>
               <tr>
                 <td><span class="swatch seg-4"></span>Screens</td>
-                <td class="num">1</td>
+                <td class="num">0.5</td>
                 <td class="num">1%</td>
               </tr>
           </tbody>
-          <tfoot><tr><th>Total</th><td class="num">117</td><td class="num">100%</td></tr></tfoot>
+          <tfoot><tr><th>Total</th><td class="num">56.5</td><td class="num">100%</td></tr></tfoot>
         </table>
       </div>
     </section>
-
     <section id="screens">
-      <h2>Screens complexity <span class="count">2 screens · 1 man-hours</span></h2>
+      <h2>Screens complexity <span class="count">2 screens · 0.5 man-hours</span></h2>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Group</th><th class="num">Screens</th><th class="num">Cost, h</th><th class="num">Total, h</th><th>Weight</th></tr></thead>
@@ -263,21 +280,21 @@
                     </details>
                 </td>
                 <td class="num">2</td>
+                <td class="num">0.25</td>
                 <td class="num">0.5</td>
-                <td class="num">1</td>
                 <td>
-                  <div class="minibar" title="1 h"><span style="width:100%"></span></div>
+                  <div class="minibar" title="0.5 h"><span style="width:100%"></span></div>
                 </td>
               </tr>
           </tbody>
-          <tfoot><tr><th>Total</th><td class="num">2</td><td></td><td class="num">1</td><td></td></tr></tfoot>
+          <tfoot><tr><th>Total</th><td class="num">2</td><td></td><td class="num">0.5</td><td></td></tr></tfoot>
         </table>
       </div>
       <div class="callout" style="margin-top:14px">
         <strong>Requires decision:</strong> 1 screen
-        contains components with no Jmix equivalent (marked "Absent").
-        The replacement cost of such components is not included in the estimations above: decide per screen whether
-        to drop the functionality, redesign it, or build a custom component.
+        contains components with no Jmix equivalent ("Absent" or
+        custom-namespace components). The replacement cost of such components is not included in the estimations
+        above: decide per screen whether to drop the functionality, redesign it, or build a custom component.
         <details>
           <summary>Show screens</summary>
           <div class="drill">
@@ -286,9 +303,9 @@
         </details>
       </div>
     </section>
-
     <section id="ui">
-      <h2>UI components <span class="count">6 noted</span></h2>
+      <details class="fold" open>
+      <summary><h2>UI components <span class="count">6 noted</span></h2></summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Component</th><th class="num">Used</th><th>Status</th><th>Notes</th></tr></thead>
@@ -325,7 +342,7 @@
                   <td class="num">1</td>
                   <td>
   <span class="badge ok">Changed</span>
-                       <span class="badge warn" title="Grouping Data Grid (io.jmix.groupgrid)">Commercial add-on</span>
+                       <span class="badge dep" title="Grouping Data Grid (io.jmix.groupgrid)">Commercial add-on</span>
 
                   </td>
                   <td>Add the commercial &#39;Grouping Data Grid&#39; add-on (io.jmix.groupgrid, requires Enterprise subscription) and use &#39;groupDataGrid&#39; (https://docs.jmix.io/jmix/groupdatagrid/index.html)</td>
@@ -335,7 +352,7 @@
                   <td class="num">1</td>
                   <td>
   <span class="badge info">Has alternative</span>
-                       <span class="badge warn" title="Vaadin &#39;Input Mask&#39; add-on">3rd-party</span>
+                       <span class="badge dep" title="Vaadin &#39;Input Mask&#39; add-on">3rd-party</span>
 
                   </td>
                   <td>No built-in masked input. Use the 3rd-party Vaadin &#39;Input Mask&#39; add-on: apply programmatically via new InputMask(&quot;...&quot;).extend(field) (~2 lines), or wrap it in a small custom component for declarative XML use (https://demo.jmix.io/ui-samples/sample/input-mask-addon-advanced). For plain character restriction without formatting, use textField &#39;allowedCharPattern&#39;</td>
@@ -357,20 +374,24 @@
         <span><span class="badge info">Has alternative</span> a different ready-made component achieves the same or similar result</span>
         <span><span class="badge warn">Has workaround</span> achievable partially or with custom glue code following a known recipe</span>
         <span><span class="badge bad">Absent</span> no recipe: drop the functionality, redesign, or build from scratch (not included in complexity scores)</span>
+        <span><span class="badge bad">Custom</span> non-standard namespace: a project custom component; no automatic analog, requires decision (not included in complexity scores)</span>
         <span><span class="chip">+N</span> extra complexity score added to each screen using the component</span>
         <span class="note">Components not listed here have a direct Jmix equivalent. Dependency badges (Add-on, Commercial add-on, 3rd-party) refer to the primary replacement recipe; simpler fallbacks, if any, are described in the notes.</span>
       </div>
+      </details>
     </section>
-
     <section id="app-components">
-      <h2>App components <span class="count">1 found</span></h2>
+      <details class="fold" open>
+      <summary><h2>App components <span class="count">1 found</span></h2></summary>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Name</th><th>Type</th><th>Origin</th><th>Notes</th></tr></thead>
+          <thead><tr><th>Name</th><th>Type</th><th>Status</th><th>Origin</th><th>Notes</th></tr></thead>
           <tbody>
                 <tr>
                   <td>com.unknown.addon</td>
                   <td>  <span class="badge bad">Missing</span>
+</td>
+                  <td>  <span class="badge bad">Unknown</span>
 </td>
                   <td>  <span class="badge neutral">Unknown</span>
 </td>
@@ -379,8 +400,8 @@
           </tbody>
         </table>
       </div>
+      </details>
     </section>
-
     <section id="data-model">
       <h2>Data model <span class="count">1 entities</span></h2>
       <div class="table-wrap">
@@ -401,9 +422,9 @@
         </table>
       </div>
     </section>
-
     <section id="misc">
-      <h2>Misc notes <span class="count">0</span></h2>
+      <details class="fold" open>
+      <summary><h2>Misc notes <span class="count">0</span></h2></summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Item</th><th>Notes</th></tr></thead>
@@ -412,8 +433,8 @@
           </tbody>
         </table>
       </div>
+      </details>
     </section>
-
     <section id="unparsed">
       <h2>Not analyzed <span class="count">2 files</span></h2>
       <div class="callout" style="margin-bottom:14px">

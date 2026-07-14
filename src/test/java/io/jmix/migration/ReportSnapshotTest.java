@@ -1,9 +1,12 @@
 package io.jmix.migration;
 
-import io.jmix.migration.analysis.CubaProjectAnalyzer;
-import io.jmix.migration.analysis.HtmlReportGenerator;
-import io.jmix.migration.analysis.issue.uicomponent.UiComponentIssuesRegistry;
-import io.jmix.migration.analysis.model.CubaProjectEstimationResult;
+import io.jmix.migration.core.incident.UiComponentIssuesRegistry;
+import io.jmix.migration.cuba.CubaProjectAnalyzer;
+import io.jmix.migration.cuba.HtmlReportGenerator;
+import io.jmix.migration.cuba.model.CubaProjectEstimationResult;
+import io.jmix.migration.jmix.JmixHtmlReportGenerator;
+import io.jmix.migration.jmix.JmixProjectAnalyzer;
+import io.jmix.migration.jmix.model.JmixProjectAnalysisResult;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -34,6 +37,27 @@ public class ReportSnapshotTest {
         checkReportSnapshot("cuba-robustness", "com.company.synth");
     }
 
+    @Test
+    public void jmixMinimalReportMatchesGolden() throws IOException {
+        checkJmixReportSnapshot("jmix17-minimal");
+    }
+
+    @Test
+    public void jmixFeaturesReportMatchesGolden() throws IOException {
+        checkJmixReportSnapshot("jmix17-features");
+    }
+
+    protected void checkJmixReportSnapshot(String fixtureName) throws IOException {
+        Path fixturePath = FIXTURES_ROOT.resolve(fixtureName).toAbsolutePath().normalize();
+        assertTrue(Files.isDirectory(fixturePath), "Fixture project not found: " + fixturePath);
+
+        JmixProjectAnalyzer analyzer = new JmixProjectAnalyzer();
+        JmixProjectAnalysisResult result = analyzer.analyzeProjectToResult(fixturePath.toString(), null, null);
+
+        String html = new JmixHtmlReportGenerator().generateReportContent(fixtureName, result);
+        compareWithGolden(fixtureName, normalize(html, fixturePath));
+    }
+
     protected void checkReportSnapshot(String fixtureName, String basePackage) throws IOException {
         Path fixturePath = FIXTURES_ROOT.resolve(fixtureName).toAbsolutePath().normalize();
         assertTrue(Files.isDirectory(fixturePath), "Fixture project not found: " + fixturePath);
@@ -43,8 +67,10 @@ public class ReportSnapshotTest {
 
         HtmlReportGenerator reportGenerator = new HtmlReportGenerator(UiComponentIssuesRegistry.create());
         String html = reportGenerator.generateReportContent(fixtureName, result);
-        String normalized = normalize(html, fixturePath);
+        compareWithGolden(fixtureName, normalize(html, fixturePath));
+    }
 
+    protected void compareWithGolden(String fixtureName, String normalized) throws IOException {
         Path goldenPath = GOLDENS_ROOT.resolve(fixtureName + ".html");
         if (Boolean.getBoolean("snapshot.update")) {
             Files.createDirectories(goldenPath.getParent());

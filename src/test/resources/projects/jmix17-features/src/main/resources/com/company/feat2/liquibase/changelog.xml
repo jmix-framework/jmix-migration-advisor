@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog">
+    <include file="/io/jmix/data/liquibase/changelog.xml"/>
+    <include file="/io/jmix/uidata/liquibase/changelog.xml"/>
+    <include file="/io/jmix/securitydata/liquibase/changelog.xml"/>
+    <includeAll path="/com/company/feat2/liquibase/changelog"/>
+</databaseChangeLog>
