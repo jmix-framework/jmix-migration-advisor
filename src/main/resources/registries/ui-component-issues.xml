@@ -230,6 +230,10 @@
         <notes>The Search add-on provides the search field for Flow UI as well; update the dependency to the flowui variant and adjust the component attributes (https://docs.jmix.io/jmix/search/search-ui.html)</notes>
         <requires kind="addon" subject="Search (io.jmix.search)"/>
     </issue>
+    <issue match="ntf:*" type="changed" score="1">
+        <notes>Components of the Notifications add-on. The add-on has a direct Flow UI counterpart; update the dependency to the flowui variant and adjust the component attributes (https://docs.jmix.io/jmix/notifications/configuration.html).</notes>
+        <requires kind="commercial-addon" subject="Notifications (io.jmix.notifications)"/>
+    </issue>
     <issue match="maps:*" type="has-alternative" score="4">
         <notes>CUBA Maps components are replaced by the Jmix Maps add-on. Layers and configuration API differ; recreate map configuration (https://docs.jmix.io/jmix/maps/index.html)</notes>
         <requires kind="commercial-addon" subject="Maps (jmix-maps)"/>

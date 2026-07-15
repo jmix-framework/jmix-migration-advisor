@@ -192,10 +192,10 @@
         <notes>Dependency rename only</notes>
         <cost-hint>0</cost-hint>
     </addon>
-    <addon artifact="io.jmix.notifications:jmix-notifications-starter" name="Notifications" category="addon" license="open-source" origin="framework" flow-status="available">
+    <addon artifact="io.jmix.notifications:jmix-notifications-starter" name="Notifications" category="addon" license="commercial" origin="framework" flow-status="available">
         <notes>No changes required</notes>
     </addon>
-    <addon artifact="io.jmix.notifications:jmix-notifications-ui-starter" name="Notifications UI" category="addon" license="open-source" origin="framework" flow-status="renamed">
+    <addon artifact="io.jmix.notifications:jmix-notifications-ui-starter" name="Notifications UI" category="addon" license="commercial" origin="framework" flow-status="renamed">
         <flow-artifact>io.jmix.notifications:jmix-notifications-flowui-starter</flow-artifact>
         <notes>Dependency rename only</notes>
         <cost-hint>0</cost-hint>

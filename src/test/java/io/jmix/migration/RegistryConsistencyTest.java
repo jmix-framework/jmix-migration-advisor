@@ -45,7 +45,8 @@ public class RegistryConsistencyTest {
 
         // Namespaced add-on families are covered by prefix entries
         for (String component : List.of("chart:pieChart", "charts:serialChart", "maps:geoMap",
-                "pivot:pivotTable", "gjs:grapesJsHtmlEditor", "search:searchField")) {
+                "pivot:pivotTable", "gjs:grapesJsHtmlEditor", "search:searchField",
+                "ntf:notificationsIndicator")) {
             assertNotNull(registry.getIssue(component), "Prefix entry does not cover: " + component);
         }
 
@@ -109,7 +110,7 @@ public class RegistryConsistencyTest {
         }
 
         for (String artifact : List.of("io.jmix.bpm:jmix-bpm-starter", "io.jmix.maps:jmix-maps-starter",
-                "io.jmix.webdav:jmix-webdav-starter")) {
+                "io.jmix.webdav:jmix-webdav-starter", "io.jmix.notifications:jmix-notifications-starter")) {
             assertEquals(License.COMMERCIAL, registry.getAddonInfo(artifact).getLicense(),
                     "Expected commercial license: " + artifact);
         }
