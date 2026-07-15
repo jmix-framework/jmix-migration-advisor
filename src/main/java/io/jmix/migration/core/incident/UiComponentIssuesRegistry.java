@@ -9,8 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Registry of classic UI components changed, replaced or absent in Jmix Flow UI.
@@ -24,11 +26,14 @@ public class UiComponentIssuesRegistry {
 
     private final Map<String, UiComponentIssue> issuesByComponent;
     private final List<PrefixIssue> issuesByPrefix;
+    private final NamespaceCanonicalization namespaceCanonicalization;
 
     protected UiComponentIssuesRegistry(Map<String, UiComponentIssue> issuesByComponent,
-                                        List<PrefixIssue> issuesByPrefix) {
+                                        List<PrefixIssue> issuesByPrefix,
+                                        NamespaceCanonicalization namespaceCanonicalization) {
         this.issuesByComponent = issuesByComponent;
         this.issuesByPrefix = issuesByPrefix;
+        this.namespaceCanonicalization = namespaceCanonicalization;
     }
 
     public static UiComponentIssuesRegistry create() {
@@ -40,6 +45,14 @@ public class UiComponentIssuesRegistry {
         } catch (IOException e) {
             throw new RuntimeException("Unable to load UI component issues registry", e);
         }
+    }
+
+    /**
+     * Namespace URIs of the add-on component families, for canonicalizing component names
+     * during layout parsing.
+     */
+    public NamespaceCanonicalization getNamespaceCanonicalization() {
+        return namespaceCanonicalization;
     }
 
     /**
@@ -74,6 +87,8 @@ public class UiComponentIssuesRegistry {
 
         Map<String, UiComponentIssue> byComponent = new HashMap<>();
         List<PrefixIssue> byPrefix = new ArrayList<>();
+        Map<String, String> prefixByUri = new HashMap<>();
+        Set<String> strictPrefixes = new HashSet<>();
         for (Element issueElement : rootElement.elements("issue")) {
             String component = issueElement.attributeValue("component");
             String match = issueElement.attributeValue("match");
@@ -83,19 +98,38 @@ public class UiComponentIssuesRegistry {
 
             String entryName = component != null ? component : match;
             UiComponentIssue issue = readIssue(entryName, issueElement);
+            List<Element> uriElements = issueElement.elements("uri");
 
             if (component != null) {
+                if (!uriElements.isEmpty()) {
+                    throw new RuntimeException("Registry entry '" + component
+                            + "': 'uri' is allowed for prefix entries only");
+                }
                 if (byComponent.put(component, issue) != null) {
                     throw new RuntimeException("Duplicated registry entry: '" + component + "'");
                 }
             } else {
-                if (!match.endsWith("*") || match.length() < 2) {
-                    throw new RuntimeException("'match' pattern must be a non-empty prefix ending with '*': '" + match + "'");
+                if (!match.endsWith(":*") || match.length() < 3) {
+                    throw new RuntimeException("'match' pattern must be a namespace prefix ending with ':*': '" + match + "'");
                 }
+                String prefix = match.substring(0, match.length() - 2);
                 byPrefix.add(new PrefixIssue(match.substring(0, match.length() - 1), issue));
+                for (Element uriElement : uriElements) {
+                    String uri = uriElement.getTextTrim();
+                    if (uri.isEmpty()) {
+                        throw new RuntimeException("Registry entry '" + match + "': empty 'uri' element");
+                    }
+                    String previous = prefixByUri.put(uri, prefix);
+                    if (previous != null && !previous.equals(prefix)) {
+                        throw new RuntimeException("Namespace URI '" + uri
+                                + "' is claimed by two families: '" + previous + "' and '" + prefix + "'");
+                    }
+                    strictPrefixes.add(prefix);
+                }
             }
         }
-        return new UiComponentIssuesRegistry(Map.copyOf(byComponent), List.copyOf(byPrefix));
+        return new UiComponentIssuesRegistry(Map.copyOf(byComponent), List.copyOf(byPrefix),
+                NamespaceCanonicalization.of(prefixByUri, strictPrefixes));
     }
 
     protected static UiComponentIssue readIssue(String entryName, Element issueElement) {

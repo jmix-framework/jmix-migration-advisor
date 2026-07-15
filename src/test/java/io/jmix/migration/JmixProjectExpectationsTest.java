@@ -105,7 +105,11 @@ public class JmixProjectExpectationsTest {
         assertEquals(1, result.getScreensCount());
         assertEquals(1, result.getFragmentsCount());
         assertTrue(result.getUiComponents().keySet().containsAll(
-                        List.of("groupTable", "buttonsPanel", "button", "popupView", "sourceCodeEditor", "textField")),
+                        List.of("groupTable", "buttonsPanel", "button", "popupView", "sourceCodeEditor", "textField",
+                                // written as ch:pieChart, canonicalized to the family prefix by the namespace URI
+                                "chart:pieChart",
+                                // written as pivot:matrix over a custom URI: NOT the pivot family, Clark-notation name
+                                "{http://com.company.feat2/custom-matrix.xsd}matrix")),
                 "UI components: " + result.getUiComponents().keySet());
 
         // Security and red flags
@@ -128,8 +132,9 @@ public class JmixProjectExpectationsTest {
         assertEquals(1, result.getUnparsedFiles().size());
 
         // Estimation, derived by hand from the jmix profile weights:
-        // CustomerBrowse: components groupTable 3 + buttonsPanel 1 + popupView 5 + sourceCodeEditor 2 = 11,
-        //   6 controller calls (L2: 8), total 19 -> Simple (1.5 h);
+        // CustomerBrowse: components groupTable 3 + buttonsPanel 1 + popupView 5 + sourceCodeEditor 2
+        //   + chart:pieChart 5 (canonicalized by URI) = 16, 6 controller calls (L2: 8),
+        //   total 24 -> Simple (1.5 h); custom-namespace components carry no score;
         // AddressFragment: textField only, score 0 -> Trivial (0.25 h);
         // initial 24 + jakarta sweep (2 files -> 4) + screens 1.75 + add-ons 0 + roles 1 x 1
         //   + config 2 + custom theme 1 x 8 = 40.75
@@ -150,8 +155,10 @@ public class JmixProjectExpectationsTest {
         assertEquals(List.of("feat2_AddressFragment"), screensByGroup.get("Trivial"));
         assertEquals(List.of("feat2_Customer.browse"), screensByGroup.get("Simple"));
 
-        // The custom-namespace component is escalated without affecting the score/hours
-        assertEquals(Map.of("feat2_Customer.browse", List.of("app:ratingField")),
+        // Custom-namespace components are escalated without affecting the score/hours;
+        // the second one uses a known family prefix over a foreign URI and gets a Clark name
+        assertEquals(Map.of("feat2_Customer.browse",
+                        List.of("app:ratingField", "{http://com.company.feat2/custom-matrix.xsd}matrix")),
                 estimation.getScreensRequireDecision());
 
         // Absent add-on (Dashboards) is present as a row; its cost stays out of the estimation

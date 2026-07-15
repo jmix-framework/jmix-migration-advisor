@@ -1,6 +1,7 @@
 package io.jmix.migration.classicui.parser;
 
 import io.jmix.migration.classicui.model.*;
+import io.jmix.migration.core.incident.UiComponentIssuesRegistry;
 import org.dom4j.Element;
 
 import javax.annotation.Nullable;
@@ -31,7 +32,11 @@ public class ScreenDescriptorParser {
         this.screensCollector = screensCollector;
         this.screenDataParser = new ScreenDataParser();
         this.screenFacetsParser = new ScreenFacetsParser();
-        this.screenLayoutParser = new ScreenLayoutParser();
+        // Namespace facts come from the component issues registry: component names of add-on
+        // families are canonicalized by URI, so registry matching does not depend on the
+        // prefixes chosen in descriptors
+        this.screenLayoutParser = new ScreenLayoutParser(
+                UiComponentIssuesRegistry.create().getNamespaceCanonicalization());
     }
 
     public boolean isScreenDescriptor(Element rootElement) {

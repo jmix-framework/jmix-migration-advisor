@@ -166,9 +166,14 @@ makes illegal states unrepresentable: an `absent` entry cannot carry a score or 
 `requires` (0..n, a conjunction) declares what the primary recipe depends on
 (add-on / commercial add-on / third-party); it is non-strict - a simpler fallback may exist
 and is described in the notes. Namespaced add-on families are covered by prefix entries
-(`match="chart:*"`); since the prefix is a per-descriptor convention, common variants are
-listed separately (`chart:`/`charts:`). A prefixed component with no registry match is
-treated as a project custom component and escalated with the synthetic `CUSTOM` status.
+(`match="chart:*"`). The prefix written in a descriptor is a per-file convention, so
+families declare their namespace URIs (`uri` elements) and the layout parser canonicalizes
+component names by the element URI: `charts:serialChart` and `ch:pieChart` both become
+`chart:...` when the URI belongs to the charts family. A component written with a family
+prefix over a foreign URI is not that family: it gets a Clark-notation name
+(`{uri}localName`) and is escalated as custom. A prefixed component with no registry match
+is treated as a project custom component and escalated with the synthetic `CUSTOM` status;
+families without declared URIs keep conventional prefix matching.
 
 **`jmix-addons.xml`** and **`cuba-app-components.xml`** - dependencies of the source project
 (Gradle starters for Jmix, app components from `web.xml` for CUBA). The formats mirror each

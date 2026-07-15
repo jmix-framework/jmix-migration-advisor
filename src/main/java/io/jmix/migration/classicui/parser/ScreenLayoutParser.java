@@ -1,6 +1,7 @@
 package io.jmix.migration.classicui.parser;
 
 import io.jmix.migration.classicui.model.Layout;
+import io.jmix.migration.core.incident.NamespaceCanonicalization;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,16 @@ import java.util.stream.Stream;
 public class ScreenLayoutParser {
 
     private static final Logger log = LoggerFactory.getLogger(ScreenLayoutParser.class);
+
+    protected final NamespaceCanonicalization namespaceCanonicalization;
+
+    public ScreenLayoutParser() {
+        this(NamespaceCanonicalization.empty());
+    }
+
+    public ScreenLayoutParser(NamespaceCanonicalization namespaceCanonicalization) {
+        this.namespaceCanonicalization = namespaceCanonicalization;
+    }
 
     protected static final Set<String> SIMPLE_CONTAINER_COMPONENTS = Stream.of(
             "buttonsPanel", "cssLayout", "flowBox", "groupBox", "hbox", "vbox", "scrollBox", "split", "htmlBox"
@@ -44,7 +55,7 @@ public class ScreenLayoutParser {
     }
 
     protected void processLayoutItem(Layout layout, Element layoutItemElement) {
-        String elementName = layoutItemElement.getQualifiedName();
+        String elementName = resolveItemName(layoutItemElement);
         log.debug("Layout item: {}", elementName);
         layout.putItem(elementName);
 
@@ -92,6 +103,33 @@ public class ScreenLayoutParser {
             }
             log.debug("Finish processing grid layout component '{}'", elementName);
         }
+    }
+
+    /**
+     * The prefix written in a descriptor is a per-file convention; the namespace URI is the
+     * identity. Known URIs are canonicalized to the registry family prefix, so add-on
+     * components match their registry entries regardless of the declared prefix. An element
+     * written with a strict family prefix over a foreign URI is a custom component, not the
+     * add-on: it gets a Clark-notation name ({uri}localName) that matches nothing and is
+     * escalated as custom. Unknown namespaces with non-colliding prefixes keep the written
+     * name (reported as custom components under their own name).
+     */
+    protected String resolveItemName(Element element) {
+        String prefix = element.getNamespacePrefix();
+        if (prefix == null || prefix.isEmpty()) {
+            return element.getName();
+        }
+        String uri = element.getNamespaceURI();
+        if (uri != null && !uri.isEmpty()) {
+            String canonicalPrefix = namespaceCanonicalization.canonicalPrefix(uri);
+            if (canonicalPrefix != null) {
+                return canonicalPrefix + ":" + element.getName();
+            }
+            if (namespaceCanonicalization.isStrictPrefix(prefix)) {
+                return "{" + uri + "}" + element.getName();
+            }
+        }
+        return element.getQualifiedName();
     }
 
     protected boolean isSimpleContainerLayoutItem(String name) {

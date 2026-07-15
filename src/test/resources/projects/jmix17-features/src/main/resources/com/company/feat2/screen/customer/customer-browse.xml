@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window xmlns="http://jmix.io/schema/ui/window"
         xmlns:app="http://com.company.feat2/customcomponents.xsd"
+        xmlns:ch="http://jmix.io/schema/ui/charts"
+        xmlns:pivot="http://com.company.feat2/custom-matrix.xsd"
         caption="msg://customerBrowse.caption">
     <data readOnly="true">
         <collection id="customersDc" class="com.company.feat2.entity.Customer">
@@ -26,5 +28,9 @@
         <popupView id="quickView"/>
         <sourceCodeEditor id="scriptEditor"/>
         <app:ratingField id="customerRating"/>
+        <!-- charts namespace under a non-standard prefix: canonicalized to chart:pieChart by URI -->
+        <ch:pieChart id="salesChart"/>
+        <!-- custom namespace behind a known family prefix: NOT the pivot add-on, escalated as custom -->
+        <pivot:matrix id="salesMatrix"/>
     </layout>
 </window>

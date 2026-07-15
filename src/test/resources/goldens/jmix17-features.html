@@ -356,14 +356,14 @@
         <details>
           <summary>Show screens</summary>
           <div class="drill">
-              <span class="mono">feat2_Customer.browse: app:ratingField</span>
+              <span class="mono">feat2_Customer.browse: app:ratingField, {http://com.company.feat2/custom-matrix.xsd}matrix</span>
           </div>
         </details>
       </div>
     </section>
     <section id="ui">
       <details class="fold" open>
-      <summary><h2>UI components <span class="count">5 noted</span></h2></summary>
+      <summary><h2>UI components <span class="count">7 noted</span></h2></summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Component</th><th class="num">Used</th><th>Status</th><th>Notes</th></tr></thead>
@@ -385,6 +385,16 @@
                     
                   </td>
                   <td>Use &#39;hbox&#39; with classNames=&quot;buttons-panel&quot; (https://docs.jmix.io/jmix/flow-ui/vc/layouts/hbox.html)</td>
+                </tr>
+                <tr>
+                  <td><code>chart:pieChart</code> <span class="chip" title="extra complexity score">+5</span></td>
+                  <td class="num">1</td>
+                  <td>
+  <span class="badge info">Has alternative</span>
+                       <span class="badge dep" title="Charts (jmix-charts)">Add-on</span>
+
+                  </td>
+                  <td>Classic Charts (AmCharts-based) components are replaced by the Jmix Charts add-on (ECharts-based). Chart types and configuration API differ significantly; recreate each chart configuration (https://docs.jmix.io/jmix/charts/index.html)</td>
                 </tr>
                 <tr>
                   <td><code>groupTable</code> <span class="chip" title="extra complexity score">+3</span></td>
@@ -413,6 +423,15 @@
                     
                   </td>
                   <td>Use &#39;codeEditor&#39; (https://docs.jmix.io/jmix/flow-ui/vc/components/codeEditor.html). Check highlight mode support - the set of supported languages differs</td>
+                </tr>
+                <tr>
+                  <td><code>{http://com.company.feat2/custom-matrix.xsd}matrix</code></td>
+                  <td class="num">1</td>
+                  <td>
+  <span class="badge bad">Custom</span>
+                    
+                  </td>
+                  <td>Component from a non-standard namespace: a project custom component or an add-on without registry data. No automatic analog is known; the cost is not estimated - requires decision</td>
                 </tr>
           </tbody>
         </table>

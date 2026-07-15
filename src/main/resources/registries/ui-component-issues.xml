@@ -18,6 +18,11 @@
                   a conjunction (all are needed). kind: addon | commercial-addon | third-party.
                   FORBIDDEN for type="absent". The requirement is not strict: a simpler recipe
                   may work without the dependency; such gradations belong to the notes text.
+      uri       - 0..n namespace URIs of the family; prefix entries only. When declared,
+                  matching is URI-driven: component names are canonicalized to the entry
+                  prefix regardless of the prefix written in the descriptor, and an element
+                  written with this prefix over a DIFFERENT URI is treated as a custom
+                  component. Entries without uri match by the conventional prefix.
 -->
 <ui-component-issues>
     <issue component="appMenu" type="changed" score="3">
@@ -207,34 +212,39 @@
          migrated component-by-component but regenerated from the Flow UI template, which
          is covered by the initial migration cost. -->
 
-    <!-- Namespaced add-on components: matched by prefix, one entry covers the whole family.
-         The prefix is a per-descriptor convention, so common variants are listed separately
-         (chart:/charts:). -->
+    <!-- Namespaced add-on components: one entry covers the whole family. The prefix written
+         in a descriptor is a per-file convention; families with declared uri elements are
+         matched by the namespace URI and canonicalized to the entry prefix. -->
     <issue match="chart:*" type="has-alternative" score="5">
-        <notes>Classic Charts (AmCharts-based) components are replaced by the Jmix Charts add-on (ECharts-based). Chart types and configuration API differ significantly; recreate each chart configuration (https://docs.jmix.io/jmix/charts/index.html)</notes>
-        <requires kind="addon" subject="Charts (jmix-charts)"/>
-    </issue>
-    <issue match="charts:*" type="has-alternative" score="5">
+        <uri>http://schemas.haulmont.com/charts/charts.xsd</uri>
+        <uri>http://jmix.io/schema/ui/charts</uri>
         <notes>Classic Charts (AmCharts-based) components are replaced by the Jmix Charts add-on (ECharts-based). Chart types and configuration API differ significantly; recreate each chart configuration (https://docs.jmix.io/jmix/charts/index.html)</notes>
         <requires kind="addon" subject="Charts (jmix-charts)"/>
     </issue>
     <issue match="pivot:*" type="has-alternative" score="4">
+        <uri>http://jmix.io/schema/ui/pivot-table</uri>
         <notes>Pivot table moves to the separate Pivot Table add-on for the current Jmix (still PivotTable.js based); recreate the component configuration (https://docs.jmix.io/jmix/pivot-table/index.html)</notes>
         <requires kind="addon" subject="Pivot Table (io.jmix.pivottable)"/>
     </issue>
-    <issue match="gjs:*" type="has-workaround" score="4">
+    <issue match="grapesjs:*" type="has-workaround" score="4">
+        <uri>http://schemas.haulmont.com/grapesjs/ui-component.xsd</uri>
+        <uri>http://jmix.io/schema/grapesjs/ui</uri>
         <notes>The standalone GrapesJS add-on does not exist for the current Jmix; a GrapesJS editor is bundled inside the Message Templates add-on. Re-wire standalone editor usages to it or build a custom Flow wrapper</notes>
         <requires kind="addon" subject="Message Templates (io.jmix.messagetemplates)"/>
     </issue>
     <issue match="search:*" type="changed" score="1">
+        <uri>http://jmix.io/schema/search/ui</uri>
         <notes>The Search add-on provides the search field for Flow UI as well; update the dependency to the flowui variant and adjust the component attributes (https://docs.jmix.io/jmix/search/search-ui.html)</notes>
         <requires kind="addon" subject="Search (io.jmix.search)"/>
     </issue>
     <issue match="ntf:*" type="changed" score="1">
+        <uri>http://jmix.io/schema/notifications/ui</uri>
         <notes>Components of the Notifications add-on. The add-on has a direct Flow UI counterpart; update the dependency to the flowui variant and adjust the component attributes (https://docs.jmix.io/jmix/notifications/configuration.html).</notes>
         <requires kind="commercial-addon" subject="Notifications (io.jmix.notifications)"/>
     </issue>
     <issue match="maps:*" type="has-alternative" score="4">
+        <uri>http://schemas.haulmont.com/maps/0.1/ui-component.xsd</uri>
+        <uri>http://jmix.io/schema/maps/ui</uri>
         <notes>CUBA Maps components are replaced by the Jmix Maps add-on. Layers and configuration API differ; recreate map configuration (https://docs.jmix.io/jmix/maps/index.html)</notes>
         <requires kind="commercial-addon" subject="Maps (jmix-maps)"/>
     </issue>

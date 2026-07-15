@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -43,12 +44,28 @@ public class RegistryConsistencyTest {
         assertEquals(UiComponentIssueType.ABSENT, registry.getIssue("capsLockIndicator").getType());
         assertEquals(UiComponentIssueType.ABSENT, registry.getIssue("jsComponent").getType());
 
-        // Namespaced add-on families are covered by prefix entries
-        for (String component : List.of("chart:pieChart", "charts:serialChart", "maps:geoMap",
-                "pivot:pivotTable", "gjs:grapesJsHtmlEditor", "search:searchField",
+        // Namespaced add-on families are covered by prefix entries (canonical prefixes)
+        for (String component : List.of("chart:pieChart", "maps:geoMap",
+                "pivot:pivotTable", "grapesjs:grapesJsHtmlEditor", "search:searchField",
                 "ntf:notificationsIndicator")) {
             assertNotNull(registry.getIssue(component), "Prefix entry does not cover: " + component);
         }
+
+        // Namespace URIs of the families canonicalize to the entry prefixes; the URIs are
+        // taken from real descriptors of the reference projects and the 1.x documentation
+        var canonicalization = registry.getNamespaceCanonicalization();
+        assertEquals("chart", canonicalization.canonicalPrefix("http://schemas.haulmont.com/charts/charts.xsd"));
+        assertEquals("chart", canonicalization.canonicalPrefix("http://jmix.io/schema/ui/charts"));
+        assertEquals("maps", canonicalization.canonicalPrefix("http://schemas.haulmont.com/maps/0.1/ui-component.xsd"));
+        assertEquals("maps", canonicalization.canonicalPrefix("http://jmix.io/schema/maps/ui"));
+        assertEquals("pivot", canonicalization.canonicalPrefix("http://jmix.io/schema/ui/pivot-table"));
+        assertEquals("ntf", canonicalization.canonicalPrefix("http://jmix.io/schema/notifications/ui"));
+        assertEquals("grapesjs", canonicalization.canonicalPrefix("http://schemas.haulmont.com/grapesjs/ui-component.xsd"));
+        assertEquals("grapesjs", canonicalization.canonicalPrefix("http://jmix.io/schema/grapesjs/ui"));
+        assertEquals("search", canonicalization.canonicalPrefix("http://jmix.io/schema/search/ui"));
+        assertNull(canonicalization.canonicalPrefix("http://example.com/unknown"));
+        assertTrue(canonicalization.isStrictPrefix("pivot"), "URI-declared family must be strict");
+        assertFalse(canonicalization.isStrictPrefix("app"), "Non-family prefix must not be strict");
 
         List<UiComponentIssue> allIssues = registry.getAllIssues();
         assertTrue(allIssues.size() >= 55, "Suspicious registry shrink: " + allIssues.size() + " entries");
@@ -82,11 +99,16 @@ public class RegistryConsistencyTest {
                 "io.jmix.webdav:jmix-webdav-starter",
                 "io.jmix.webdav:jmix-webdav-ui-starter",
                 "io.jmix.webdav:jmix-webdav-rest-starter",
+                "io.jmix.quartz:jmix-quartz-starter",
+                "io.jmix.quartz:jmix-quartz-ui-starter",
+                "io.jmix.cuba:jmix-cuba-starter",
+                "io.jmix.authorizationserver:jmix-authorization-server-starter",
+                "io.jmix.grapesjs:jmix-grapesjs-ui-starter",
                 "io.jmix.translations:jmix-translations-ru")) {
             assertNotNull(registry.getAddonInfo(artifact), "Missing addon entry: " + artifact);
         }
 
-        assertTrue(registry.getAll().size() >= 55,
+        assertTrue(registry.getAll().size() >= 65,
                 "Suspicious registry shrink: " + registry.getAll().size() + " entries");
 
         for (JmixAddonInfo info : registry.getAll()) {
